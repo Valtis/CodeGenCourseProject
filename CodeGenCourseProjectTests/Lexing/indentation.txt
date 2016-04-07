@@ -1,0 +1,8 @@
+﻿no_indentation
+    x_4_spaces
+        x_8_spaces
+	one_tab
+  	x_2_spaces_and_tab
+    	x_4_spaces_and_tab
+ 	x_one_space_and_tab
+	 	tab_space_tab

@@ -1,0 +1,3 @@
+﻿"hello"
+"valid_string\n"
+"\tanother\"valid_string\r\\"

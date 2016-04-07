@@ -1,0 +1,17 @@
+﻿ or
+ and
+ not
+ if
+ then
+ else
+ of
+ while
+ do
+ begin
+ end
+ var
+ array
+ procedure
+ function
+ program
+ assert

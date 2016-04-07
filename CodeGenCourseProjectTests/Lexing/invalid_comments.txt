@@ -1,0 +1,5 @@
+﻿{+ not_a_comment
+{* this 
+comment 
+is missing 
+its closing * star-brace }

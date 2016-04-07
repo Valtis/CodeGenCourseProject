@@ -1,0 +1,5 @@
+﻿{* comment goes here *}
+var a : integer; {* something something *}
+foobar
+{* This is comment with new {* inside, but it is ignored! *}
+poitot
