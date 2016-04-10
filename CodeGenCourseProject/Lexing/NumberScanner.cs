@@ -28,7 +28,7 @@ namespace CodeGenCourseProject.Lexing
             var column = Reader.Column;
             var builder = new StringBuilder();
 
-            
+
             bool sawExponent = false;
             int exponentLine = 0;
             int exponentColumn = 0;
@@ -47,7 +47,16 @@ namespace CodeGenCourseProject.Lexing
                 }
                 else if (character == '-')
                 {
-                    builder.Append('-');
+                    // only part of number if previous char was 'e', otherwise signals end of string
+                    var str = builder.ToString();
+                    if (str[str.Length - 1] == 'e')
+                    {
+                        builder.Append('-');
+                    }
+                    else
+                    {
+                        break;
+                    }
                 }
                 else if (character == '.')
                 {
@@ -127,13 +136,13 @@ namespace CodeGenCourseProject.Lexing
                     {
                         break;
                     }
-                   
+
                 }
 
                 Reader.NextCharacter();
             }
 
-        
+
             if (isInteger)
             {
                 try
@@ -165,7 +174,7 @@ namespace CodeGenCourseProject.Lexing
                             "Decimal separator must be followed by a number",
                             separatorLine,
                             separatorColumn);
-                    }                        
+                    }
                 }
                 try
                 {
@@ -182,7 +191,7 @@ namespace CodeGenCourseProject.Lexing
                     return new RealToken(1);
                 }
             }
-           
+
         }
     }
 }

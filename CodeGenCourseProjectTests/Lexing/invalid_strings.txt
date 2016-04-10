@@ -1,0 +1,4 @@
+﻿"invalid\q escape seque\unces"
+valid_identifier
+"unterminated string
+another_valid_identifier

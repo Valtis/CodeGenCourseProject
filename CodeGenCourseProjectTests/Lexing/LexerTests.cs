@@ -103,6 +103,14 @@ namespace CodeGenCourseWork.Lexing.Tests
             Assert.AreEqual(new RealToken(987.654), lexer.NextToken());
             Assert.AreEqual(new RealToken(765.23e12), lexer.NextToken());
             Assert.AreEqual(new RealToken(731.3e-92), lexer.NextToken());
+            Assert.AreEqual(new MinusToken(), lexer.NextToken());
+            Assert.AreEqual(new IntegerToken(54), lexer.NextToken());
+            Assert.AreEqual(new IntegerToken(83), lexer.NextToken());
+            Assert.AreEqual(new MinusToken(), lexer.NextToken());
+            Assert.AreEqual(new IntegerToken(34), lexer.NextToken());
+            Assert.AreEqual(new RealToken(9.82e-4), lexer.NextToken());
+            Assert.AreEqual(new MinusToken(), lexer.NextToken());
+            Assert.AreEqual(new IntegerToken(42), lexer.NextToken());
             Assert.AreEqual(new EOFToken(), lexer.NextToken());
 
             Assert.AreEqual(0, reporter.Errors.Count);
@@ -351,6 +359,36 @@ namespace CodeGenCourseWork.Lexing.Tests
             Assert.AreEqual(new EOFToken(), lexer.NextToken());
 
             Assert.AreEqual(0, reporter.Errors.Count);
+        }
+
+        [TestMethod()]
+        public void InvalidStringsAreHandled()
+        {
+            var reporter = new ErrorReporter();
+            var lexer = new Lexer(@"..\..\Lexing\invalid_strings.txt", reporter);
+
+            Assert.AreEqual(new StringToken("invalidq escape sequeunces"), lexer.NextToken());
+            Assert.AreEqual(new IdentifierToken("valid_identifier"), lexer.NextToken());
+            Assert.AreEqual(new StringToken("unterminated string"), lexer.NextToken());
+            Assert.AreEqual(new IdentifierToken("another_valid_identifier"), lexer.NextToken());
+            Assert.AreEqual(new EOFToken(), lexer.NextToken());
+
+            Assert.AreEqual(3, reporter.Errors.Count);
+
+            Assert.AreEqual(Error.LEXICAL_ERROR, reporter.Errors[0].Type);
+            Assert.AreEqual(0, reporter.Errors[0].Line);
+            Assert.AreEqual(9, reporter.Errors[0].Column);
+            Assert.IsTrue(reporter.Errors[0].Message.Contains("Invalid escape sequence '\\q'"));
+
+            Assert.AreEqual(Error.LEXICAL_ERROR, reporter.Errors[1].Type);
+            Assert.AreEqual(0, reporter.Errors[1].Line);
+            Assert.AreEqual(24, reporter.Errors[1].Column);
+            Assert.IsTrue(reporter.Errors[1].Message.Contains("Invalid escape sequence '\\u'"));
+
+            Assert.AreEqual(Error.LEXICAL_ERROR, reporter.Errors[2].Type);
+            Assert.AreEqual(2, reporter.Errors[2].Line);
+            Assert.AreEqual(20, reporter.Errors[2].Column);
+            Assert.IsTrue(reporter.Errors[2].Message.Contains("String is not terminated"));
         }
 
         [TestMethod()]

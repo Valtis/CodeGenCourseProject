@@ -1,5 +1,6 @@
 ﻿using CodeGenCourseProject.ErrorHandling;
 using CodeGenCourseProject.Tokens;
+using System.Collections.Generic;
 using System.Text;
 
 namespace CodeGenCourseProject.Lexing
@@ -9,8 +10,15 @@ namespace CodeGenCourseProject.Lexing
     */
     internal class StringScanner : TokenScanner
     {
-		internal StringScanner(TextReader reader, ErrorReporter reporter) : base(reader, reporter)
+        private IDictionary<char, char> escapeSequences;
+        internal StringScanner(TextReader reader, ErrorReporter reporter) : base(reader, reporter)
         {
+            escapeSequences = new Dictionary<char, char>();
+            escapeSequences['n'] = '\n';
+            escapeSequences['t'] = '\t';
+            escapeSequences['r'] = '\r';
+            escapeSequences['\\'] = '\\';
+            escapeSequences['"'] = '\"';
         }
 
         internal override bool Recognizes(char character)
@@ -36,7 +44,7 @@ namespace CodeGenCourseProject.Lexing
                   else if (character == '\n')
                   {
                       Reporter.ReportError(Error.LEXICAL_ERROR,
-                          "Unmatched '\"'",
+                          "String is not terminated",
                           Reader.Line,
                           Reader.Column
                           );
@@ -67,35 +75,19 @@ namespace CodeGenCourseProject.Lexing
 			// so getting the value without a check should not cause issues
             var nextChar = Reader.PeekCharacter().Value;
 
-			if (nextChar == 'n')
+            if (escapeSequences.ContainsKey(nextChar))
             {
-                return '\n';
-            }
-            else if (nextChar == 't')
-            {
-                return '\t';
-            }
-            else if (nextChar == 'r')
-            {
-                return '\r';
-            }
-            else if (nextChar == '\\')
-            {
-                return '\\';
-            }
-            else if (nextChar == '"')
-            {
-                return '"';
+                return escapeSequences[nextChar];
             }
             else
             {
-                Reporter.ReportError(Error.LEXICAL_ERROR,
-                    "Invalid escape sequence character '" + nextChar + "'",
+                Reporter.ReportError(
+                    Error.LEXICAL_ERROR,
+                    "Invalid escape sequence '\\" + nextChar + "'",
                     Reader.Line,
                     Reader.Column);
-
                 return nextChar;
-            }
+            }            
         }
     }
 }
