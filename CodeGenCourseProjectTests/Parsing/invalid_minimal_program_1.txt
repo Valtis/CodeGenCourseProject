@@ -1,0 +1,4 @@
+﻿foo; 
+begin
+	a := 4
+end.

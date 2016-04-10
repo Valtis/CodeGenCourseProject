@@ -54,8 +54,17 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="AST\ArrayIndexTests.cs" />
+    <Compile Include="AST\IdentifierNodeTests.cs" />
+    <Compile Include="AST\IntegerNodeTests.cs" />
+    <Compile Include="AST\NegateNodeTests.cs" />
+    <Compile Include="AST\NotNodeTests.cs" />
+    <Compile Include="AST\ProgramNodeTests.cs" />
+    <Compile Include="AST\RealNodeTests.cs" />
+    <Compile Include="AST\VariableAssignmentNodeTests.cs" />
     <Compile Include="Lexing\LexerTests.cs" />
     <Compile Include="Lexing\StringTokenTests.cs" />
+    <Compile Include="Parsing\ParserTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Tokens\IdentifierTokenTests.cs" />
     <Compile Include="Tokens\IntegerTokenTests.cs" />
@@ -72,12 +81,19 @@
     <Content Include="Lexing\indentation.txt" />
     <Content Include="Lexing\invalid_comments.txt" />
     <Content Include="Lexing\invalid_numbers.txt" />
+    <Content Include="Lexing\invalid_strings.txt" />
     <Content Include="Lexing\valid_comments.txt" />
     <Content Include="Lexing\valid_identifiers.txt" />
     <Content Include="Lexing\valid_keywords.txt" />
     <Content Include="Lexing\valid_numbers.txt" />
     <Content Include="Lexing\valid_operators.txt" />
     <Content Include="Lexing\valid_strings.txt" />
+    <Content Include="Parsing\invalid_minimal_program_1.txt" />
+    <Content Include="Parsing\invalid_minimal_program_2.txt" />
+    <Content Include="Parsing\valid_expressions.txt" />
+    <Content Include="Parsing\valid_minimal_program_without_trailing_semicolon.txt" />
+    <Content Include="Parsing\valid_minimal_program.txt" />
+    <Content Include="Parsing\valid_minimal_program_with_trailing_semicolon.txt" />
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

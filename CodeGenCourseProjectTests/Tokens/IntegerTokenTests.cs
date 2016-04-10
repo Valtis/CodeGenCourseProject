@@ -29,5 +29,11 @@ namespace CodeGenCourseProject.Tokens.Tests
             Assert.AreEqual("<Integer - '53'>", new IntegerToken(53).ToString());
         }
 
+        [TestMethod()]
+        public void IntegerStringRepresentationIsCorrectWhenNoValueIsSpecified()
+        {
+            Assert.AreEqual("<Integer>", new IntegerToken().ToString());
+        }
+
     }
 }

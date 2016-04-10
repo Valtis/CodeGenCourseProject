@@ -4,11 +4,24 @@ namespace CodeGenCourseProject.Tokens
 {
     public class RealToken : Token
     {
-        private double value;
+        private readonly double? value;
+
+        public double Value
+        {
+            get
+            {
+                return value.Value;
+            }
+        }
 
         public RealToken(double value)
         {
             this.value = value;
+        }
+
+        public RealToken()
+        {
+            this.value = null;
         }
 
         protected override Tuple<string, string> GetStringRepresentation()
@@ -20,14 +33,14 @@ namespace CodeGenCourseProject.Tokens
         {
             if (obj is RealToken)
             {
-                return value == ((RealToken)obj).value;
+                return Value == ((RealToken)obj).Value;
             }
             return false;
         }
 
         public override int GetHashCode()
         {
-            return value.GetHashCode();
+            return Value.GetHashCode();
         }
     }
 }

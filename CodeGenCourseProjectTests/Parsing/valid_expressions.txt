@@ -1,0 +1,72 @@
+﻿program expression_test;
+begin
+    {* Test parsing single factor *}
+	assignment := 4;
+	assinment_with_real := 1432.21;
+	assignment_with_variable := hello;
+	assignment_with_negation := -233;
+	assignment_with_real_negation := -235.12;
+    assignment_with_variable_negation := -hello;
+	assignment_with_not_and_identifier := not hello;
+	assignment_with_not_and_integer := not 346;
+	assignment_with_parenthesis := (235);
+	assignment_of_array_value := arr[4];
+    assignment_with_array_index_negation := arr[-5]; 
+	assignment_of_array_size := foo.size;
+	assignment_of_array_size_with_parenthesis := (foo).size;
+    assignment_of_semantically_invalid_size := (-235).size;
+	
+{*	addition := 4 + 2;
+	substraction := 5 - 6;
+	multiplication := 20*40;
+	division := 50/2;
+	modulo := 53 % 34;
+	modulo_with_addition := 23 % 3 + 3;
+	addition_with_modulo := 23 + 9 % 3;
+	addition_with_real_and_variable := 353.21e2 + foobar;
+
+	assignment_with_string := "hello";
+	assignment_with_string_concatenation := "hello " + "world";
+	assignment_with_strings_and_semantically_invalid_operation := "hello" - "world" / "test";
+
+	division_with_real := 3235.1/3231.124e-2;
+
+	addition_with_multiplication := 2 + 4 * 2;
+	division_with_addition := 4/2+2;
+
+	multiplication_with_subtraction := 12*6 - 4;
+	subtraction_with_division := 4 - 2 * 3;
+	
+	expression_with_parenthesis := 23*(4 - 5);
+	negations_with_parenthesis := -4 + (-2);
+
+
+	boolean_expression_with_or := hello or world;
+	boolean_expression_with_and := hello and world;
+	boolean_expression_with_and_and_or := hello and world or foo;
+	boolean_expression_with_or_and_and := hello or world and foo;
+
+	boolean_expression_with_and_and_not := hello and not world;
+	boolean_expression_with_not_and_and := not hello and world;
+	boolean_expression_with_not_and_or := not hello or world;
+	boolean_expression_with_not_and_or_with_parenthesis := not (hello or world);
+
+	equality_comparison := a == 2;
+	less_than := a < 7;
+	less_or_equal := 7 <= b;
+	greater := 4 > 3;
+	greater_or_equal := 4 >= 2;
+
+	equality_with_expressions := 4 - 2 == 2 * 3 + 4;
+	less_than_with_expressions := (4 - 2) < 2 / 3;
+	greater_than_with_expressions not a and b > a % 323.2;
+	less_or_equal_with_negation := -4 <= -abcdef;
+	
+	
+	array_assignment[4] := 2;
+	array_assignment_with_expression[5 + 2] := 19;
+	array_assignment_with_boolean_expression[hello and 452] := 12; 	*} {* Semantic error, but should not be a parse error *}
+	{* foo := array.size + 24*4;
+	array.size := 145 + 69; 
+	*}
+end.

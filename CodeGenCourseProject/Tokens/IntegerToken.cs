@@ -4,11 +4,24 @@ namespace CodeGenCourseProject.Tokens
 {
     public class IntegerToken : Token
     {
-        private int value;
+        private readonly int? value;
+
+        public int Value
+        {
+            get
+            {
+                return value.Value;
+            }
+        }
 
         public IntegerToken(int value)
         {
             this.value = value;
+        }
+
+        public IntegerToken()
+        {
+            value = null;
         }
 
         protected override Tuple<string, string> GetStringRepresentation()
@@ -20,14 +33,14 @@ namespace CodeGenCourseProject.Tokens
         {
             if (obj is IntegerToken)
             {
-                return value == ((IntegerToken)obj).value;
+                return Value == ((IntegerToken)obj).Value;
             }
             return false;
         }
 
         public override int GetHashCode()
         {
-            return value;
+            return Value;
         }
     }
 }

@@ -31,5 +31,12 @@ namespace CodeGenCourseProject.Tokens.Tests
             Assert.AreEqual("<Real - '123" + separator + "456'>", new RealToken(123.456).ToString());
             Assert.AreEqual("<Real - '1234560'>", new RealToken(123.456e4).ToString());
         }
+
+        [TestMethod()]
+        public void RealStringRepresentationWithoutValueIsCorrect()
+        {
+            var separator = CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator;
+            Assert.AreEqual("<Real>", new RealToken().ToString());
+        }
     }
 }

@@ -28,5 +28,11 @@ namespace CodeGenCourseProject.Tokens.Tests
             Assert.AreEqual("<identifier - 'foo'>", new IdentifierToken("foo").ToString());
         }
 
+        [TestMethod()]
+        public void IdentifierTokenStringRepresentationIsCorrectWhenNoNameIsSpecified()
+        {
+            Assert.AreEqual("<identifier>", new IdentifierToken().ToString());
+        }
+
     }
 }

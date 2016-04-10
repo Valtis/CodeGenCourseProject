@@ -43,6 +43,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AST\ArraySizeNode.cs" />
+    <Compile Include="AST\ASTNode.cs" />
+    <Compile Include="AST\BlockNode.cs" />
+    <Compile Include="AST\ArrayIndex.cs" />
+    <Compile Include="AST\ErrorNode.cs" />
+    <Compile Include="AST\IdentifierNode.cs" />
+    <Compile Include="AST\IntegerNode.cs" />
+    <Compile Include="AST\NegateNode.cs" />
+    <Compile Include="AST\NotNode.cs" />
+    <Compile Include="AST\ProgramNode.cs" />
+    <Compile Include="AST\RealNode.cs" />
+    <Compile Include="AST\VariableAssignmentNode.cs" />
     <Compile Include="ErrorHandling\ErrorData.cs" />
     <Compile Include="ErrorHandling\ErrorReporter.cs" />
     <Compile Include="InternalCompilerError.cs" />
@@ -52,6 +64,8 @@
     <Compile Include="Lexing\NumberScanner.cs" />
     <Compile Include="Lexing\Lexer.cs" />
     <Compile Include="Lexing\OperatorScanner.cs" />
+    <Compile Include="Parsing\InvalidParseException.cs" />
+    <Compile Include="Parsing\Parser.cs" />
     <Compile Include="Tokens\StringToken.cs" />
     <Compile Include="Tokens\OperatorToken.cs" />
     <Compile Include="Lexing\StringScanner.cs" />
