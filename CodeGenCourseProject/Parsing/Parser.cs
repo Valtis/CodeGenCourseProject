@@ -3,6 +3,7 @@ using CodeGenCourseProject.ErrorHandling;
 using CodeGenCourseProject.Lexing;
 using CodeGenCourseProject.Tokens;
 using System;
+using System.Collections.Generic;
 
 namespace CodeGenCourseProject.Parsing
 {
@@ -11,10 +12,32 @@ namespace CodeGenCourseProject.Parsing
         private Lexer lexer;
         private ErrorReporter reporter;
 
+        private IDictionary<Type, Type> relationalOperators;
+        private IDictionary<Type, Type> additionOperators;
+        private IDictionary<Type, Type> multiplyOperators;
+
         public Parser(Lexer lexer, ErrorReporter reporter)
         {
             this.lexer = lexer;
             this.reporter = reporter;
+
+            multiplyOperators = new Dictionary<Type, Type>();
+            multiplyOperators.Add(typeof(MultiplyToken), typeof(MultiplyNode));
+            multiplyOperators.Add(typeof(DivideToken), typeof(DivideNode));
+            multiplyOperators.Add(typeof(ModuloToken), typeof(ModuloNode));
+            multiplyOperators.Add(typeof(AndToken), typeof(AndNode));
+
+            additionOperators = new Dictionary<Type, Type>();
+            additionOperators.Add(typeof(PlusToken), typeof(AddNode));
+            additionOperators.Add(typeof(MinusToken), typeof(SubtractNode));
+            additionOperators.Add(typeof(OrToken), typeof(OrNode));
+
+            relationalOperators = new Dictionary<Type, Type>();
+            relationalOperators.Add(typeof(LessThanToken), typeof(LessThanNode));
+            relationalOperators.Add(typeof(LessThanOrEqualToken), typeof(LessThanOrEqualNode));
+            relationalOperators.Add(typeof(EqualsToken), typeof(EqualsNode));
+            relationalOperators.Add(typeof(GreaterThanOrEqualToken), typeof(GreaterThanOrEqualNode));
+            relationalOperators.Add(typeof(GreaterThanToken), typeof(GreaterThanNode));
         }
 
 
@@ -108,32 +131,46 @@ namespace CodeGenCourseProject.Parsing
             var identifier = Expect<IdentifierToken>();
 
             var next = lexer.PeekToken();
-            if (next is AssignmentToken)
-            {
-                return ParseAssignmentStatement(identifier);
-            }
-
+            return ParseAssignmentStatement();
+            
             throw new NotImplementedException();
         }
 
-        private ASTNode ParseAssignmentStatement(IdentifierToken identifier)
+        private ASTNode ParseAssignmentStatement()
         {
+            // backtrack once, so that we can use the ParseVariable() - method
+            lexer.Backtrack();
+            var variable = ParseVariable();
+
             var assignmentToken = Expect<AssignmentToken>();
             var expression = ParseExpression();
 
             return new VariableAssignmentNode(
                 assignmentToken.Line,
                 assignmentToken.Column,
-                identifier,
+                variable,
                 expression);
         }
 
         private ASTNode ParseExpression()
         {
-            var first_expr = ParseSimpleExpression();
+            var expr = ParseSimpleExpression();
 
+            if (relationalOperators.ContainsKey(lexer.PeekToken().GetType()))
+            {
+                var op = lexer.NextToken();
+                var expr2 = ParseSimpleExpression();
+                var binaryNode = (ASTNode)Activator.CreateInstance(
+                    relationalOperators[op.GetType()],
+                    op.Line,
+                    op.Column,
+                    expr,
+                    expr2
+                    );
+                return binaryNode;
+            }
 
-            return first_expr;            
+            return expr;            
         }
 
         private ASTNode ParseSimpleExpression()
@@ -143,6 +180,12 @@ namespace CodeGenCourseProject.Parsing
             {
                 negate = Expect<MinusToken>();
             }
+
+            // discard plus sign
+            if (lexer.PeekToken() is PlusToken)
+            {
+                Expect<PlusToken>();
+            }                
 
             var term = ParseTerm();
 
@@ -162,6 +205,20 @@ namespace CodeGenCourseProject.Parsing
                 }
             }
 
+            if (additionOperators.ContainsKey(lexer.PeekToken().GetType()))
+            {
+                var op = lexer.NextToken();
+                var term2 = ParseTerm();
+                var binaryNode = (ASTNode)Activator.CreateInstance(
+                    additionOperators[op.GetType()],
+                    op.Line,
+                    op.Column,
+                    term,
+                    term2
+                    );
+                return binaryNode;
+            }
+
             return term;
         }
 
@@ -169,6 +226,22 @@ namespace CodeGenCourseProject.Parsing
         private ASTNode ParseTerm()
         {
             var factor = ParseFactor();
+
+            if (multiplyOperators.ContainsKey(lexer.PeekToken().GetType()))
+            {
+                var op = lexer.NextToken();
+                var factor2 = ParseFactor(); 
+                var binaryNode = (ASTNode)Activator.CreateInstance(
+                    multiplyOperators[op.GetType()],
+                    op.Line,
+                    op.Column,
+                    factor,
+                    factor2
+                    );
+                return binaryNode;
+            }
+
+
             return factor;
         }
 
@@ -205,6 +278,11 @@ namespace CodeGenCourseProject.Parsing
                 var real = Expect<RealToken>();
                 return new RealNode(real.Line, real.Column, real.Value);
             }
+            else if (token is StringToken)
+            {
+                var str = Expect<StringToken>();
+                return new StringNode(str.Line, str.Column, str.Value);
+            }
             else if (token is IdentifierToken)
             {
                 return ParseVariable();
@@ -238,7 +316,7 @@ namespace CodeGenCourseProject.Parsing
 
                 Expect<RBracketToken>();
 
-                return new ArrayIndex(identifier.Line, identifier.Column, identifier, expr);
+                return new ArrayIndexNode(identifier.Line, identifier.Column, identifier, expr);
             }
 
             return new IdentifierNode(identifier.Line, identifier.Column, identifier.Value);

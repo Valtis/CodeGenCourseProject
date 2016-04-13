@@ -43,17 +43,30 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AST\AddNode.cs" />
+    <Compile Include="AST\AndNode.cs" />
     <Compile Include="AST\ArraySizeNode.cs" />
     <Compile Include="AST\ASTNode.cs" />
     <Compile Include="AST\BlockNode.cs" />
-    <Compile Include="AST\ArrayIndex.cs" />
+    <Compile Include="AST\ArrayIndexNode.cs" />
+    <Compile Include="AST\DivideNode.cs" />
+    <Compile Include="AST\EqualsNode.cs" />
     <Compile Include="AST\ErrorNode.cs" />
+    <Compile Include="AST\GreaterThanNode.cs" />
+    <Compile Include="AST\GreaterThanOrEqualNode.cs" />
     <Compile Include="AST\IdentifierNode.cs" />
     <Compile Include="AST\IntegerNode.cs" />
+    <Compile Include="AST\LessThanNode.cs" />
+    <Compile Include="AST\LessThanOrEqualNode.cs" />
+    <Compile Include="AST\ModuloNode.cs" />
+    <Compile Include="AST\MultiplyNode.cs" />
     <Compile Include="AST\NegateNode.cs" />
     <Compile Include="AST\NotNode.cs" />
+    <Compile Include="AST\OrNode.cs" />
     <Compile Include="AST\ProgramNode.cs" />
     <Compile Include="AST\RealNode.cs" />
+    <Compile Include="AST\StringNode.cs" />
+    <Compile Include="AST\SubtractNode.cs" />
     <Compile Include="AST\VariableAssignmentNode.cs" />
     <Compile Include="ErrorHandling\ErrorData.cs" />
     <Compile Include="ErrorHandling\ErrorReporter.cs" />

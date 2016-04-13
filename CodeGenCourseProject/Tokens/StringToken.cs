@@ -4,26 +4,39 @@ namespace CodeGenCourseProject.Tokens
 {
     public class StringToken : Token
     {
-        private string value;
+        private readonly string value;
+
+        public string Value
+        {
+            get
+            {
+                return value;
+            }
+        }
 
         public StringToken(string value)
         {
             this.value = value;
         }
+
+        public StringToken()
+        {
+            value = null;
+        }
              
         protected override Tuple<string, string> GetStringRepresentation()
         {
-            return new Tuple<string, string>("string", value);
+            return new Tuple<string, string>("string", "" + value);
         }
 
         public override int GetHashCode()
         {
-            return value.GetHashCode();
+            return Value.GetHashCode();
         }
 
         public override bool Equals(object obj)
         {
-            return obj is StringToken && value == ((StringToken)obj).value;
+            return obj is StringToken && Value == ((StringToken)obj).Value;
         }
     }
 }

@@ -36,7 +36,7 @@ namespace CodeGenCourseProject.AST
 
         public override bool Equals(object obj)
         {
-            return obj is IntegerNode && ((IntegerNode)obj).Value == value;
+            return obj is IntegerNode && ((IntegerNode)obj).value == value;
         }
     }
 }

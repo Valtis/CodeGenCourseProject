@@ -54,13 +54,14 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="AST\ArrayIndexTests.cs" />
+    <Compile Include="AST\ArrayIndexNodeTests.cs" />
     <Compile Include="AST\IdentifierNodeTests.cs" />
     <Compile Include="AST\IntegerNodeTests.cs" />
     <Compile Include="AST\NegateNodeTests.cs" />
     <Compile Include="AST\NotNodeTests.cs" />
     <Compile Include="AST\ProgramNodeTests.cs" />
     <Compile Include="AST\RealNodeTests.cs" />
+    <Compile Include="AST\StringNodeTests.cs" />
     <Compile Include="AST\VariableAssignmentNodeTests.cs" />
     <Compile Include="Lexing\LexerTests.cs" />
     <Compile Include="Lexing\StringTokenTests.cs" />
@@ -69,6 +70,7 @@
     <Compile Include="Tokens\IdentifierTokenTests.cs" />
     <Compile Include="Tokens\IntegerTokenTests.cs" />
     <Compile Include="Tokens\RealTokenTests.cs" />
+    <Compile Include="Tokens\StringTokenTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CodeGenCourseProject\CodeGenCourseProject.csproj">

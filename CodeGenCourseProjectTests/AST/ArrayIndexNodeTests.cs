@@ -4,30 +4,30 @@ using CodeGenCourseProject.Tokens;
 namespace CodeGenCourseProject.AST.Tests
 {
     [TestClass()]
-    public class ArrayIndexTests
+    public class ArrayIndexNodeTests
     {
         [TestMethod()]
         public void TwoArrayIndexNodesAreEqualWhenValuesAreEqual()
         {
             Assert.AreEqual(
-                new ArrayIndex(1, 2, new IdentifierToken("hello"), null),
-                new ArrayIndex(6, 32, new IdentifierToken("hello"), null));
+                new ArrayIndexNode(1, 2, new IdentifierToken("hello"), null),
+                new ArrayIndexNode(6, 32, new IdentifierToken("hello"), null));
         }
 
         [TestMethod()]
         public void TwoArrayIndexNodessAreNotEqualWhenValuesAreNotEqual()
         {
             Assert.AreNotEqual(
-                new ArrayIndex(1, 2, new IdentifierToken("hello"), null),
-                new ArrayIndex(6, 32, new IdentifierToken("world"), null));
+                new ArrayIndexNode(1, 2, new IdentifierToken("hello"), null),
+                new ArrayIndexNode(6, 32, new IdentifierToken("world"), null));
         }
 
         [TestMethod()]
         public void ArrayIndexNodeStringRepresentationIsCorrect()
         {
             Assert.AreEqual(
-                "<ArrayIndexNode>",
-                new ArrayIndex(6, 32, new IdentifierToken("hello"), null).ToString());
+                "<ArrayIndexNode - 'hello'>",
+                new ArrayIndexNode(6, 32, new IdentifierToken("hello"), null).ToString());
         }
     }
 }
