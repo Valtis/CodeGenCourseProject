@@ -1,0 +1,19 @@
+﻿program invalid_expressions;
+begin
+	a := 232 +; 
+	b := or 2342;
+	c := + 1234; {* Correct, but just here as a sanity check *}
+	d := foo.bar;
+	e := foo.1234;
+	f := 42 * ;
+	g := * "hello";
+	h := 244 235;
+	i := --244;
+	j := a =;
+	k := = 4;
+	l = 23;
+	:= 423;
+	m[e := 1243;
+	n] := 21;
+	o[1 * 23 +] := 3215;
+end.

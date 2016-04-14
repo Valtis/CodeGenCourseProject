@@ -68,7 +68,6 @@ begin
 	less_or_equal_with_negation := -4 <= -"abcdef";
 	
 	{* Array and array size assignments *}
-	
 	array_assignment[4] := 2;
 	array_assignment_with_expression[5 + 2] := 19;
 	array_assignment_with_boolean_expression[hello and 452] := 12;  {* Semantic error, but should not be a parse error *}

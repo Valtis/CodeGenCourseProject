@@ -90,8 +90,11 @@
     <Content Include="Lexing\valid_numbers.txt" />
     <Content Include="Lexing\valid_operators.txt" />
     <Content Include="Lexing\valid_strings.txt" />
+    <Content Include="Parsing\invalid_expressions.txt" />
     <Content Include="Parsing\invalid_minimal_program_1.txt" />
     <Content Include="Parsing\invalid_minimal_program_2.txt" />
+    <Content Include="Parsing\invalid_program_with_missing_dot.txt" />
+    <Content Include="Parsing\invalid_program_with_missing_semicolon_in_mid_statement.txt" />
     <Content Include="Parsing\valid_expressions.txt" />
     <Content Include="Parsing\valid_minimal_program_without_trailing_semicolon.txt" />
     <Content Include="Parsing\valid_minimal_program.txt" />

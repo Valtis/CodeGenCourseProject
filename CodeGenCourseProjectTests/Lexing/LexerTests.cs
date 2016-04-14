@@ -141,9 +141,10 @@ namespace CodeGenCourseWork.Lexing.Tests
             Assert.AreEqual(new IdentifierToken("x"), lexer.NextToken());
             Assert.AreEqual(new RealToken(1.234e46), lexer.NextToken());
             Assert.AreEqual(new IdentifierToken("ybbb"), lexer.NextToken());
+            Assert.AreEqual(new RealToken(1), lexer.NextToken());
             Assert.AreEqual(new EOFToken(), lexer.NextToken());
 
-            Assert.AreEqual(10, reporter.Errors.Count);
+            Assert.AreEqual(11, reporter.Errors.Count);
 
 
             Assert.AreEqual(Error.LEXICAL_ERROR, reporter.Errors[0].Type);
@@ -195,6 +196,11 @@ namespace CodeGenCourseWork.Lexing.Tests
             Assert.AreEqual(16, reporter.Errors[9].Line);
             Assert.AreEqual(8, reporter.Errors[9].Column);
             Assert.IsTrue(reporter.Errors[9].Message.Contains("Invalid character 'y'"));
+
+            Assert.AreEqual(Error.LEXICAL_ERROR, reporter.Errors[10].Type);
+            Assert.AreEqual(17, reporter.Errors[10].Line);
+            Assert.AreEqual(0, reporter.Errors[10].Column);
+            Assert.IsTrue(reporter.Errors[10].Message.Contains("Real cannot end in 'e'"));
         }
 
         [TestMethod()]

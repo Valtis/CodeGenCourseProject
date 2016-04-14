@@ -1,0 +1,7 @@
+﻿program missing_semicolon;
+begin
+	a := 232;
+	b := 1215 {* Missing semicolon *}
+	c := 1432;
+	d := 4.124e2;
+end.

@@ -15,14 +15,6 @@ namespace CodeGenCourseProject.AST.Tests
         }
 
         [TestMethod()]
-        public void TwoVariableAssignmentNodesWithDifferentIdentifierAreNotEqual()
-        {
-            Assert.AreNotEqual(
-                new VariableAssignmentNode(0, 1, null, null),
-                new VariableAssignmentNode(67, 45, null, null));
-        }
-
-        [TestMethod()]
         public void VariableAssignmentNodeStringRepresentationIsCorrect()
         {
             Assert.AreEqual(

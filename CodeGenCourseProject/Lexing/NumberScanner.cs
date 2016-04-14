@@ -176,6 +176,20 @@ namespace CodeGenCourseProject.Lexing
                             separatorColumn);
                     }
                 }
+
+                // check if ends in 'e'
+                if (str[str.Length - 1] == 'e')
+                {
+                    Reporter.ReportError(
+                        Error.LEXICAL_ERROR,
+                        "Real cannot end in 'e'",
+                        line,
+                        column);
+
+                    return new RealToken(1);
+                }
+
+
                 try
                 {
                     return new RealToken(double.Parse(builder.ToString()));
