@@ -22,6 +22,10 @@ namespace CodeGenCourseWork.Lexing.Tests
             Assert.AreEqual(new IdentifierToken("ends_in_underscore_"), lexer.NextToken());
             Assert.AreEqual(new IdentifierToken("ends_in_number123"), lexer.NextToken());
             Assert.AreEqual(new IdentifierToken("functionnotkeyword"), lexer.NextToken());
+            Assert.AreEqual(new IdentifierToken("abc"), lexer.NextToken());
+            Assert.AreEqual(new IdentifierToken("abc"), lexer.NextToken());
+            Assert.AreEqual(new IdentifierToken("hello"), lexer.NextToken());
+            Assert.AreEqual(new IdentifierToken("hello"), lexer.NextToken());
             Assert.AreEqual(new EOFToken(), lexer.NextToken());
             Assert.AreEqual(0, reporter.Errors.Count);
         }
@@ -49,10 +53,16 @@ namespace CodeGenCourseWork.Lexing.Tests
             Assert.AreEqual(new FunctionToken(), lexer.NextToken());
             Assert.AreEqual(new ProgramToken(), lexer.NextToken());
             Assert.AreEqual(new AssertToken(), lexer.NextToken());
+            Assert.AreEqual(new ReturnToken(), lexer.NextToken());
+            Assert.AreEqual(new ReturnToken(), lexer.NextToken());
+            Assert.AreEqual(new OrToken(), lexer.NextToken());
+            Assert.AreEqual(new AndToken(), lexer.NextToken());
+            Assert.AreEqual(new NotToken(), lexer.NextToken());
+            Assert.AreEqual(new BeginToken(), lexer.NextToken());
             Assert.AreEqual(new EOFToken(), lexer.NextToken());
             Assert.AreEqual(0, reporter.Errors.Count);
         }
-
+ 
         [TestMethod()]
         public void ValidOperatorsAreHandled()
         {

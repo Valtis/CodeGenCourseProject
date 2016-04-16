@@ -1,0 +1,7 @@
+﻿program return_statements;
+begin
+	return;
+	return 5;
+	return "hello" + 2;
+	return "hello" * 2 <= 4;
+end.

@@ -1,0 +1,10 @@
+﻿program read_statements;
+begin
+	{* 
+	Parser handles these as function calls, semantic phase will then decide if this is call 
+	to the inbuilt read, or user-declared read
+	*}
+	read(foo);
+	read(foo, bar);
+	read(foo[54], bar[12], baz[12*2341-qux]);
+end.

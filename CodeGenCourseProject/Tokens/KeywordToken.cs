@@ -147,4 +147,12 @@ namespace CodeGenCourseProject.Tokens
             return "assert";
         }
     }
+
+    public class ReturnToken : KeywordToken
+    {
+        protected override string GetKeywordName()
+        {
+            return "return";
+        }
+    }
 }

@@ -46,9 +46,11 @@
     <Compile Include="AST\AddNode.cs" />
     <Compile Include="AST\AndNode.cs" />
     <Compile Include="AST\ArraySizeNode.cs" />
+    <Compile Include="AST\AssertNode.cs" />
     <Compile Include="AST\ASTNode.cs" />
     <Compile Include="AST\BlockNode.cs" />
     <Compile Include="AST\ArrayIndexNode.cs" />
+    <Compile Include="AST\CallNode.cs" />
     <Compile Include="AST\DivideNode.cs" />
     <Compile Include="AST\EqualsNode.cs" />
     <Compile Include="AST\ErrorNode.cs" />
@@ -65,6 +67,7 @@
     <Compile Include="AST\OrNode.cs" />
     <Compile Include="AST\ProgramNode.cs" />
     <Compile Include="AST\RealNode.cs" />
+    <Compile Include="AST\ReturnNode.cs" />
     <Compile Include="AST\StringNode.cs" />
     <Compile Include="AST\SubtractNode.cs" />
     <Compile Include="AST\VariableAssignmentNode.cs" />

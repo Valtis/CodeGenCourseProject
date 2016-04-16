@@ -1,0 +1,10 @@
+﻿program valid_function_calls;
+begin
+	no_arguments();
+	one_argument(hello);
+	one_argument_expression(12 + 32 = 1 * 2 -4);
+	two_arguments(hello, world);
+	two_arguments_expressions(23*1.4312e2, "foo">=bar);
+	three_arguments(hello, 1, "world");
+	three_arguments_expressions(1 + 2, 3*1, a < b + c);
+end.

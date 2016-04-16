@@ -1,0 +1,7 @@
+﻿program invalid_return_statements;
+begin
+	return a+;
+	return >=b;
+	return 5*(a+4;
+	return {* This is actually valid *}
+end.

@@ -1,0 +1,5 @@
+﻿{* Regression test *}
+program foo;
+begin
+
+a := 4234;

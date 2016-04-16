@@ -23,7 +23,7 @@ namespace CodeGenCourseProject.AST
 
         protected override Tuple<string, string> GetStringRepresentation()
         {
-            throw new NotImplementedException();
+            return new Tuple<string, string>("BlockNode", "");
         }
     }
 }

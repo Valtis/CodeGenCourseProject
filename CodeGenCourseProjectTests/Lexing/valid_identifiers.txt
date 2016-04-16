@@ -4,4 +4,8 @@ id_with123_numbers_and_underscores
 ends_in_underscore_
 ends_in_number123
 functionnotkeyword
-
+{* case insensitivity *}
+abc
+ABC
+HELLo
+hElLo

@@ -1,0 +1,7 @@
+﻿program valid_write_statements;
+begin
+	{* as with read statement, as far as parser is conserned, this is a regular function call *}
+	writeln();
+	writeln(hello);
+	writeln("foo", 1, a % 2 > not 4);
+end.

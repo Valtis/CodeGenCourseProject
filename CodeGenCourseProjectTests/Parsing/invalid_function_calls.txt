@@ -1,0 +1,9 @@
+﻿program invalid_function_calls;
+begin
+	no_rparen(;
+	no_lparen);
+	arg_missing_comma(4, 5 6);
+	list_ending_in_comma(3, 4, );
+	invalid_expr(3 +, 4, 5);
+	invalid_expr2(3 + 4, =3, 1);
+end.

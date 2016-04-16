@@ -1,0 +1,6 @@
+﻿program invalid_assert_statements;
+begin
+	assert();
+	assert(4 <);
+	assert(12 32);
+end.

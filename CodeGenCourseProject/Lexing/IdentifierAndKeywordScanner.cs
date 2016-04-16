@@ -36,6 +36,7 @@ namespace CodeGenCourseProject.Lexing
             keywords.Add("function", typeof(FunctionToken));
             keywords.Add("program", typeof(ProgramToken));
             keywords.Add("assert", typeof(AssertToken));
+            keywords.Add("return", typeof(ReturnToken));
         }
 
         internal override bool Recognizes(char character)
@@ -56,12 +57,12 @@ namespace CodeGenCourseProject.Lexing
              }
 
              var text = builder.ToString();
-             if (keywords.ContainsKey(text))
+             if (keywords.ContainsKey(text.ToLower()))
              {
-                 return (Token)Activator.CreateInstance(keywords[text]);
+                 return (Token)Activator.CreateInstance(keywords[text.ToLower()]);
              }
 
-             return new IdentifierToken(text);
+             return new IdentifierToken(text.ToLower());
         }
 
 

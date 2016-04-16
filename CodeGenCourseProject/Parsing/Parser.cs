@@ -91,9 +91,10 @@ namespace CodeGenCourseProject.Parsing
                 // initial statement in the block
                 block.Children.Add(ParseStatement());
 
-                while (!(lexer.PeekToken() is EndToken))
+                while (!(lexer.PeekToken() is EndToken) && !(lexer.PeekToken() is EOFToken))
                 {
-                    try {
+                    try
+                    {
                         Expect<SemicolonToken>();
                     }
                     catch
@@ -103,15 +104,15 @@ namespace CodeGenCourseProject.Parsing
                         continue;
                     }
 
-                    if (lexer.PeekToken() is EndToken)
+                    if (lexer.PeekToken() is EndToken || lexer.PeekToken() is EOFToken)
                     {
                         break;
-                    }   
+                    }
 
                     block.Children.Add(ParseStatement());
                 }
 
-               
+
                 Expect<EndToken>();
 
                 return block;
@@ -137,6 +138,14 @@ namespace CodeGenCourseProject.Parsing
                 if (next is IdentifierToken)
                 {
                     return ParseAssignmentOrCallStatement();
+                }
+                else if (next is ReturnToken)
+                {
+                    return ParseReturnStatement();
+                }
+                else if (next is AssertToken)
+                {
+                    return ParseAssertStatement();
                 }
             }
             catch (InvalidParseException ex)
@@ -164,9 +173,60 @@ namespace CodeGenCourseProject.Parsing
             var identifier = Expect<IdentifierToken>();
 
             var next = lexer.PeekToken();
+            if (next is LParenToken)
+            {
+                return ParseCall(identifier);
+            }
+
             return ParseAssignmentStatement();
 
-            throw new NotImplementedException();
+        }
+
+        private ASTNode ParseCall(IdentifierToken identifier)
+        {
+            try
+            {
+                Expect<LParenToken>();
+                var arguments = new List<ASTNode>();
+                if (!(lexer.PeekToken() is RParenToken))
+                {
+                    arguments = ParseArguments();
+                }
+
+                Expect<RParenToken>();
+
+                return new CallNode(
+                    identifier.Line,
+                    identifier.Column,
+                    new IdentifierNode(identifier.Line, identifier.Column, identifier.Value),
+                    arguments.ToArray()
+                    );
+            }
+            catch (InvalidParseException ex)
+            {
+                reporter.ReportError(
+                   Error.NOTE,
+                   "Error occured when parsing function call",
+                   identifier.Line,
+                   identifier.Column);
+                SyncAfterError();
+                return new ErrorNode();
+            }
+        }
+
+        private List<ASTNode> ParseArguments()
+        {
+
+            var nodes = new List<ASTNode>();
+            nodes.Add(ParseExpression());
+
+            while (lexer.PeekToken() is CommaToken)
+            {
+                Expect<CommaToken>();
+                nodes.Add(ParseExpression());
+            }
+
+            return nodes;
         }
 
         private ASTNode ParseAssignmentStatement()
@@ -177,7 +237,7 @@ namespace CodeGenCourseProject.Parsing
             Token assignmentToken;
             try
             {
-                 assignmentToken = Expect<AssignmentToken>();
+                assignmentToken = Expect<AssignmentToken>();
             }
             catch (InvalidParseException ex)
             {
@@ -214,6 +274,36 @@ namespace CodeGenCourseProject.Parsing
                 assignmentToken.Column,
                 variable,
                 expression);
+        }
+
+        private ASTNode ParseReturnStatement()
+        {
+            var ret = Expect<ReturnToken>();
+            try
+            {
+                if (lexer.PeekToken() is SemicolonToken || lexer.PeekToken() is EndToken)
+                {
+                    return new ReturnNode(ret.Line, ret.Column);
+                }
+
+                return new ReturnNode(ret.Line, ret.Column, ParseExpression());
+            }
+            catch (InvalidParseException ex)
+            {
+                reporter.ReportError(
+                    Error.NOTE,
+                    "Error occured while parsing return statement",
+                    ret.Line,
+                    ret.Column);
+                SyncAfterError();
+                return new ErrorNode();
+            }
+        }
+
+        private ASTNode ParseAssertStatement()
+        {
+            var assert = Expect<AssertToken>();
+            return new AssertNode(assert.Line, assert.Column, ParseExpression());
         }
 
         private ASTNode ParseExpression()
@@ -365,7 +455,7 @@ namespace CodeGenCourseProject.Parsing
 
             reporter.ReportError(
                 Error.SYNTAX_ERROR,
-                "Unexpected token " + token.ToString() + " when operand was expected",
+                "Unexpected token " + token.ToString() + " when expression was expected",
                 token.Line,
                 token.Column);
 
@@ -389,8 +479,6 @@ namespace CodeGenCourseProject.Parsing
 
             return new IdentifierNode(identifier.Line, identifier.Column, identifier.Value);
         }
-
-
 
         private T Expect<T>() where T : Token, new()
         {

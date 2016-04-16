@@ -602,14 +602,14 @@ namespace CodeGenCourseProject.Parsing.Tests
                     new BlockNode(0, 0,
                         new ErrorNode(),
                         new ErrorNode(),
-                        new VariableAssignmentNode(0, 0, 
+                        new VariableAssignmentNode(0, 0,
                             new IdentifierNode(0, 0, "c"),
                             new IntegerNode(0, 0, 1234)
                         ),
                         new ErrorNode(),
                         new ErrorNode(),
                         new ErrorNode(),
-                        new ErrorNode(), 
+                        new ErrorNode(),
                         new VariableAssignmentNode(0, 0,
                             new IdentifierNode(0, 0, "h"),
                             new IntegerNode(0, 0, 244)
@@ -630,12 +630,12 @@ namespace CodeGenCourseProject.Parsing.Tests
             Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[0].Type);
             Assert.AreEqual(2, reporter.Errors[0].Line);
             Assert.AreEqual(18, reporter.Errors[0].Column);
-            Assert.IsTrue(reporter.Errors[0].Message.Contains("Unexpected token <operator - ';'> when operand"));
+            Assert.IsTrue(reporter.Errors[0].Message.Contains("Unexpected token <operator - ';'> when expression"));
 
             Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[1].Type);
             Assert.AreEqual(3, reporter.Errors[1].Line);
             Assert.AreEqual(13, reporter.Errors[1].Column);
-            Assert.IsTrue(reporter.Errors[1].Message.Contains("Unexpected token <keyword - 'or'> when operand"));
+            Assert.IsTrue(reporter.Errors[1].Message.Contains("Unexpected token <keyword - 'or'> when expression"));
 
             Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[2].Type);
             Assert.AreEqual(5, reporter.Errors[2].Line);
@@ -650,12 +650,12 @@ namespace CodeGenCourseProject.Parsing.Tests
             Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[4].Type);
             Assert.AreEqual(7, reporter.Errors[4].Line);
             Assert.AreEqual(18, reporter.Errors[4].Column);
-            Assert.IsTrue(reporter.Errors[4].Message.Contains("Unexpected token <operator - ';'> when operand"));
+            Assert.IsTrue(reporter.Errors[4].Message.Contains("Unexpected token <operator - ';'> when expression"));
 
             Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[5].Type);
             Assert.AreEqual(8, reporter.Errors[5].Line);
             Assert.AreEqual(13, reporter.Errors[5].Column);
-            Assert.IsTrue(reporter.Errors[5].Message.Contains("Unexpected token <operator - '*'> when operand"));
+            Assert.IsTrue(reporter.Errors[5].Message.Contains("Unexpected token <operator - '*'> when expression"));
 
             Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[6].Type);
             Assert.AreEqual(9, reporter.Errors[6].Line);
@@ -665,17 +665,17 @@ namespace CodeGenCourseProject.Parsing.Tests
             Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[7].Type);
             Assert.AreEqual(10, reporter.Errors[7].Line);
             Assert.AreEqual(14, reporter.Errors[7].Column);
-            Assert.IsTrue(reporter.Errors[7].Message.Contains("Unexpected token <operator - '-'> when operand"));
+            Assert.IsTrue(reporter.Errors[7].Message.Contains("Unexpected token <operator - '-'> when expression"));
 
             Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[8].Type);
             Assert.AreEqual(11, reporter.Errors[8].Line);
             Assert.AreEqual(16, reporter.Errors[8].Column);
-            Assert.IsTrue(reporter.Errors[8].Message.Contains("Unexpected token <operator - ';'> when operand"));
+            Assert.IsTrue(reporter.Errors[8].Message.Contains("Unexpected token <operator - ';'> when expression"));
 
             Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[9].Type);
             Assert.AreEqual(12, reporter.Errors[9].Line);
             Assert.AreEqual(13, reporter.Errors[9].Column);
-            Assert.IsTrue(reporter.Errors[9].Message.Contains("Unexpected token <operator - '='> when operand"));
+            Assert.IsTrue(reporter.Errors[9].Message.Contains("Unexpected token <operator - '='> when expression"));
 
             Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[10].Type);
             Assert.AreEqual(13, reporter.Errors[10].Line);
@@ -700,7 +700,402 @@ namespace CodeGenCourseProject.Parsing.Tests
             Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[14].Type);
             Assert.AreEqual(17, reporter.Errors[14].Line);
             Assert.AreEqual(18, reporter.Errors[14].Column);
-            Assert.IsTrue(reporter.Errors[14].Message.Contains("Unexpected token <operator - ']'> when operand"));
+            Assert.IsTrue(reporter.Errors[14].Message.Contains("Unexpected token <operator - ']'> when expression"));
+        }
+
+        [TestMethod()]
+        public void ValidCallsAreAccepted()
+        {
+            var reporter = new ErrorReporter();
+            var lexer = new Lexer(@"..\..\Parsing\valid_function_calls.txt", reporter);
+            var parser = new Parser(lexer, reporter);
+
+            var node = parser.Parse();
+
+            Assert.AreEqual(0, reporter.Errors.Count);
+
+            ASTMatches(
+                new ProgramNode(0, 0, new IdentifierToken("valid_function_calls"),
+                    new BlockNode(0, 0,
+                        new CallNode(0, 0,
+                            new IdentifierNode(0, 0, "no_arguments")
+                        ),
+                        new CallNode(0, 0,
+                            new IdentifierNode(0, 0, "one_argument"),
+                            new IdentifierNode(0, 0, "hello")
+                        ),
+                        new CallNode(0, 0,
+                            new IdentifierNode(0, 0, "one_argument_expression"),
+                            new EqualsNode(0, 0,
+                                new AddNode(0, 0,
+                                    new IntegerNode(0, 0, 12),
+                                    new IntegerNode(0, 0, 32)),
+                                new SubtractNode(0, 0,
+                                    new MultiplyNode(0, 0,
+                                        new IntegerNode(0, 0, 1),
+                                        new IntegerNode(0, 0, 2)
+                                    ),
+                                    new IntegerNode(0, 0, 4)
+                                )
+                            )
+                        ),
+                        new CallNode(0, 0,
+                            new IdentifierNode(0, 0, "two_arguments"),
+                            new IdentifierNode(0, 0, "hello"),
+                            new IdentifierNode(0, 0, "world")
+                        ),
+                        new CallNode(0, 0,
+                            new IdentifierNode(0, 0, "two_arguments_expressions"),
+                            new MultiplyNode(0, 0,
+                                new IntegerNode(0, 0, 23),
+                                new RealNode(0, 0, 1.4312e2)
+                            ),
+                            new GreaterThanOrEqualNode(0, 0,
+                                new StringNode(0, 0, "foo"),
+                                new IdentifierNode(0, 0, "bar")
+                            )
+                        ),
+                        new CallNode(0, 0,
+                            new IdentifierNode(0, 0, "three_arguments"),
+                            new IdentifierNode(0, 0, "hello"),
+                            new IntegerNode(0, 0, 1),
+                            new StringNode(0, 0, "world")
+                        ),
+                        new CallNode(0, 0,
+                            new IdentifierNode(0, 0, "three_arguments_expressions"),
+                            new AddNode(0, 0,
+                                new IntegerNode(0, 0, 1),
+                                new IntegerNode(0, 0, 2)
+                            ),
+                            new MultiplyNode(0, 0,
+                                new IntegerNode(0, 0, 3),
+                                new IntegerNode(0, 0, 1)
+                            ),
+                            new LessThanNode(0, 0,
+                                new IdentifierNode(0, 0, "a"),
+                                new AddNode(0, 0,
+                                    new IdentifierNode(0, 0, "b"),
+                                    new IdentifierNode(0, 0, "c")
+                                )
+                            )
+                        )
+                    )
+                ),
+                node);
+        }
+
+        [TestMethod()]
+        public void InvalidCallsAreRejected()
+        {
+            var reporter = new ErrorReporter();
+            var lexer = new Lexer(@"..\..\Parsing\invalid_function_calls.txt", reporter);
+            var parser = new Parser(lexer, reporter);
+
+            var node = parser.Parse();
+
+            Assert.AreEqual(6, reporter.Errors.Count);
+            ASTMatches(
+                new ProgramNode(0, 0, new IdentifierToken("invalid_function_calls"),
+                    new BlockNode(0, 0,
+                        new ErrorNode(),
+                        new ErrorNode(),
+                        new ErrorNode(),
+                        new ErrorNode(),
+                        new ErrorNode(),
+                        new ErrorNode()
+                    )
+                ),
+                node);
+
+            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[0].Type);
+            Assert.AreEqual(2, reporter.Errors[0].Line);
+            Assert.AreEqual(18, reporter.Errors[0].Column);
+            Assert.IsTrue(reporter.Errors[0].Message.Contains("Unexpected token <operator - ';'> when expression "));
+
+            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[1].Type);
+            Assert.AreEqual(3, reporter.Errors[1].Line);
+            Assert.AreEqual(17, reporter.Errors[1].Column);
+            Assert.IsTrue(reporter.Errors[1].Message.Contains("Expected token <operator - ':='>"));
+
+            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[2].Type);
+            Assert.AreEqual(4, reporter.Errors[2].Line);
+            Assert.AreEqual(31, reporter.Errors[2].Column);
+            Assert.IsTrue(reporter.Errors[2].Message.Contains("Expected token <operator - ')'>"));
+
+            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[3].Type);
+            Assert.AreEqual(5, reporter.Errors[3].Line);
+            Assert.AreEqual(35, reporter.Errors[3].Column);
+            Assert.IsTrue(reporter.Errors[3].Message.Contains("Unexpected token <operator - ')'>"));
+
+            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[4].Type);
+            Assert.AreEqual(6, reporter.Errors[4].Line);
+            Assert.AreEqual(24, reporter.Errors[4].Column);
+            Assert.IsTrue(reporter.Errors[4].Message.Contains("Unexpected token <operator - ','>"));
+
+            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[5].Type);
+            Assert.AreEqual(7, reporter.Errors[5].Line);
+            Assert.AreEqual(29, reporter.Errors[5].Column);
+            Assert.IsTrue(reporter.Errors[5].Message.Contains("Unexpected token <operator - '='>"));
+        }
+
+        [TestMethod()]
+        public void ValidReturnStatementsAreAccepted()
+        {
+
+            var reporter = new ErrorReporter();
+            var lexer = new Lexer(@"..\..\Parsing\valid_return_statements.txt", reporter);
+            var parser = new Parser(lexer, reporter);
+
+            var node = parser.Parse();
+
+            Assert.AreEqual(0, reporter.Errors.Count);
+            ASTMatches(
+                new ProgramNode(0, 0, new IdentifierToken("return_statements"),
+                    new BlockNode(0, 0,
+                        new ReturnNode(0, 0),
+                        new ReturnNode(0, 0,
+                            new IntegerNode(0, 0, 5)
+                        ),
+                        new ReturnNode(0, 0,
+                            new AddNode(0, 0,
+                                new StringNode(0, 0, "hello"),
+                                new IntegerNode(0, 0, 2)
+                            )
+                        ),
+                        new ReturnNode(0, 0,
+                            new LessThanOrEqualNode(0, 0,
+                                new MultiplyNode(0, 0,
+                                    new StringNode(0, 0, "hello"),
+                                    new IntegerNode(0, 0, 2)
+                                ),
+                                new IntegerNode(0, 0, 4)
+                            )
+                        )
+                    )
+                ),
+                node);
+        }
+
+        [TestMethod()]
+        public void InvalidReturnStatementsAreRejected()
+        {
+
+            var reporter = new ErrorReporter();
+            var lexer = new Lexer(@"..\..\Parsing\invalid_return_statements.txt", reporter);
+            var parser = new Parser(lexer, reporter);
+
+            var node = parser.Parse();
+
+            Assert.AreEqual(3, reporter.Errors.Count);
+            ASTMatches(
+                new ProgramNode(0, 0, new IdentifierToken("invalid_return_statements"),
+                    new BlockNode(0, 0,
+                        new ErrorNode(),
+                        new ErrorNode(),
+                        new ErrorNode(),
+                        new ReturnNode(0, 0)
+                    )
+                ),
+                node);
+
+
+            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[0].Type);
+            Assert.AreEqual(2, reporter.Errors[0].Line);
+            Assert.AreEqual(17, reporter.Errors[0].Column);
+            Assert.IsTrue(reporter.Errors[0].Message.Contains("Unexpected token <operator - ';'> when expression"));
+
+            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[1].Type);
+            Assert.AreEqual(3, reporter.Errors[1].Line);
+            Assert.AreEqual(15, reporter.Errors[1].Column);
+            Assert.IsTrue(reporter.Errors[1].Message.Contains("Unexpected token <operator - '>='> when expression"));
+
+            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[2].Type);
+            Assert.AreEqual(4, reporter.Errors[2].Line);
+            Assert.AreEqual(21, reporter.Errors[2].Column);
+            Assert.IsTrue(reporter.Errors[2].Message.Contains("Expected token <operator - ')'>"));
+        }
+
+        [TestMethod()]
+        public void ValidReadStatementsAreAccepted()
+        {
+            var reporter = new ErrorReporter();
+            var lexer = new Lexer(@"..\..\Parsing\valid_read_statements.txt", reporter);
+            var parser = new Parser(lexer, reporter);
+
+            var node = parser.Parse();
+
+            Assert.AreEqual(0, reporter.Errors.Count);
+
+            ASTMatches(
+                new ProgramNode(0, 0, new IdentifierToken("read_statements"),
+                    new BlockNode(0, 0,
+                        new CallNode(0, 0,
+                            new IdentifierNode(0, 0, "read"),
+                            new IdentifierNode(0, 0, "foo")
+                        ),
+                        new CallNode(0, 0,
+                            new IdentifierNode(0, 0, "read"),
+                            new IdentifierNode(0, 0, "foo"),
+                            new IdentifierNode(0, 0, "bar")
+                        ),
+                        new CallNode(0, 0,
+                            new IdentifierNode(0, 0, "read"),
+                            new ArrayIndexNode(0, 0,
+                                new IdentifierToken("foo"),
+                                new IntegerNode(0, 0, 54)
+                            ),
+                            new ArrayIndexNode(0, 0,
+                                new IdentifierToken("bar"),
+                                new IntegerNode(0, 0, 12)
+                            ),
+                            new ArrayIndexNode(0, 0,
+                                new IdentifierToken("baz"),
+                                new SubtractNode(0, 0,
+                                    new MultiplyNode(0, 0,
+                                        new IntegerNode(0, 0, 12),
+                                        new IntegerNode(0, 0, 2341)
+                                    ),
+                                    new IdentifierNode(0, 0, "qux")
+                                )
+                            )
+                        )
+                    )
+                ),
+                node
+            );
+        }
+
+        [TestMethod()]
+        public void ValidWriteStatementsAreAccepted()
+        {
+            var reporter = new ErrorReporter();
+            var lexer = new Lexer(@"..\..\Parsing\valid_write_statements.txt", reporter);
+            var parser = new Parser(lexer, reporter);
+
+            var node = parser.Parse();
+
+            Assert.AreEqual(0, reporter.Errors.Count);
+
+            ASTMatches(
+                new ProgramNode(0, 0, new IdentifierToken("valid_write_statements"),
+                    new BlockNode(0, 0,
+                        new CallNode(0, 0,
+                            new IdentifierNode(0, 0, "writeln")
+                        ),
+                        new CallNode(0, 0,
+                            new IdentifierNode(0, 0, "writeln"),
+                            new IdentifierNode(0, 0, "hello")
+                        ),
+                        new CallNode(0, 0,
+                            new IdentifierNode(0, 0, "writeln"),
+                            new StringNode(0, 0, "foo"),
+                            new IntegerNode(0, 0, 1),
+                            new GreaterThanNode(0, 0,
+                                new ModuloNode(0, 0,
+                                    new IdentifierNode(0, 0, "a"),
+                                    new IntegerNode(0, 0, 2) 
+                                ),
+                                new NotNode(0, 0,
+                                    new IntegerNode(0, 0, 4)
+                                )
+                            )
+                        )
+                    )
+                ),
+                node
+            );
+        }
+
+        [TestMethod()]
+        public void ValidAssertStatementsAreAccepted()
+        {
+            var reporter = new ErrorReporter();
+            var lexer = new Lexer(@"..\..\Parsing\valid_assert_statements.txt", reporter);
+            var parser = new Parser(lexer, reporter);
+
+            var node = parser.Parse();
+
+            Assert.AreEqual(0, reporter.Errors.Count);
+            ASTMatches(
+                new ProgramNode(0, 0, new IdentifierToken("valid_assert_statements"),
+                    new BlockNode(0, 0, 
+                        new AssertNode(0, 0,
+                            new IdentifierNode(0, 0, "foo")
+                        ),
+                        new AssertNode(0, 0, 
+                            new GreaterThanOrEqualNode(0, 0,
+                                new IdentifierNode(0, 0, "bar"),
+                                new IntegerNode(0, 0, 3)
+                            )
+                        )
+                    )
+                ),
+                node);
+        }
+
+        [TestMethod()]
+        public void InvalidAssertStatementsAreRejected()
+        {
+            var reporter = new ErrorReporter();
+            var lexer = new Lexer(@"..\..\Parsing\invalid_assert_statements.txt", reporter);
+            var parser = new Parser(lexer, reporter);
+
+            var node = parser.Parse();
+
+            Assert.AreEqual(3, reporter.Errors.Count);
+            ASTMatches(
+                new ProgramNode(0, 0, new IdentifierToken("invalid_assert_statements"),
+                    new BlockNode(0, 0,
+                        new ErrorNode(),
+                        new ErrorNode(),
+                        new ErrorNode()
+                    )
+                ),
+                node);
+
+            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[0].Type);
+            Assert.AreEqual(2, reporter.Errors[0].Line);
+            Assert.AreEqual(15, reporter.Errors[0].Column);
+            Assert.IsTrue(reporter.Errors[0].Message.Contains("Unexpected token <operator - ')'> when expression"));
+
+            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[1].Type);
+            Assert.AreEqual(3, reporter.Errors[1].Line);
+            Assert.AreEqual(18, reporter.Errors[1].Column);
+            Assert.IsTrue(reporter.Errors[1].Message.Contains("Unexpected token <operator - ')'> when expression"));
+
+
+            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[2].Type);
+            Assert.AreEqual(4, reporter.Errors[2].Line);
+            Assert.AreEqual(18, reporter.Errors[2].Column);
+            Assert.IsTrue(reporter.Errors[2].Message.Contains("Expected token <operator - ')'>"));
+
+        }
+
+        [TestMethod()]
+        public void ParserRejectsProgramWithMissingEndDot()
+        {
+            var reporter = new ErrorReporter();
+            var lexer = new Lexer(@"..\..\Parsing\invalid_program_with_missing_end_dot.txt", reporter);
+            var parser = new Parser(lexer, reporter);
+
+            var node = parser.Parse();
+
+            Assert.AreEqual(2, reporter.Errors.Count);
+            ASTMatches(
+                new ProgramNode(0, 0, new IdentifierToken("foo"),
+                    new ErrorNode()
+                ),
+                node);
+
+            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[0].Type);
+            Assert.AreEqual(4, reporter.Errors[0].Line);
+            Assert.AreEqual(10, reporter.Errors[0].Column);
+            Assert.IsTrue(reporter.Errors[0].Message.Contains("Expected token <keyword - 'end'>"));
+
+            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[1].Type);
+            Assert.AreEqual(4, reporter.Errors[1].Line);
+            Assert.AreEqual(10, reporter.Errors[1].Column);
+            Assert.IsTrue(reporter.Errors[1].Message.Contains("Expected token <operator - '.'>"));
         }
 
         void ASTMatches(ASTNode expected, ASTNode actual)
