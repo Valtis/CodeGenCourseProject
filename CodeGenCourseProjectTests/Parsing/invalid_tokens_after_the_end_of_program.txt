@@ -1,0 +1,9 @@
+﻿program tokens_after_program;
+begin
+  a := 4;
+
+end.
+
+{* Tokens after the end of program *}
+call(foo, bar);
+a := 4;

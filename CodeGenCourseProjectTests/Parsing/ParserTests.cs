@@ -507,6 +507,12 @@ namespace CodeGenCourseProject.Parsing.Tests
                                 new IntegerNode(0, 0, 4),
                                 new IntegerNode(0, 0, 2)
                             )
+                        ), 
+                        new VariableAssignmentNode(0, 0, new IdentifierNode(0, 0, "not_equal"),
+                            new NotEqualsNode(0, 0,
+                                new IntegerNode(0, 0, 4),
+                                new IntegerNode(0, 0, 2)
+                            )
                         ),
                         new VariableAssignmentNode(0, 0, new IdentifierNode(0, 0, "equality_with_expressions"),
                             new EqualsNode(0, 0,
@@ -993,7 +999,7 @@ namespace CodeGenCourseProject.Parsing.Tests
                             new GreaterThanNode(0, 0,
                                 new ModuloNode(0, 0,
                                     new IdentifierNode(0, 0, "a"),
-                                    new IntegerNode(0, 0, 2) 
+                                    new IntegerNode(0, 0, 2)
                                 ),
                                 new NotNode(0, 0,
                                     new IntegerNode(0, 0, 4)
@@ -1018,11 +1024,11 @@ namespace CodeGenCourseProject.Parsing.Tests
             Assert.AreEqual(0, reporter.Errors.Count);
             ASTMatches(
                 new ProgramNode(0, 0, new IdentifierToken("valid_assert_statements"),
-                    new BlockNode(0, 0, 
+                    new BlockNode(0, 0,
                         new AssertNode(0, 0,
                             new IdentifierNode(0, 0, "foo")
                         ),
-                        new AssertNode(0, 0, 
+                        new AssertNode(0, 0,
                             new GreaterThanOrEqualNode(0, 0,
                                 new IdentifierNode(0, 0, "bar"),
                                 new IntegerNode(0, 0, 3)
@@ -1072,6 +1078,485 @@ namespace CodeGenCourseProject.Parsing.Tests
         }
 
         [TestMethod()]
+        public void ValidNesterBlocksAreAccepted()
+        {
+            var reporter = new ErrorReporter();
+            var lexer = new Lexer(@"..\..\Parsing\valid_nested_blocks.txt", reporter);
+            var parser = new Parser(lexer, reporter);
+
+            var node = parser.Parse();
+
+            Assert.AreEqual(0, reporter.Errors.Count);
+            ASTMatches(
+                new ProgramNode(0, 0, new IdentifierToken("valid_nested_blocks"),
+                    new BlockNode(0, 0,
+                        new VariableAssignmentNode(0, 0,
+                            new IdentifierNode(0, 0, "a"),
+                            new IntegerNode(0, 0, 4)
+                        ),
+                        new BlockNode(0, 0,
+                            new VariableAssignmentNode(0, 0,
+                                new IdentifierNode(0, 0, "inner_a"),
+                                new IntegerNode(0, 0, 4)
+                            ),
+                            new VariableAssignmentNode(0, 0,
+                                new IdentifierNode(0, 0, "inner_b"),
+                                new IntegerNode(0, 0, 6)
+                            ),
+                            new BlockNode(0, 0,
+                                new CallNode(0, 0,
+                                    new IdentifierNode(0, 0, "call"),
+                                    new IntegerNode(0, 0, 23)
+                                )
+                            ),
+                            new CallNode(0, 0,
+                                new IdentifierNode(0, 0, "another_call"),
+                                new IntegerNode(0, 0, 1),
+                                new IntegerNode(0, 0, 2122)
+                            )
+                        ),
+                        new VariableAssignmentNode(0, 0,
+                            new IdentifierNode(0, 0, "b"),
+                            new IntegerNode(0, 0, 4)
+                        )
+                    )
+                ),
+                node);
+        }
+
+        [TestMethod()]
+        public void InvalidNestedBlocksAreRejected()
+        {
+            var reporter = new ErrorReporter();
+            var lexer = new Lexer(@"..\..\Parsing\invalid_nested_blocks.txt", reporter);
+            var parser = new Parser(lexer, reporter);
+
+            var node = parser.Parse();
+
+            Assert.AreEqual(4, reporter.Errors.Count);
+            ASTMatches(
+                new ProgramNode(0, 0, new IdentifierToken("invalid_block_statements"),
+                    new BlockNode(0, 0,
+                        new BlockNode(0, 0,
+                            new VariableAssignmentNode(0, 0,
+                                new IdentifierNode(0, 0, "abcd"),
+                                new IntegerNode(0, 0, 12)
+                            )
+                        ),
+                        new ErrorNode(),
+                        new BlockNode(0, 0,
+                            new ErrorNode()
+                        ),
+                        new BlockNode(0, 0,
+                            new VariableAssignmentNode(0, 0,
+                                new IdentifierNode(0, 0, "a"),
+                                new IntegerNode(0, 0, 322)
+                            ),
+                            new ErrorNode(),
+                            new VariableAssignmentNode(0, 0,
+                                new IdentifierNode(0, 0, "b"),
+                                new IntegerNode(0, 0, 4)
+                            )
+
+                        ),
+                        new BlockNode(0, 0,
+                            new ErrorNode()
+                        )
+                    )
+                ),
+                node);
+
+
+            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[0].Type);
+            Assert.AreEqual(5, reporter.Errors[0].Line);
+            Assert.AreEqual(8, reporter.Errors[0].Column);
+            Assert.IsTrue(reporter.Errors[0].Message.Contains("Expected token <operator - ';'>"));
+
+            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[1].Type);
+            Assert.AreEqual(9, reporter.Errors[1].Line);
+            Assert.AreEqual(8, reporter.Errors[1].Column);
+            Assert.IsTrue(reporter.Errors[1].Message.Contains("Expected token <operator - ')'>"));
+
+            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[2].Type);
+            Assert.AreEqual(12, reporter.Errors[2].Line);
+            Assert.AreEqual(25, reporter.Errors[2].Column);
+            Assert.IsTrue(reporter.Errors[2].Message.Contains("Expected token <operator - ';'>"));
+
+            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[3].Type);
+            Assert.AreEqual(18, reporter.Errors[3].Line);
+            Assert.AreEqual(8, reporter.Errors[3].Column);
+            Assert.IsTrue(reporter.Errors[3].Message.Contains("Unexpected token <keyword - 'end'> when start of a"));
+        }
+
+        [TestMethod()]
+        public void ValidIfStatementsAreAccepted()
+        {
+            var reporter = new ErrorReporter();
+            var lexer = new Lexer(@"..\..\Parsing\valid_if_statements.txt", reporter);
+            var parser = new Parser(lexer, reporter);
+
+            var node = parser.Parse();
+
+            Assert.AreEqual(0, reporter.Errors.Count);
+            ASTMatches(
+                new ProgramNode(0, 0, new IdentifierToken("valid_if_statements"),
+                    new BlockNode(0, 0,
+                        new IfNode(0, 0,
+                            new EqualsNode(0, 0,
+                                new IdentifierNode(0, 0, "a"),
+                                new IntegerNode(0, 0, 2323)
+                            ),
+                            new BlockNode(0, 0,
+                                new VariableAssignmentNode(0, 0,
+                                    new ArrayIndexNode(0, 0,
+                                        new IdentifierToken("b"),
+                                        new IntegerNode(0, 0, 4)
+                                    ),
+                                    new RealNode(0, 0, 4.335e6)
+                                )
+                            )
+                        ),
+                        new IfNode(0, 0,
+                            new EqualsNode(0, 0,
+                                new AddNode(0, 0,
+                                    new IdentifierNode(0, 0, "b"),
+                                    new StringNode(0, 0, " world")
+                                ),
+                                new StringNode(0, 0, "hello world")
+                            ),
+                            new BlockNode(0, 0,
+                                new VariableAssignmentNode(0, 0,
+                                    new IdentifierNode(0, 0, "foo"),
+                                    new IntegerNode(0, 0, 246)
+                                ),
+                                new CallNode(0, 0,
+                                    new IdentifierNode(0, 0, "abcdef"),
+                                    new IntegerNode(0, 0, 432)
+                                )
+                            )
+                        ),
+                        new IfNode(0, 0,
+                            new IdentifierNode(0, 0, "bar"),
+                            new BlockNode(0, 0,
+                                new VariableAssignmentNode(0, 0,
+                                    new IdentifierNode(0, 0, "q"),
+                                    new IntegerNode(0, 0, 23)
+                                )
+                            ),
+                            new BlockNode(0, 0,
+                                new VariableAssignmentNode(0, 0,
+                                    new IdentifierNode(0, 0, "q"),
+                                    new IntegerNode(0, 0, 32)
+                                )
+                            )
+                        ),
+                        new IfNode(0, 0,
+                            new IdentifierNode(0, 0, "a"),
+                            new BlockNode(0, 0,
+                                new VariableAssignmentNode(0, 0,
+                                    new IdentifierNode(0, 0, "foo"),
+                                    new StringNode(0, 0, "hello")
+                                ),
+                                new VariableAssignmentNode(0, 0,
+                                    new IdentifierNode(0, 0, "bar"),
+                                    new IdentifierNode(0, 0, "world")
+                                )
+                            ),
+                            new BlockNode(0, 0,
+                                new VariableAssignmentNode(0, 0,
+                                    new IdentifierNode(0, 0, "foo"),
+                                    new StringNode(0, 0, "asdasd")
+                                ),
+                                new VariableAssignmentNode(0, 0,
+                                    new IdentifierNode(0, 0, "bar"),
+                                    new IntegerNode(0, 0, 42343124)
+                                )
+                            )
+                        ),
+                        new IfNode(0, 0,
+                            new GreaterThanOrEqualNode(0, 0,
+                                new IdentifierNode(0, 0, "a"),
+                                new IntegerNode(0, 0, 4)
+                            ),
+                            new BlockNode(0, 0,
+                                new IfNode(0, 0,
+                                    new GreaterThanOrEqualNode(0, 0,
+                                        new IdentifierNode(0, 0, "b"),
+                                        new IntegerNode(0, 0, 5)
+                                    ),
+                                    new BlockNode(0, 0,
+                                        new VariableAssignmentNode(0, 0,
+                                            new IdentifierNode(0, 0, "q"),
+                                            new IntegerNode(0, 0, 3)
+                                        )
+                                    ),
+                                    new BlockNode(0, 0,
+                                        new VariableAssignmentNode(0, 0,
+                                           new IdentifierNode(0, 0, "a"),
+                                           new IntegerNode(0, 0, 2)
+                                        )
+                                    )
+                                )
+                            )
+                        ),
+                        new VariableAssignmentNode(0, 0,
+                            new IdentifierNode(0, 0, "foo"),
+                            new IntegerNode(0, 0, 312)
+                        ),
+                        new IfNode(0, 0,
+                            new GreaterThanOrEqualNode(0, 0,
+                                new IdentifierNode(0, 0, "a"),
+                                new IntegerNode(0, 0, 4)
+                            ),
+                            new BlockNode(0, 0,
+                                new IfNode(0, 0,
+                                    new GreaterThanOrEqualNode(0, 0,
+                                        new IdentifierNode(0, 0, "b"),
+                                        new IntegerNode(0, 0, 5)
+                                    ),
+                                    new BlockNode(0, 0,
+                                        new VariableAssignmentNode(0, 0,
+                                            new IdentifierNode(0, 0, "q"),
+                                            new IntegerNode(0, 0, 3)
+                                        )
+                                    )
+                                )
+                            ),
+                            new BlockNode(0, 0,
+                                new VariableAssignmentNode(0, 0,
+                                    new IdentifierNode(0, 0, "a"),
+                                    new IntegerNode(0, 0, 2)
+                                )
+                            )
+                        ),
+                        new VariableAssignmentNode(0, 0,
+                            new IdentifierNode(0, 0, "bar"),
+                            new IntegerNode(0, 0, 42)
+                        )
+                    )
+                ),
+                node);
+        }
+
+        [TestMethod()]
+        public void InvalidIfStatementsAreRejected()
+        {
+            var reporter = new ErrorReporter();
+            var lexer = new Lexer(@"..\..\Parsing\invalid_if_statements.txt", reporter);
+            var parser = new Parser(lexer, reporter);
+
+            var node = parser.Parse();
+
+            Assert.AreEqual(6, reporter.Errors.Count);
+            ASTMatches(
+                new ProgramNode(0, 0, new IdentifierToken("invalid_if_statements"),
+                    new BlockNode(0, 0,
+                        new ErrorNode(),
+                        new ErrorNode(),
+                        new ErrorNode(),
+                        new IfNode(0, 0, 
+                            new IdentifierNode(0, 0, "foo"),
+                            new BlockNode(0, 0, 
+                                new VariableAssignmentNode(0, 0, 
+                                    new IdentifierNode(0, 0, "sda"),
+                                    new RealNode(0, 0, 43432.1)
+                                )
+                            )
+                        ),
+                        new ErrorNode(),
+                        new IfNode(0, 0,
+                            new IdentifierNode(0, 0, "foo"),
+                            new BlockNode(0, 0,
+                                new ErrorNode()
+                            )
+                        ),
+                        new IfNode(0, 0,
+                            new IdentifierNode(0, 0, "foo"),
+                            new BlockNode(0, 0,
+                                new VariableAssignmentNode(0, 0,
+                                    new IdentifierNode(0, 0, "q"),
+                                    new IntegerNode(0, 0, 456)
+                                )
+                            ),
+                            new BlockNode(0, 0,
+                                new ErrorNode()
+                            )
+
+                        )
+                    )
+                ),
+                node);
+
+            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[0].Type);
+            Assert.AreEqual(2, reporter.Errors[0].Line);
+            Assert.AreEqual(29, reporter.Errors[0].Column);
+            Assert.IsTrue(reporter.Errors[0].Message.Contains("Unexpected token <keyword - 'then'> when expression"));
+
+            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[1].Type);
+            Assert.AreEqual(5, reporter.Errors[1].Line);
+            Assert.AreEqual(43, reporter.Errors[1].Column);
+            Assert.IsTrue(reporter.Errors[1].Message.Contains("Unexpected token <keyword - 'then'> when expression"));
+
+            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[2].Type);
+            Assert.AreEqual(9, reporter.Errors[2].Line);
+            Assert.AreEqual(16, reporter.Errors[2].Column);
+            Assert.IsTrue(reporter.Errors[2].Message.Contains("Expected token <keyword - 'then'> but was"));
+
+            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[3].Type);
+            Assert.AreEqual(12, reporter.Errors[3].Line);
+            Assert.AreEqual(8, reporter.Errors[3].Column);
+            Assert.IsTrue(reporter.Errors[3].Message.Contains("Unexpected token <keyword - 'else'> when start of a"));
+
+            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[4].Type);
+            Assert.AreEqual(17, reporter.Errors[4].Line);
+            Assert.AreEqual(8, reporter.Errors[4].Column);
+            Assert.IsTrue(reporter.Errors[4].Message.Contains("Unexpected token <keyword - 'else'> when expression"));
+
+            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[5].Type);
+            Assert.AreEqual(23, reporter.Errors[5].Line);
+            Assert.AreEqual(26, reporter.Errors[5].Column);
+            Assert.IsTrue(reporter.Errors[5].Message.Contains("Unexpected token <operator - ';'> when expression"));
+        }
+
+        [TestMethod()]
+        public void ValidWhileStatementsAreAccepted()
+        {
+
+            var reporter = new ErrorReporter();
+            var lexer = new Lexer(@"..\..\Parsing\valid_while_statements.txt", reporter);
+            var parser = new Parser(lexer, reporter);
+
+            var node = parser.Parse();
+
+            Assert.AreEqual(0, reporter.Errors.Count);
+
+            ASTMatches(
+                new ProgramNode(0, 0, new IdentifierToken("valid_while_statements"),
+                    new BlockNode(0, 0, 
+                        new WhileNode(0, 0, 
+                            new IdentifierNode(0, 0, "true"),
+                            new BlockNode(0, 0, 
+                                new CallNode(0, 0, 
+                                    new IdentifierNode(0, 0, "writeln"),
+                                    new StringNode(0, 0, "abc_def")
+                                )
+                            )
+                        ),
+                        new WhileNode(0, 0,
+                            new LessThanOrEqualNode(0, 0, 
+                                new IdentifierNode(0, 0, "a"),
+                                new IntegerNode(0, 0, 6)
+                            ),
+                            new BlockNode(0, 0,
+                                new IfNode(0, 0, 
+                                    new EqualsNode(0, 0, 
+                                        new ModuloNode(0, 0, 
+                                            new IdentifierNode(0, 0, "a"),
+                                            new IntegerNode(0, 0, 2)
+                                        ),
+                                        new IntegerNode(0, 0, 0)
+                                    ),
+                                    new BlockNode(0, 0, 
+                                        new CallNode(0, 0,
+                                            new IdentifierNode(0, 0, "writeln"),
+                                            new StringNode(0, 0, "a: "),
+                                            new IdentifierNode(0, 0, "a")
+                                        )
+                                    ),
+                                    new BlockNode(0, 0, 
+                                        new CallNode(0, 0, 
+                                            new IdentifierNode(0, 0, "writeln"),
+                                            new StringNode(0, 0, "")
+                                        )
+                                    )
+                                )
+                            )
+                        ),
+                        new WhileNode(0, 0,
+                            new LessThanNode(0, 0,
+                                new IdentifierNode(0, 0, "a"),
+                                new IntegerNode(0, 0, 5)
+                            ),
+                            new BlockNode(0, 0,
+                                new CallNode(0, 0, 
+                                    new IdentifierNode(0, 0, "writeln"),
+                                    new StringNode(0, 0, "A: "),
+                                    new IdentifierNode(0, 0, "a")
+                                ),
+                                new VariableAssignmentNode(0, 0, 
+                                    new IdentifierNode(0, 0, "a"),
+                                    new AddNode(0, 0,
+                                        new IdentifierNode(0, 0, "a"),
+                                        new IntegerNode(0, 0, 1) 
+                                    )
+                                )                              
+                            )
+                        )
+                    )
+                ),
+                node);
+        }
+
+        [TestMethod()]
+        public void InvalidWhileStatementsAreRejected()
+        {
+            var reporter = new ErrorReporter();
+            var lexer = new Lexer(@"..\..\Parsing\invalid_while_statements.txt", reporter);
+            var parser = new Parser(lexer, reporter);
+
+            var node = parser.Parse();
+
+            Assert.AreEqual(4, reporter.Errors.Count);
+
+            ASTMatches(
+                new ProgramNode(0, 0, new IdentifierToken("invalid_while_statements"),
+                    new BlockNode(0, 0,
+                        new ErrorNode(),
+                        new ErrorNode(),
+                        new WhileNode(0, 0,
+                            new NotEqualsNode(0, 0,
+                                new IdentifierNode(0, 0, "ads34"),
+                                new RealNode(0, 0, 23.21)
+                            ),
+                            new BlockNode(0, 0, 
+                                new ErrorNode()
+                            )
+                        ),
+                        new WhileNode(0, 0, 
+                            new IdentifierNode(0, 0, "foobar"),
+                            new BlockNode(0, 0, 
+                                new CallNode(0, 0, 
+                                    new IdentifierNode(0, 0, "call_foo")
+                                ),
+                                new ErrorNode()
+                            )
+                        )
+                    )                
+                ),
+                node);
+
+            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[0].Type);
+            Assert.AreEqual(2, reporter.Errors[0].Line);
+            Assert.AreEqual(10, reporter.Errors[0].Column);
+            Assert.IsTrue(reporter.Errors[0].Message.Contains("Unexpected token <keyword - 'do'> when expression"));
+
+            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[1].Type);
+            Assert.AreEqual(6, reporter.Errors[1].Line);
+            Assert.AreEqual(16, reporter.Errors[1].Column);
+            Assert.IsTrue(reporter.Errors[1].Message.Contains("Expected token <keyword - 'do'> but was"));
+
+            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[2].Type);
+            Assert.AreEqual(9, reporter.Errors[2].Line);
+            Assert.AreEqual(26, reporter.Errors[2].Column);
+            Assert.IsTrue(reporter.Errors[2].Message.Contains("Unexpected token <operator - '-'> when expression"));
+
+            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[3].Type);
+            Assert.AreEqual(13, reporter.Errors[3].Line);
+            Assert.AreEqual(26, reporter.Errors[3].Column);
+            Assert.IsTrue(reporter.Errors[3].Message.Contains("Expected token <operator - ';'> but was"));
+        }
+
+        [TestMethod()]
         public void ParserRejectsProgramWithMissingEndDot()
         {
             var reporter = new ErrorReporter();
@@ -1096,6 +1581,33 @@ namespace CodeGenCourseProject.Parsing.Tests
             Assert.AreEqual(4, reporter.Errors[1].Line);
             Assert.AreEqual(10, reporter.Errors[1].Column);
             Assert.IsTrue(reporter.Errors[1].Message.Contains("Expected token <operator - '.'>"));
+        }
+
+        [TestMethod()]
+        public void TokensAfterEndOfProgramAreError()
+        {
+            var reporter = new ErrorReporter();
+            var lexer = new Lexer(@"..\..\Parsing\invalid_tokens_after_the_end_of_program.txt", reporter);
+            var parser = new Parser(lexer, reporter);
+
+            var node = parser.Parse();
+
+            Assert.AreEqual(1, reporter.Errors.Count);
+            ASTMatches(
+                new ProgramNode(0, 0, new IdentifierToken("tokens_after_program"),
+                    new BlockNode(0, 0,
+                        new VariableAssignmentNode(0, 0,
+                            new IdentifierNode(0, 0, "a"),
+                            new IntegerNode(0, 0, 4)
+                        )
+                    )
+                ),
+                node);
+
+            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[0].Type);
+            Assert.AreEqual(7, reporter.Errors[0].Line);
+            Assert.AreEqual(0, reporter.Errors[0].Column);
+            Assert.IsTrue(reporter.Errors[0].Message.Contains("Unexpected token <identifier - 'call'> after the end"));
         }
 
         void ASTMatches(ASTNode expected, ASTNode actual)

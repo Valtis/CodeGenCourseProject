@@ -1,0 +1,13 @@
+﻿program valid_nested_blocks;
+begin
+	a := 4;
+	begin
+	    inner_a:=4;
+		inner_b:=6;
+		begin
+			call(23);
+		end;				
+		another_call(1, 2122)
+	end;
+	b := 4;
+end.

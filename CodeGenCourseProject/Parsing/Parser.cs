@@ -38,6 +38,7 @@ namespace CodeGenCourseProject.Parsing
             relationalOperators.Add(typeof(EqualsToken), typeof(EqualsNode));
             relationalOperators.Add(typeof(GreaterThanOrEqualToken), typeof(GreaterThanOrEqualNode));
             relationalOperators.Add(typeof(GreaterThanToken), typeof(GreaterThanNode));
+            relationalOperators.Add(typeof(NotEqualsToken), typeof(NotEqualsNode));
         }
 
 
@@ -75,6 +76,16 @@ namespace CodeGenCourseProject.Parsing
                     0,
                     0);
             }
+
+            if (!(lexer.PeekToken() is EOFToken))
+            {
+                reporter.ReportError(
+                    Error.SYNTAX_ERROR,
+                    "Unexpected token " + lexer.PeekToken().ToString() + " after the end of program block",
+                    lexer.PeekToken().Line,
+                    lexer.PeekToken().Column);
+            }
+
             return new ProgramNode(program.Line, program.Column, identifier, block);
 
         }
@@ -146,6 +157,18 @@ namespace CodeGenCourseProject.Parsing
                 else if (next is AssertToken)
                 {
                     return ParseAssertStatement();
+                }
+                else if (next is BeginToken)
+                {
+                    return ParseBlock();
+                }
+                else if (next is IfToken)
+                {
+                    return ParseIfStatement();
+                }
+                else if (next is WhileToken)
+                {
+                    return ParseWhileStatement();
                 }
             }
             catch (InvalidParseException ex)
@@ -304,6 +327,74 @@ namespace CodeGenCourseProject.Parsing
         {
             var assert = Expect<AssertToken>();
             return new AssertNode(assert.Line, assert.Column, ParseExpression());
+        }
+
+        private ASTNode ParseIfStatement()
+        {
+            var ifToken = Expect<IfToken>();
+            try
+            {
+                var expression = ParseExpression();
+                Expect<ThenToken>();
+                var body = ParseStatement();
+
+                if (!(body is BlockNode))
+                {
+                    body = new BlockNode(body.Line, body.Column, body);
+                }
+
+                if (lexer.PeekToken() is ElseToken)
+                {
+                    Expect<ElseToken>();
+                    var elseBody = ParseStatement();
+                    if (!(elseBody is BlockNode))
+                    {
+                        elseBody = new BlockNode(elseBody.Line, elseBody.Column, elseBody);
+                    }
+
+                    return new IfNode(ifToken.Line, ifToken.Column, expression, body, elseBody);
+                }
+
+                return new IfNode(ifToken.Line, ifToken.Column, expression, body);
+            }
+            catch (InvalidParseException ex)
+            {
+                reporter.ReportError(
+                    Error.NOTE,
+                    "Error occured while parsing if statement",
+                    ifToken.Line,
+                    ifToken.Column);
+                SyncAfterError();
+                return new ErrorNode();
+            }
+        }
+
+        private ASTNode ParseWhileStatement()
+        {
+            var whileToken = Expect<WhileToken>();
+            try
+            {
+                var expression = ParseExpression();
+                Expect<DoToken>();
+                var body = ParseStatement();
+
+                if (!(body is BlockNode))
+                {
+                    body = new BlockNode(body.Line, body.Column, body);
+                }
+
+                return new WhileNode(whileToken.Line, whileToken.Column, expression, body);
+            }
+            catch (InvalidParseException ex)
+            {
+                reporter.ReportError(
+                    Error.NOTE,
+                    "Error occured while parsing while statement",
+                    whileToken.Line,
+                    whileToken.Column);
+                SyncAfterError();
+                return new ErrorNode();
+            }
         }
 
         private ASTNode ParseExpression()

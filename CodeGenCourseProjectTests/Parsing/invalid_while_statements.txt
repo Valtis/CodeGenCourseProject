@@ -1,0 +1,18 @@
+﻿program invalid_while_statements;
+begin
+    while do
+		assert(4 < 2);
+
+	while false <> true + 2
+		assert(4 < 2);
+
+	while ads34 <> 23.21 do
+		a := 42 + -;
+
+	while foobar do
+	begin		
+		call_foo(),
+		a := 4;
+	end
+
+end.

@@ -1,0 +1,21 @@
+﻿program invalid_block_statements;
+begin
+	begin
+		AbCd := 12;
+	end {* missing semicolon *}
+	a := 4;
+
+	begin
+		call (2, 25 {* Missing rparen *}
+	end;
+
+	begin
+		a := 322 31; {* missing operator *}
+		b := 4;
+	end;
+	
+	begin
+		{* empty block *}
+	end;
+		
+end.

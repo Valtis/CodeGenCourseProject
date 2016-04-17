@@ -1,0 +1,17 @@
+﻿program valid_while_statements;
+begin
+	while true do
+		writeln("abc_def");
+
+	while a <= 6 do
+		if a % 2 = 0 then
+			writeln("a: ", a)
+		else
+			writeln("");
+	
+	while a < 5 do
+	begin
+		writeln("A: ", a);
+		a := a + 1
+	end {* No semicolon *}
+end.

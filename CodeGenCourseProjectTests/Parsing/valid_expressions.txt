@@ -61,6 +61,7 @@ begin
 	less_or_equal := 7 <= b;
 	greater := 4 > 3;
 	greater_or_equal := 4 >= 2;
+	not_equal := 4 <> 2;
 
 	equality_with_expressions := 4 - 2 = 2 * 3 + 4;
 	less_than_with_expressions := (4 - 2) < 2 / 3;

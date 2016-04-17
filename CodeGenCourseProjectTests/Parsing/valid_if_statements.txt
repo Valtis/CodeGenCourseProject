@@ -1,0 +1,45 @@
+﻿program valid_if_statements;
+begin
+	if a = 2323 then
+		b[4] := 433.5e4;
+
+	if b + " world" = "hello world" then
+	begin
+		foo := 246;
+		abcdef(432);
+	end;
+	
+	if bar then
+		q := 23
+	else
+		q := 32;
+
+	if a then
+	begin
+		foo := "hello";
+		bar := world
+	end
+	else
+	begin
+		foo := "asdasd";
+		bar := 42343124;
+	end;
+
+	if a >= 4 then
+		if b >= 5 then
+			q := 3
+		else
+			a := 2;
+
+	foo := 312; {* Ensuring scope ended above *} 
+
+	if a >= 4 then
+	begin
+		if b >= 5 then
+			q := 3
+	end
+	else
+		a := 2;
+
+	bar := 42
+end.

@@ -57,12 +57,14 @@
     <Compile Include="AST\GreaterThanNode.cs" />
     <Compile Include="AST\GreaterThanOrEqualNode.cs" />
     <Compile Include="AST\IdentifierNode.cs" />
+    <Compile Include="AST\IfNode.cs" />
     <Compile Include="AST\IntegerNode.cs" />
     <Compile Include="AST\LessThanNode.cs" />
     <Compile Include="AST\LessThanOrEqualNode.cs" />
     <Compile Include="AST\ModuloNode.cs" />
     <Compile Include="AST\MultiplyNode.cs" />
     <Compile Include="AST\NegateNode.cs" />
+    <Compile Include="AST\NotEqualsNode.cs" />
     <Compile Include="AST\NotNode.cs" />
     <Compile Include="AST\OrNode.cs" />
     <Compile Include="AST\ProgramNode.cs" />
@@ -71,6 +73,7 @@
     <Compile Include="AST\StringNode.cs" />
     <Compile Include="AST\SubtractNode.cs" />
     <Compile Include="AST\VariableAssignmentNode.cs" />
+    <Compile Include="AST\WhileNode.cs" />
     <Compile Include="ErrorHandling\ErrorData.cs" />
     <Compile Include="ErrorHandling\ErrorReporter.cs" />
     <Compile Include="InternalCompilerError.cs" />

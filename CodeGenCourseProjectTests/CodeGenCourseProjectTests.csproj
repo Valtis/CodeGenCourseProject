@@ -91,6 +91,8 @@
     <Content Include="Lexing\valid_operators.txt" />
     <Content Include="Lexing\valid_strings.txt" />
     <Content Include="Parsing\invalid_assert_statements.txt" />
+    <Content Include="Parsing\invalid_if_statements.txt" />
+    <Content Include="Parsing\invalid_nested_blocks.txt" />
     <Content Include="Parsing\invalid_expressions.txt" />
     <Content Include="Parsing\invalid_program_with_missing_end_dot.txt" />
     <Content Include="Parsing\invalid_function_calls.txt" />
@@ -99,14 +101,19 @@
     <Content Include="Parsing\invalid_program_with_missing_dot.txt" />
     <Content Include="Parsing\invalid_program_with_missing_semicolon_in_mid_statement.txt" />
     <Content Include="Parsing\invalid_return_statements.txt" />
+    <Content Include="Parsing\invalid_tokens_after_the_end_of_program.txt" />
+    <Content Include="Parsing\invalid_while_statements.txt" />
     <Content Include="Parsing\valid_assert_statements.txt" />
     <Content Include="Parsing\valid_expressions.txt" />
     <Content Include="Parsing\valid_function_calls.txt" />
+    <Content Include="Parsing\valid_if_statements.txt" />
     <Content Include="Parsing\valid_minimal_program_without_trailing_semicolon.txt" />
     <Content Include="Parsing\valid_minimal_program.txt" />
     <Content Include="Parsing\valid_minimal_program_with_trailing_semicolon.txt" />
+    <Content Include="Parsing\valid_nested_blocks.txt" />
     <Content Include="Parsing\valid_read_statements.txt" />
     <Content Include="Parsing\valid_return_statements.txt" />
+    <Content Include="Parsing\valid_while_statements.txt" />
     <Content Include="Parsing\valid_write_statements.txt" />
   </ItemGroup>
   <Choose>

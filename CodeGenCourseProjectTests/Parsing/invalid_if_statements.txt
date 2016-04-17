@@ -1,0 +1,26 @@
+﻿program invalid_if_statements;
+begin
+	if {*no expression*} then
+		a := 4;
+	
+	if abc % 4 + {* missing operand *} then
+		a := 4;
+
+	if foo {* missing then *}
+		a := 4;
+	if foo then
+		sda := 43432.1; {* erroneus ';', causing the else-block to be invalid *}
+	else
+		q := 4;
+
+	if foo then
+		q := 3 *
+	else 
+		bar := 4;
+
+	if foo then
+		q := 456
+	else
+		bar := 4 *;
+
+end.
