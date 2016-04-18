@@ -1,0 +1,16 @@
+﻿program invalid_variable_declarations;
+begin
+	var : integer;
+	var a integer;
+	var a : ;
+	var a : not_a_valid_type;
+	var a, : integer;
+	var a b : integer;
+	var a : rray [4] of integer;
+	var a : array 5] of integer;
+	var a : array [23 *] of integer;
+	var a : array [23 of integer;
+	var a : array [23] integer;
+	var a : array [23] of;
+	var a : array [23] of foobar;
+end.

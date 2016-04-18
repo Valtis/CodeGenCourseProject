@@ -6,4 +6,12 @@ begin
 	list_ending_in_comma(3, 4, );
 	invalid_expr(3 +, 4, 5);
 	invalid_expr2(3 + 4, =3, 1);
+
+	a := no_rparen(;
+	b := invalid_expression(3, 2 *);
+
+	if foo(3,) then
+		q := 4;
+	while bar(3, 4, ) do
+		foobar();	
 end.

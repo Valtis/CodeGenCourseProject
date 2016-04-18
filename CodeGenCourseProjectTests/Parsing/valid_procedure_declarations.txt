@@ -1,0 +1,23 @@
+﻿program valid_procedure_declarations;
+begin
+	procedure foo();
+	begin
+		q := 343;
+		return
+	end;
+
+	procedure bar(var a : integer);
+	begin
+		return 1 + 2;
+	end;
+	
+	procedure baz(var a : integer, var b : array [4] of integer);
+	begin
+		return 1 + 2;
+	end;
+
+	procedure qux(a : integer, b : boolean, c : real);
+	begin
+		return;
+	end;
+end.

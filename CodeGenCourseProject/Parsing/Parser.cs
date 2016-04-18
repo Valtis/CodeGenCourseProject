@@ -16,6 +16,8 @@ namespace CodeGenCourseProject.Parsing
         private IDictionary<Type, Type> additionOperators;
         private IDictionary<Type, Type> multiplyOperators;
 
+        private ISet<string> validTypes;
+
         public Parser(Lexer lexer, ErrorReporter reporter)
         {
             this.lexer = lexer;
@@ -39,8 +41,13 @@ namespace CodeGenCourseProject.Parsing
             relationalOperators.Add(typeof(GreaterThanOrEqualToken), typeof(GreaterThanOrEqualNode));
             relationalOperators.Add(typeof(GreaterThanToken), typeof(GreaterThanNode));
             relationalOperators.Add(typeof(NotEqualsToken), typeof(NotEqualsNode));
-        }
 
+            validTypes = new SortedSet<string>();
+            validTypes.Add("integer");
+            validTypes.Add("real");
+            validTypes.Add("boolean");
+            validTypes.Add("string");
+        }
 
         public ASTNode Parse()
         {
@@ -170,6 +177,14 @@ namespace CodeGenCourseProject.Parsing
                 {
                     return ParseWhileStatement();
                 }
+                else if (next is VarToken)
+                {
+                    return ParseVariableDeclarationStatement();
+                }
+                else if (next is ProcedureToken)
+                {
+                    return ParseProcedureDeclaration();
+                }
             }
             catch (InvalidParseException ex)
             {
@@ -201,7 +216,7 @@ namespace CodeGenCourseProject.Parsing
                 return ParseCall(identifier);
             }
 
-            return ParseAssignmentStatement();
+            return ParseAssignmentStatement(identifier);
 
         }
 
@@ -241,22 +256,35 @@ namespace CodeGenCourseProject.Parsing
         {
 
             var nodes = new List<ASTNode>();
-            nodes.Add(ParseExpression());
 
-            while (lexer.PeekToken() is CommaToken)
+            try
             {
-                Expect<CommaToken>();
                 nodes.Add(ParseExpression());
+
+                while (lexer.PeekToken() is CommaToken)
+                {
+                    Expect<CommaToken>();
+                    nodes.Add(ParseExpression());
+                }
+            }
+            catch (InvalidParseException ex)
+            {
+                SkipTo(new List<Type>
+                {
+                    typeof(EndToken),
+                    typeof(SemicolonToken),
+                    typeof(RParenToken)
+                });
+                nodes.Add(new ErrorNode());
+                return nodes;
             }
 
             return nodes;
         }
 
-        private ASTNode ParseAssignmentStatement()
+        private ASTNode ParseAssignmentStatement(IdentifierToken identifier)
         {
-            // backtrack once, so that we can use the ParseVariable() - method
-            lexer.Backtrack();
-            var variable = ParseVariable();
+            var variable = ParseVariable(identifier);
             Token assignmentToken;
             try
             {
@@ -397,6 +425,132 @@ namespace CodeGenCourseProject.Parsing
             }
         }
 
+        private ASTNode ParseVariableDeclarationStatement()
+        {
+            var varToken = Expect<VarToken>();
+            try
+            {
+                return ParseVariableDeclaration(varToken);
+            }
+            catch (InvalidParseException ex)
+            {
+                reporter.ReportError(
+                    Error.NOTE,
+                    "Error occured while parsing variable declaration",
+                    varToken.Line,
+                    varToken.Column);
+                SyncAfterError();
+                return new ErrorNode();
+            }
+        }
+
+        private ASTNode ParseVariableDeclaration(Token token)
+        {
+
+            var identifiers = new List<ASTNode>();
+            var identifier = Expect<IdentifierToken>();
+            identifiers.Add(new IdentifierNode(identifier.Line, identifier.Column, identifier.Value));
+
+            while (lexer.PeekToken() is CommaToken)
+            {
+                Expect<CommaToken>();
+                identifier = Expect<IdentifierToken>();
+                identifiers.Add(new IdentifierNode(identifier.Line, identifier.Column, identifier.Value));
+            }
+
+            Expect<ColonToken>();
+
+            ASTNode typeNode;
+            if (lexer.PeekToken() is ArrayToken)
+            {
+                var array = Expect<ArrayToken>();
+                Expect<LBracketToken>();
+                var expression = ParseExpression();
+                Expect<RBracketToken>();
+                Expect<OfToken>();
+                identifier = Expect<IdentifierToken>();
+                ValidateType(identifier);
+
+                typeNode = new ArrayTypeNode(
+                    array.Line,
+                    array.Column,
+                    new IdentifierNode(identifier.Line, identifier.Column, identifier.Value),
+                    expression);
+            }
+            else
+            {
+                var typeToken = Expect<IdentifierToken>();
+                ValidateType(typeToken);
+                typeNode = new IdentifierNode(typeToken.Line, typeToken.Column, typeToken.Value);
+            }
+
+            return new VariableDeclarationNode(token.Line, token.Column, typeNode, identifiers.ToArray());
+        }
+
+        private void ValidateType(IdentifierToken type)
+        {
+            if (!validTypes.Contains(type.Value))
+            {
+                reporter.ReportError(
+                    Error.SYNTAX_ERROR,
+                    "'" + type.Value + "' is not a valid type",
+                    type.Line,
+                    type.Column);
+
+                var types = string.Join(", ", validTypes);
+                reporter.ReportError(
+                    Error.NOTE_GENERIC,
+                    "Valid types are " + types,
+                    0, 0);
+                throw new InvalidParseException();
+            }
+        }
+
+        private ASTNode ParseProcedureDeclaration()
+        {
+            var procedure = Expect<ProcedureToken>();
+            var identifier = Expect<IdentifierToken>();
+            Expect<LParenToken>();
+            var arguments = ParseParameters();
+            Expect<RParenToken>();
+            Expect<SemicolonToken>();
+
+            var block = ParseBlock();
+            return new ProcedureNode(procedure.Line, procedure.Column,
+                new IdentifierNode(identifier.Line, identifier.Column, identifier.Value),
+                block,
+                arguments.ToArray()
+                );
+        }
+
+        private List<ASTNode> ParseParameters()
+        {
+            var nodes = new List<ASTNode>();
+            if (lexer.PeekToken() is RParenToken)
+            {
+                return nodes;
+            }
+            var token = lexer.PeekToken();
+            if (token is VarToken)
+            {
+                lexer.NextToken();
+            }
+
+            nodes.Add(ParseVariableDeclaration(token));
+            while (lexer.PeekToken() is CommaToken)
+            {
+                Expect<CommaToken>();
+                token = lexer.PeekToken();
+                if (token is VarToken)
+                {
+                    lexer.NextToken();
+                }
+                nodes.Add(ParseVariableDeclaration(token));
+            }
+
+            return nodes;
+        }
+
         private ASTNode ParseExpression()
         {
             var expr = ParseSimpleExpression();
@@ -529,7 +683,7 @@ namespace CodeGenCourseProject.Parsing
             }
             else if (token is IdentifierToken)
             {
-                return ParseVariable();
+                return ParseVariableOrCall();
             }
             else if (token is NotToken)
             {
@@ -553,10 +707,21 @@ namespace CodeGenCourseProject.Parsing
             throw new InvalidParseException();
         }
 
-        private ASTNode ParseVariable()
+        private ASTNode ParseVariableOrCall()
         {
             var identifier = Expect<IdentifierToken>();
+            if (lexer.PeekToken() is LParenToken)
+            {
+                return ParseCall(identifier);
+            }
+            else
+            {
+                return ParseVariable(identifier);
+            }
+        }
 
+        private ASTNode ParseVariable(IdentifierToken identifier)
+        {
             if (lexer.PeekToken() is LBracketToken)
             {
                 Expect<LBracketToken>();
@@ -598,7 +763,9 @@ namespace CodeGenCourseProject.Parsing
 
         private void SyncAfterError()
         {
-            SkipTo(new List<Type> { typeof(EndToken), typeof(SemicolonToken) });
+            SkipTo(new List<Type> {
+                typeof(EndToken),
+                typeof(SemicolonToken) });
         }
 
         private void SkipTo(IList<Type> types)

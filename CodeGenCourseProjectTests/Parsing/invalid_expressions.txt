@@ -16,4 +16,18 @@ begin
 	m[e := 1243;
 	n] := 21;
 	o[1 * 23 +] := 3215;
+	
+	
+	foo := 4 
+	{* valid, testing token skipping *}
+	if foo then
+		q := 456;
+		
+	foo := 5
+
+	
+	{* valid, testing token skipping *}
+	while foo do
+		q := 456;
+
 end.

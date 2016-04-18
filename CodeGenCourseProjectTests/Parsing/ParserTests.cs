@@ -507,7 +507,7 @@ namespace CodeGenCourseProject.Parsing.Tests
                                 new IntegerNode(0, 0, 4),
                                 new IntegerNode(0, 0, 2)
                             )
-                        ), 
+                        ),
                         new VariableAssignmentNode(0, 0, new IdentifierNode(0, 0, "not_equal"),
                             new NotEqualsNode(0, 0,
                                 new IntegerNode(0, 0, 4),
@@ -601,7 +601,7 @@ namespace CodeGenCourseProject.Parsing.Tests
 
             var node = parser.Parse();
 
-            Assert.AreEqual(15, reporter.Errors.Count);
+            Assert.AreEqual(17, reporter.Errors.Count);
 
             ASTMatches(
                 new ProgramNode(0, 0, new IdentifierToken("invalid_expressions"),
@@ -628,6 +628,16 @@ namespace CodeGenCourseProject.Parsing.Tests
                         new ErrorNode(),
                         new ErrorNode(),
                         new ErrorNode(),
+                        new ErrorNode(),
+                        new VariableAssignmentNode(0, 0,
+                            new IdentifierNode(0, 0, "foo"),
+                            new IntegerNode(0, 0, 4)
+                        ),
+                        new ErrorNode(),
+                        new VariableAssignmentNode(0, 0,
+                            new IdentifierNode(0, 0, "foo"),
+                            new IntegerNode(0, 0, 5)
+                        ),
                         new ErrorNode()
                     )
                 ),
@@ -707,6 +717,17 @@ namespace CodeGenCourseProject.Parsing.Tests
             Assert.AreEqual(17, reporter.Errors[14].Line);
             Assert.AreEqual(18, reporter.Errors[14].Column);
             Assert.IsTrue(reporter.Errors[14].Message.Contains("Unexpected token <operator - ']'> when expression"));
+
+            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[15].Type);
+            Assert.AreEqual(22, reporter.Errors[15].Line);
+            Assert.AreEqual(8, reporter.Errors[15].Column);
+            Assert.IsTrue(reporter.Errors[15].Message.Contains("Expected token <operator - ';'> but was"));
+
+
+            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[16].Type);
+            Assert.AreEqual(29, reporter.Errors[16].Line);
+            Assert.AreEqual(8, reporter.Errors[16].Column);
+            Assert.IsTrue(reporter.Errors[16].Message.Contains("Expected token <operator - ';'> but was"));
         }
 
         [TestMethod()]
@@ -784,6 +805,33 @@ namespace CodeGenCourseProject.Parsing.Tests
                                     new IdentifierNode(0, 0, "c")
                                 )
                             )
+                        ),
+                        new VariableAssignmentNode(0, 0,
+                            new IdentifierNode(0, 0, "a"),
+                            new CallNode(0, 0,
+                                new IdentifierNode(0, 0, "hello")
+                            )
+                        ),
+                        new VariableAssignmentNode(0, 0,
+                            new IdentifierNode(0, 0, "b"),
+                            new CallNode(0, 0,
+                                new IdentifierNode(0, 0, "hello"),
+                                new IntegerNode(0, 0, 1),
+                                new IntegerNode(0, 0, 2)
+                            )
+                        ),
+                        new IfNode(0, 0,
+                            new CallNode(0, 0,
+                                new IdentifierNode(0, 0, "foobar"),
+                                new IntegerNode(0, 0, 32),
+                                new IntegerNode(0, 0, 4)
+                            ),
+                            new BlockNode(0, 0,
+                                new VariableAssignmentNode(0, 0,
+                                    new IdentifierNode(0, 0, "q"),
+                                    new IntegerNode(0, 0, 2)
+                                )
+                            )
                         )
                     )
                 ),
@@ -793,22 +841,76 @@ namespace CodeGenCourseProject.Parsing.Tests
         [TestMethod()]
         public void InvalidCallsAreRejected()
         {
+
             var reporter = new ErrorReporter();
             var lexer = new Lexer(@"..\..\Parsing\invalid_function_calls.txt", reporter);
             var parser = new Parser(lexer, reporter);
 
             var node = parser.Parse();
 
-            Assert.AreEqual(6, reporter.Errors.Count);
+            Assert.AreEqual(12, reporter.Errors.Count);
             ASTMatches(
                 new ProgramNode(0, 0, new IdentifierToken("invalid_function_calls"),
                     new BlockNode(0, 0,
                         new ErrorNode(),
                         new ErrorNode(),
                         new ErrorNode(),
-                        new ErrorNode(),
-                        new ErrorNode(),
-                        new ErrorNode()
+                        new CallNode(0, 0,
+                            new IdentifierNode(0, 0, "list_ending_in_comma"),
+                            new IntegerNode(0, 0, 3),
+                            new IntegerNode(0, 0, 4),
+                            new ErrorNode()
+                        ),
+                        new CallNode(0, 0,
+                            new IdentifierNode(0, 0, "invalid_expr"),
+                            new ErrorNode()
+                        ),
+                        new CallNode(0, 0,
+                            new IdentifierNode(0, 0, "invalid_expr2"),
+                            new AddNode(0, 0,
+                                new IntegerNode(0, 0, 3),
+                                new IntegerNode(0, 0, 4)
+                            ),
+                            new ErrorNode()
+                        ),
+                        new VariableAssignmentNode(0, 0,
+                            new IdentifierNode(0, 0, "a"),
+                            new ErrorNode()
+                        ),
+                        new VariableAssignmentNode(0, 0,
+                            new IdentifierNode(0, 0, "b"),
+                            new CallNode(0, 0,
+                                new IdentifierNode(0, 0, "invalid_expression"),
+                                new IntegerNode(0, 0, 3),
+                                new ErrorNode()
+                            )
+                        ),
+                        new IfNode(0, 0,
+                            new CallNode(0, 0,
+                                new IdentifierNode(0, 0, "foo"),
+                                new IntegerNode(0, 0, 3),
+                                new ErrorNode()
+                            ),
+                            new BlockNode(0, 0,
+                                 new VariableAssignmentNode(0, 0,
+                                     new IdentifierNode(0, 0, "q"),
+                                     new IntegerNode(0, 0, 4)
+                                 )
+                             )
+                         ),
+                         new WhileNode(0, 0,
+                             new CallNode(0, 0,
+                                new IdentifierNode(0, 0, "bar"),
+                                new IntegerNode(0, 0, 3),
+                                new IntegerNode(0, 0, 4),
+                                new ErrorNode()
+                             ),
+                             new BlockNode(0, 0,
+                                 new CallNode(0, 0,
+                                     new IdentifierNode(0, 0, "foobar")
+                                 )
+                             )
+                         )
                     )
                 ),
                 node);
@@ -819,29 +921,59 @@ namespace CodeGenCourseProject.Parsing.Tests
             Assert.IsTrue(reporter.Errors[0].Message.Contains("Unexpected token <operator - ';'> when expression "));
 
             Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[1].Type);
-            Assert.AreEqual(3, reporter.Errors[1].Line);
-            Assert.AreEqual(17, reporter.Errors[1].Column);
-            Assert.IsTrue(reporter.Errors[1].Message.Contains("Expected token <operator - ':='>"));
+            Assert.AreEqual(2, reporter.Errors[1].Line);
+            Assert.AreEqual(18, reporter.Errors[1].Column);
+            Assert.IsTrue(reporter.Errors[1].Message.Contains("Expected token <operator - ')'> but was"));
 
             Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[2].Type);
-            Assert.AreEqual(4, reporter.Errors[2].Line);
-            Assert.AreEqual(31, reporter.Errors[2].Column);
-            Assert.IsTrue(reporter.Errors[2].Message.Contains("Expected token <operator - ')'>"));
+            Assert.AreEqual(3, reporter.Errors[2].Line);
+            Assert.AreEqual(17, reporter.Errors[2].Column);
+            Assert.IsTrue(reporter.Errors[2].Message.Contains("Expected token <operator - ':='>"));
 
             Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[3].Type);
-            Assert.AreEqual(5, reporter.Errors[3].Line);
-            Assert.AreEqual(35, reporter.Errors[3].Column);
-            Assert.IsTrue(reporter.Errors[3].Message.Contains("Unexpected token <operator - ')'>"));
+            Assert.AreEqual(4, reporter.Errors[3].Line);
+            Assert.AreEqual(31, reporter.Errors[3].Column);
+            Assert.IsTrue(reporter.Errors[3].Message.Contains("Expected token <operator - ')'>"));
 
             Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[4].Type);
-            Assert.AreEqual(6, reporter.Errors[4].Line);
-            Assert.AreEqual(24, reporter.Errors[4].Column);
-            Assert.IsTrue(reporter.Errors[4].Message.Contains("Unexpected token <operator - ','>"));
+            Assert.AreEqual(5, reporter.Errors[4].Line);
+            Assert.AreEqual(35, reporter.Errors[4].Column);
+            Assert.IsTrue(reporter.Errors[4].Message.Contains("Unexpected token <operator - ')'>"));
 
             Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[5].Type);
-            Assert.AreEqual(7, reporter.Errors[5].Line);
-            Assert.AreEqual(29, reporter.Errors[5].Column);
-            Assert.IsTrue(reporter.Errors[5].Message.Contains("Unexpected token <operator - '='>"));
+            Assert.AreEqual(6, reporter.Errors[5].Line);
+            Assert.AreEqual(24, reporter.Errors[5].Column);
+            Assert.IsTrue(reporter.Errors[5].Message.Contains("Unexpected token <operator - ','>"));
+
+            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[6].Type);
+            Assert.AreEqual(7, reporter.Errors[6].Line);
+            Assert.AreEqual(29, reporter.Errors[6].Column);
+            Assert.IsTrue(reporter.Errors[6].Message.Contains("Unexpected token <operator - '='>"));
+
+            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[7].Type);
+            Assert.AreEqual(9, reporter.Errors[7].Line);
+            Assert.AreEqual(23, reporter.Errors[7].Column);
+            Assert.IsTrue(reporter.Errors[7].Message.Contains("Unexpected token <operator - ';'> when expression"));
+
+            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[8].Type);
+            Assert.AreEqual(9, reporter.Errors[8].Line);
+            Assert.AreEqual(23, reporter.Errors[8].Column);
+            Assert.IsTrue(reporter.Errors[8].Message.Contains("Expected token <operator - ')'> but was"));
+
+            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[9].Type);
+            Assert.AreEqual(10, reporter.Errors[9].Line);
+            Assert.AreEqual(38, reporter.Errors[9].Column);
+            Assert.IsTrue(reporter.Errors[9].Message.Contains("Unexpected token <operator - ')'> when expression"));
+
+            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[10].Type);
+            Assert.AreEqual(12, reporter.Errors[10].Line);
+            Assert.AreEqual(17, reporter.Errors[10].Column);
+            Assert.IsTrue(reporter.Errors[10].Message.Contains("Unexpected token <operator - ')'> when expression"));
+
+            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[11].Type);
+            Assert.AreEqual(14, reporter.Errors[11].Line);
+            Assert.AreEqual(24, reporter.Errors[11].Column);
+            Assert.IsTrue(reporter.Errors[11].Message.Contains("Unexpected token <operator - ')'> when expression"));
         }
 
         [TestMethod()]
@@ -1354,10 +1486,10 @@ namespace CodeGenCourseProject.Parsing.Tests
                         new ErrorNode(),
                         new ErrorNode(),
                         new ErrorNode(),
-                        new IfNode(0, 0, 
+                        new IfNode(0, 0,
                             new IdentifierNode(0, 0, "foo"),
-                            new BlockNode(0, 0, 
-                                new VariableAssignmentNode(0, 0, 
+                            new BlockNode(0, 0,
+                                new VariableAssignmentNode(0, 0,
                                     new IdentifierNode(0, 0, "sda"),
                                     new RealNode(0, 0, 43432.1)
                                 )
@@ -1432,39 +1564,39 @@ namespace CodeGenCourseProject.Parsing.Tests
 
             ASTMatches(
                 new ProgramNode(0, 0, new IdentifierToken("valid_while_statements"),
-                    new BlockNode(0, 0, 
-                        new WhileNode(0, 0, 
+                    new BlockNode(0, 0,
+                        new WhileNode(0, 0,
                             new IdentifierNode(0, 0, "true"),
-                            new BlockNode(0, 0, 
-                                new CallNode(0, 0, 
+                            new BlockNode(0, 0,
+                                new CallNode(0, 0,
                                     new IdentifierNode(0, 0, "writeln"),
                                     new StringNode(0, 0, "abc_def")
                                 )
                             )
                         ),
                         new WhileNode(0, 0,
-                            new LessThanOrEqualNode(0, 0, 
+                            new LessThanOrEqualNode(0, 0,
                                 new IdentifierNode(0, 0, "a"),
                                 new IntegerNode(0, 0, 6)
                             ),
                             new BlockNode(0, 0,
-                                new IfNode(0, 0, 
-                                    new EqualsNode(0, 0, 
-                                        new ModuloNode(0, 0, 
+                                new IfNode(0, 0,
+                                    new EqualsNode(0, 0,
+                                        new ModuloNode(0, 0,
                                             new IdentifierNode(0, 0, "a"),
                                             new IntegerNode(0, 0, 2)
                                         ),
                                         new IntegerNode(0, 0, 0)
                                     ),
-                                    new BlockNode(0, 0, 
+                                    new BlockNode(0, 0,
                                         new CallNode(0, 0,
                                             new IdentifierNode(0, 0, "writeln"),
                                             new StringNode(0, 0, "a: "),
                                             new IdentifierNode(0, 0, "a")
                                         )
                                     ),
-                                    new BlockNode(0, 0, 
-                                        new CallNode(0, 0, 
+                                    new BlockNode(0, 0,
+                                        new CallNode(0, 0,
                                             new IdentifierNode(0, 0, "writeln"),
                                             new StringNode(0, 0, "")
                                         )
@@ -1478,18 +1610,18 @@ namespace CodeGenCourseProject.Parsing.Tests
                                 new IntegerNode(0, 0, 5)
                             ),
                             new BlockNode(0, 0,
-                                new CallNode(0, 0, 
+                                new CallNode(0, 0,
                                     new IdentifierNode(0, 0, "writeln"),
                                     new StringNode(0, 0, "A: "),
                                     new IdentifierNode(0, 0, "a")
                                 ),
-                                new VariableAssignmentNode(0, 0, 
+                                new VariableAssignmentNode(0, 0,
                                     new IdentifierNode(0, 0, "a"),
                                     new AddNode(0, 0,
                                         new IdentifierNode(0, 0, "a"),
-                                        new IntegerNode(0, 0, 1) 
+                                        new IntegerNode(0, 0, 1)
                                     )
-                                )                              
+                                )
                             )
                         )
                     )
@@ -1518,20 +1650,20 @@ namespace CodeGenCourseProject.Parsing.Tests
                                 new IdentifierNode(0, 0, "ads34"),
                                 new RealNode(0, 0, 23.21)
                             ),
-                            new BlockNode(0, 0, 
+                            new BlockNode(0, 0,
                                 new ErrorNode()
                             )
                         ),
-                        new WhileNode(0, 0, 
+                        new WhileNode(0, 0,
                             new IdentifierNode(0, 0, "foobar"),
-                            new BlockNode(0, 0, 
-                                new CallNode(0, 0, 
+                            new BlockNode(0, 0,
+                                new CallNode(0, 0,
                                     new IdentifierNode(0, 0, "call_foo")
                                 ),
                                 new ErrorNode()
                             )
                         )
-                    )                
+                    )
                 ),
                 node);
 
@@ -1554,6 +1686,290 @@ namespace CodeGenCourseProject.Parsing.Tests
             Assert.AreEqual(13, reporter.Errors[3].Line);
             Assert.AreEqual(26, reporter.Errors[3].Column);
             Assert.IsTrue(reporter.Errors[3].Message.Contains("Expected token <operator - ';'> but was"));
+        }
+
+        [TestMethod()]
+        public void ValidVariableDeclarationsAreAccepted()
+        {
+            var reporter = new ErrorReporter();
+            var lexer = new Lexer(@"..\..\Parsing\valid_variable_declarations.txt", reporter);
+            var parser = new Parser(lexer, reporter);
+
+            var node = parser.Parse();
+
+            Assert.AreEqual(0, reporter.Errors.Count);
+
+            ASTMatches(
+                new ProgramNode(0, 0, new IdentifierToken("valid_variable_declarations"),
+                    new BlockNode(0, 0,
+                        new VariableDeclarationNode(0, 0,
+                            new IdentifierNode(0, 0, "integer"),
+                            new IdentifierNode(0, 0, "a")
+                        ),
+                        new VariableDeclarationNode(0, 0,
+                            new IdentifierNode(0, 0, "string"),
+                            new IdentifierNode(0, 0, "b"),
+                            new IdentifierNode(0, 0, "c")
+                        ),
+                        new VariableDeclarationNode(0, 0,
+                            new IdentifierNode(0, 0, "boolean"),
+                            new IdentifierNode(0, 0, "d")
+                        ),
+                        new VariableDeclarationNode(0, 0,
+                            new IdentifierNode(0, 0, "real"),
+                            new IdentifierNode(0, 0, "e"),
+                            new IdentifierNode(0, 0, "f"),
+                            new IdentifierNode(0, 0, "g"),
+                            new IdentifierNode(0, 0, "h")
+                        ),
+                        new VariableDeclarationNode(0, 0,
+                            new ArrayTypeNode(0, 0,
+                                new IdentifierNode(0, 0, "integer"),
+                                new IntegerNode(0, 0, 5)
+                            ),
+                            new IdentifierNode(0, 0, "i"),
+                            new IdentifierNode(0, 0, "j"),
+                            new IdentifierNode(0, 0, "k")
+                        ),
+                        new VariableDeclarationNode(0, 0,
+                            new ArrayTypeNode(0, 0,
+                                new IdentifierNode(0, 0, "string"),
+                                new AddNode(0, 0,
+                                    new IdentifierNode(0, 0, "foo"),
+                                    new IntegerNode(0, 0, 32)
+                                )
+                            ),
+                            new IdentifierNode(0, 0, "l")
+                        ),
+                        new VariableDeclarationNode(0, 0,
+                            new ArrayTypeNode(0, 0,
+                                new IdentifierNode(0, 0, "real"),
+                                new NotEqualsNode(0, 0,
+                                    new MultiplyNode(0, 0,
+                                        new AddNode(0, 0,
+                                            new IntegerNode(0, 0, 8),
+                                            new IntegerNode(0, 0, 4)
+                                        ),
+                                        new IdentifierNode(0, 0, "bar")
+                                    ),
+                                    new IntegerNode(0, 0, 2)
+                                )
+                            ),
+                            new IdentifierNode(0, 0, "m")
+                        ),
+                        new VariableDeclarationNode(0, 0,
+                            new ArrayTypeNode(0, 0,
+                                new IdentifierNode(0, 0, "boolean"),
+                                new AddNode(0, 0,
+                                    new StringNode(0, 0, "invalid_semantically"),
+                                    new IntegerNode(0, 0, 23)
+                                )
+                            ),
+                            new IdentifierNode(0, 0, "n"),
+                            new IdentifierNode(0, 0, "o")
+                        )
+                    )
+                ),
+            node);
+        }
+
+        [TestMethod()]
+        public void InvalidVariableDeclarationsAreRejected()
+        {
+            var reporter = new ErrorReporter();
+            var lexer = new Lexer(@"..\..\Parsing\invalid_variable_declarations.txt", reporter);
+            var parser = new Parser(lexer, reporter);
+
+            var node = parser.Parse();
+
+            Assert.AreEqual(13, reporter.Errors.Count);
+            ASTMatches(
+                new ProgramNode(0, 0, new IdentifierToken("invalid_variable_declarations"),
+                    new BlockNode(0, 0,
+                        new ErrorNode(),
+                        new ErrorNode(),
+                        new ErrorNode(),
+                        new ErrorNode(),
+                        new ErrorNode(),
+                        new ErrorNode(),
+                        new ErrorNode(),
+                        new ErrorNode(),
+                        new ErrorNode(),
+                        new ErrorNode(),
+                        new ErrorNode(),
+                        new ErrorNode(),
+                        new ErrorNode()
+                    )
+                ),
+                node);
+
+            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[0].Type);
+            Assert.AreEqual(2, reporter.Errors[0].Line);
+            Assert.AreEqual(12, reporter.Errors[0].Column);
+            Assert.IsTrue(reporter.Errors[0].Message.Contains("Expected token <identifier> but was"));
+
+            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[1].Type);
+            Assert.AreEqual(3, reporter.Errors[1].Line);
+            Assert.AreEqual(14, reporter.Errors[1].Column);
+            Assert.IsTrue(reporter.Errors[1].Message.Contains("Expected token <operator - ':'> but was"));
+
+            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[2].Type);
+            Assert.AreEqual(4, reporter.Errors[2].Line);
+            Assert.AreEqual(16, reporter.Errors[2].Column);
+            Assert.IsTrue(reporter.Errors[2].Message.Contains("Expected token <identifier> but was"));
+
+            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[3].Type);
+            Assert.AreEqual(5, reporter.Errors[3].Line);
+            Assert.AreEqual(16, reporter.Errors[3].Column);
+            Assert.IsTrue(reporter.Errors[3].Message.Contains("'not_a_valid_type' is not a valid type"));
+
+            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[4].Type);
+            Assert.AreEqual(6, reporter.Errors[4].Line);
+            Assert.AreEqual(15, reporter.Errors[4].Column);
+            Assert.IsTrue(reporter.Errors[4].Message.Contains("Expected token <identifier> but was"));
+
+            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[5].Type);
+            Assert.AreEqual(7, reporter.Errors[5].Line);
+            Assert.AreEqual(14, reporter.Errors[5].Column);
+            Assert.IsTrue(reporter.Errors[5].Message.Contains("Expected token <operator - ':'> but was"));
+
+            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[6].Type);
+            Assert.AreEqual(8, reporter.Errors[6].Line);
+            Assert.AreEqual(16, reporter.Errors[6].Column);
+            Assert.IsTrue(reporter.Errors[6].Message.Contains("'rray' is not a valid"));
+
+            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[7].Type);
+            Assert.AreEqual(9, reporter.Errors[7].Line);
+            Assert.AreEqual(22, reporter.Errors[7].Column);
+            Assert.IsTrue(reporter.Errors[7].Message.Contains("Expected token <operator - '['> but was"));
+
+            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[8].Type);
+            Assert.AreEqual(10, reporter.Errors[8].Line);
+            Assert.AreEqual(27, reporter.Errors[8].Column);
+            Assert.IsTrue(reporter.Errors[8].Message.Contains("Unexpected token <operator - ']'> when expression"));
+
+            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[9].Type);
+            Assert.AreEqual(11, reporter.Errors[9].Line);
+            Assert.AreEqual(26, reporter.Errors[9].Column);
+            Assert.IsTrue(reporter.Errors[9].Message.Contains("Expected token <operator - ']'>"));
+
+            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[10].Type);
+            Assert.AreEqual(12, reporter.Errors[10].Line);
+            Assert.AreEqual(27, reporter.Errors[10].Column);
+            Assert.IsTrue(reporter.Errors[10].Message.Contains("Expected token <keyword - 'of'>"));
+
+            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[11].Type);
+            Assert.AreEqual(13, reporter.Errors[11].Line);
+            Assert.AreEqual(29, reporter.Errors[11].Column);
+            Assert.IsTrue(reporter.Errors[11].Message.Contains("Expected token <identifier>"));
+
+            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[12].Type);
+            Assert.AreEqual(14, reporter.Errors[12].Line);
+            Assert.AreEqual(30, reporter.Errors[12].Column);
+            Assert.IsTrue(reporter.Errors[12].Message.Contains("'foobar' is not a valid"));
+        }
+
+        [TestMethod()]
+        public void ParserAcceptsValidProcedureDeclarations()
+        {
+            var reporter = new ErrorReporter();
+            var lexer = new Lexer(@"..\..\Parsing\valid_procedure_declarations.txt", reporter);
+            var parser = new Parser(lexer, reporter);
+
+            var node = parser.Parse();
+
+            Assert.AreEqual(0, reporter.Errors.Count);
+            ASTMatches(
+                new ProgramNode(0, 0, new IdentifierToken("valid_procedure_declarations"),
+                    new BlockNode(0, 0,
+                        new ProcedureNode(0, 0,
+                            new IdentifierNode(0, 0, "foo"),
+                            new BlockNode(0, 0,
+                                new VariableAssignmentNode(0, 0,
+                                    new IdentifierNode(0, 0, "q"),
+                                    new IntegerNode(0, 0, 343)
+                                ),
+                                new ReturnNode(0, 0)
+                            )
+                        ),
+                        new ProcedureNode(0, 0,
+                            new IdentifierNode(0, 0, "bar"),
+                            new BlockNode(0, 0,
+                                new ReturnNode(0, 0,
+                                    new AddNode(0, 0,
+                                        new IntegerNode(0, 0, 1),
+                                        new IntegerNode(0, 0, 2)
+                                    )
+                                )
+                            ),
+                            new VariableDeclarationNode(0, 0,
+                                new IdentifierNode(0, 0, "integer"),
+                                new IdentifierNode(0, 0, "a")
+                            )
+                        ),
+                        new ProcedureNode(0, 0,
+                            new IdentifierNode(0, 0, "baz"),
+                            new BlockNode(0, 0,
+                                new ReturnNode(0, 0,
+                                    new AddNode(0, 0,
+                                        new IntegerNode(0, 0, 1),
+                                        new IntegerNode(0, 0, 2)
+                                    )
+                                )
+                            ),
+                            new VariableDeclarationNode(0, 0,
+                                new IdentifierNode(0, 0, "integer"),
+                                new IdentifierNode(0, 0, "a")
+                            ),
+                            new VariableDeclarationNode(0, 0,
+                                new ArrayTypeNode(0, 0,
+                                    new IdentifierNode(0, 0, "integer"),
+                                    new IntegerNode(0, 0, 4)
+                                ),
+                                new IdentifierNode(0, 0, "b")
+                            )
+
+                        ),
+                        new ProcedureNode(0, 0,
+                            new IdentifierNode(0, 0, "qux"),
+                            new BlockNode(0, 0,
+                                new ReturnNode(0, 0)
+                            ),
+                            new VariableDeclarationNode(0, 0,
+                                new IdentifierNode(0, 0, "integer"),
+                                new IdentifierNode(0, 0, "a")
+                            ),
+                            new VariableDeclarationNode(0, 0,
+                                new IdentifierNode(0, 0, "boolean"),
+                                new IdentifierNode(0, 0, "b")
+                            ),
+                            new VariableDeclarationNode(0, 0,
+                                new IdentifierNode(0, 0, "real"),
+                                new IdentifierNode(0, 0, "c")
+                            )
+
+                        )
+                    )
+                ),
+                node);
+        }
+
+        [TestMethod()]
+        public void ParserRejectsInvalidProcedureDeclarations()
+        {
+            Assert.Fail();
+        }
+
+        [TestMethod()]
+        public void ParserAcceptsValidFunctionDeclarations()
+        {
+            Assert.Fail();
+        }
+
+        [TestMethod()]
+        public void ParserRejectsInvalidFunctionDeclarations()
+        {
+            Assert.Fail();
         }
 
         [TestMethod()]

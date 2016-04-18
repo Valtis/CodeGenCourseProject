@@ -1,0 +1,12 @@
+﻿program valid_variable_declarations;
+begin
+	var a : integer;
+	var b, c : string;
+	var d : boolean;
+	var e, f, g, h : real;
+	var i, j, k : array [5] of integer;
+	var l : array [foo + 32] of string;
+	var m : array[(8 + 4) * bar <> 2] of real;
+	var n, o : array["invalid_semantically" + 23] of boolean;
+
+end.

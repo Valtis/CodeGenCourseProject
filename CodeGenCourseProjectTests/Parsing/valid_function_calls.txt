@@ -7,4 +7,9 @@ begin
 	two_arguments_expressions(23*1.4312e2, "foo">=bar);
 	three_arguments(hello, 1, "world");
 	three_arguments_expressions(1 + 2, 3*1, a < b + c);
+
+	a := hello();
+	b := hello(1, 2);
+	if foobar(32, 4) then
+		q := 2;
 end.
