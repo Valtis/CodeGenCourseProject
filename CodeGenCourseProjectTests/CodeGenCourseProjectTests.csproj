@@ -91,9 +91,11 @@
     <Content Include="Lexing\valid_operators.txt" />
     <Content Include="Lexing\valid_strings.txt" />
     <Content Include="Parsing\invalid_assert_statements.txt" />
+    <Content Include="Parsing\invalid_function_declarations.txt" />
     <Content Include="Parsing\invalid_if_statements.txt" />
     <Content Include="Parsing\invalid_nested_blocks.txt" />
     <Content Include="Parsing\invalid_expressions.txt" />
+    <Content Include="Parsing\invalid_procedure_declarations.txt" />
     <Content Include="Parsing\invalid_program_with_missing_end_dot.txt" />
     <Content Include="Parsing\invalid_function_calls.txt" />
     <Content Include="Parsing\invalid_minimal_program_1.txt" />
@@ -106,6 +108,7 @@
     <Content Include="Parsing\invalid_while_statements.txt" />
     <Content Include="Parsing\valid_assert_statements.txt" />
     <Content Include="Parsing\valid_expressions.txt" />
+    <Content Include="Parsing\valid_function_declarations.txt" />
     <Content Include="Parsing\valid_function_calls.txt" />
     <Content Include="Parsing\valid_if_statements.txt" />
     <Content Include="Parsing\valid_minimal_program_without_trailing_semicolon.txt" />

@@ -1,0 +1,23 @@
+﻿program valid_function_declarations;
+begin
+
+	function foobar() : integer;
+	begin
+		a()
+	end;
+
+	function bar(var a : integer, var b : real, var c : string) : real;
+	begin
+		b()
+	end;
+
+	function baz(a : integer, b : real, c : string) : BOOLEAN;
+	begin
+		c()
+	end;
+
+	function qux(a : integer, var b : real, c : string) : string;
+	begin
+		d()
+	end;
+end.

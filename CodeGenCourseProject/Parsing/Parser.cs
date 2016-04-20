@@ -185,6 +185,10 @@ namespace CodeGenCourseProject.Parsing
                 {
                     return ParseProcedureDeclaration();
                 }
+                else if (next is FunctionToken)
+                {
+                    return ParseFunctionDeclaration();
+                }
             }
             catch (InvalidParseException ex)
             {
@@ -509,18 +513,64 @@ namespace CodeGenCourseProject.Parsing
         private ASTNode ParseProcedureDeclaration()
         {
             var procedure = Expect<ProcedureToken>();
-            var identifier = Expect<IdentifierToken>();
-            Expect<LParenToken>();
-            var arguments = ParseParameters();
-            Expect<RParenToken>();
-            Expect<SemicolonToken>();
+            try
+            {
+                var identifier = Expect<IdentifierToken>();
+                Expect<LParenToken>();
+                var arguments = ParseParameters();
+                Expect<RParenToken>();
+                Expect<SemicolonToken>();
 
-            var block = ParseBlock();
-            return new ProcedureNode(procedure.Line, procedure.Column,
-                new IdentifierNode(identifier.Line, identifier.Column, identifier.Value),
-                block,
-                arguments.ToArray()
-                );
+                var block = ParseBlock();
+                return new ProcedureNode(procedure.Line, procedure.Column,
+                    new IdentifierNode(identifier.Line, identifier.Column, identifier.Value),
+                    block,
+                    arguments.ToArray()
+                    );
+            } catch (InvalidParseException ex)
+            {
+                reporter.ReportError(
+                   Error.NOTE,
+                   "Error occured while parsing procedure declaration",
+                   procedure.Line,
+                   procedure.Column);
+                SyncAfterError();
+                return new ErrorNode();
+            }
+        }
+
+        private ASTNode ParseFunctionDeclaration()
+        {
+            var procedure = Expect<FunctionToken>();
+            try
+            {
+                var identifier = Expect<IdentifierToken>();
+                Expect<LParenToken>();
+                var arguments = ParseParameters();
+                Expect<RParenToken>();
+                Expect<ColonToken>();
+                var type = Expect<IdentifierToken>();
+                ValidateType(type);
+                Expect<SemicolonToken>();
+
+                var block = ParseBlock();
+                return new FunctionNode(procedure.Line, procedure.Column,
+                    new IdentifierNode(identifier.Line, identifier.Column, identifier.Value),
+                    new IdentifierNode(type.Line, type.Column, type.Value),
+                    block,
+                    arguments.ToArray()
+                    );
+            }
+            catch (InvalidParseException ex)
+            {
+                reporter.ReportError(
+                   Error.NOTE,
+                   "Error occured while parsing function declaration",
+                   procedure.Line,
+                   procedure.Column);
+                SyncAfterError();
+                return new ErrorNode();
+            }
         }
 
         private List<ASTNode> ParseParameters()

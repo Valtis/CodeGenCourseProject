@@ -1,0 +1,53 @@
+﻿program invalid_procedure_declarations;
+begin
+	procedure ();
+	begin
+		q := 343;
+		return
+	end;
+
+	procedure foobar);
+	begin
+		abc := 132;
+	end;
+
+	procedure foobar(;
+	begin
+		qux := 743;
+	end;
+
+	procedure foobar(: integer);
+	begin
+		TTT := 333;
+	end;
+
+	procedure foobar(var : integer);
+	begin
+		VcX := 34523;
+	end;
+
+	procedure foobar(foo integer);
+	begin
+		bvcx := 000;
+	end;
+
+	procedure foobar(foo : bar);
+	begin
+		q___(0)
+	end;
+
+	procedure foobar(foo : );
+	begin
+		x()
+	end;
+
+	procedure foobar(foo : integer, );
+	begin
+		abcde()
+	end;
+		
+	procedure foobar(foo : integer var bar : real);
+	begin
+		vfr()
+	end;
+end.

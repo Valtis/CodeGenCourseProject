@@ -1,0 +1,23 @@
+﻿program invalid_function_declarations;
+begin
+	
+	function foo( : integer;
+	begin
+		a()
+	end;
+
+	function bar() integer;
+	begin
+		b()
+	end;
+
+	function baz(a : real, b : real) : abcdef;
+	begin
+		c()
+	end;
+
+	function qux() : ;
+	begin
+		d()
+	end
+end.
