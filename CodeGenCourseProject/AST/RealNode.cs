@@ -34,5 +34,10 @@ namespace CodeGenCourseProject.AST
         {
             return Value.GetHashCode();
         }
+
+        public override void Accept(ASTVisitor visitor)
+        {
+            visitor.Visit(this);
+        }
     }
 }

@@ -24,5 +24,10 @@ namespace CodeGenCourseProject.AST
         {
             return obj is StringNode && value == ((StringNode)obj).value;
         }
+
+        public override void Accept(ASTVisitor visitor)
+        {
+            visitor.Visit(this);
+        }
     }
 }

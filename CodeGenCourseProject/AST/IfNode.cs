@@ -25,5 +25,10 @@ namespace CodeGenCourseProject.AST
         {
             return new Tuple<string, string>("IfNode", "");
         }
+
+        public override void Accept(ASTVisitor visitor)
+        {
+            visitor.Visit(this);
+        }
     }
 }

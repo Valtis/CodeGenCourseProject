@@ -18,5 +18,10 @@ namespace CodeGenCourseProject.AST
         {
             return new Tuple<string, string>("ModuloNode", "");
         }
+
+        public override void Accept(ASTVisitor visitor)
+        {
+            visitor.Visit(this);
+        }
     }
 }

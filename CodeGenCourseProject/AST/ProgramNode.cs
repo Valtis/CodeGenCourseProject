@@ -27,5 +27,10 @@ namespace CodeGenCourseProject.AST
             return obj is ProgramNode && ((ProgramNode)obj).identifier.Identifier == identifier.Identifier;
         }
 
+        public override void Accept(ASTVisitor visitor)
+        {
+            visitor.Visit(this);
+        }
+
     }
 }

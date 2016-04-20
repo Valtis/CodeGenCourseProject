@@ -14,5 +14,10 @@ namespace CodeGenCourseProject.AST
         {
             throw new NotImplementedException();
         }
+
+        public override void Accept(ASTVisitor visitor)
+        {
+            visitor.Visit(this);
+        }
     }
 }

@@ -15,5 +15,10 @@ namespace CodeGenCourseProject.AST
         {
             return new Tuple<string, string>("MultiplyNode", "");
         }
+
+        public override void Accept(ASTVisitor visitor)
+        {
+            visitor.Visit(this);
+        }
     }
 }

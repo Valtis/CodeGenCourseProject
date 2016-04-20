@@ -65,5 +65,6 @@ namespace CodeGenCourseProject.AST
         }
 
         protected abstract Tuple<String, String> GetStringRepresentation();
+        public abstract void Accept(ASTVisitor visitor);
     }
 }

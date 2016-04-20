@@ -14,5 +14,10 @@ namespace CodeGenCourseProject.AST
         {
             return new Tuple<string, string>("GreaterThanOrEqualNode", "");
         }
+
+        public override void Accept(ASTVisitor visitor)
+        {
+            visitor.Visit(this);
+        }
     }
 }

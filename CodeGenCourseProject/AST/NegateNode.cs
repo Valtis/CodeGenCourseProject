@@ -17,5 +17,10 @@ namespace CodeGenCourseProject.AST
         {
             return new Tuple<string, string>("NegateNode", "");
         }
+
+        public override void Accept(ASTVisitor visitor)
+        {
+            visitor.Visit(this);
+        }
     }
 }

@@ -27,5 +27,9 @@ namespace CodeGenCourseProject.AST
             return value.GetHashCode();
         }
 
+        public override void Accept(ASTVisitor visitor)
+        {
+            visitor.Visit(this);
+        }
     }
 }
