@@ -9,6 +9,7 @@
         void Visit(ArrayTypeNode arrayTypeNode);
         void Visit(AssertNode assertNode);
         void Visit(BlockNode blockNode);
+        void Visit(UnaryPlusNode unaryPlusNode);
         void Visit(CallNode callNode);
         void Visit(DivideNode divideNode);
         void Visit(EqualsNode equalsNode);

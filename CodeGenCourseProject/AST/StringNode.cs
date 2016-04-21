@@ -29,5 +29,10 @@ namespace CodeGenCourseProject.AST
         {
             visitor.Visit(this);
         }
+
+        public override string NodeType()
+        {
+            return "string";
+        }
     }
 }

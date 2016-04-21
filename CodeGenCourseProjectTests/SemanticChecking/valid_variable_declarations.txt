@@ -1,0 +1,32 @@
+﻿program valid_variable_declarations;
+begin
+
+	var a : integer;
+	var b : string;
+	var x, y, z : integer;
+
+	begin
+		var x, y, z : real;
+		var a : real;
+		var b : integer;
+		var c : string;
+		var d : integer;
+
+		begin
+			var integer : real;
+		end;
+		var e : boolean;
+	end;
+
+	var c : boolean;
+	var d : integer;
+
+	begin
+		var real : integer;
+		var true : boolean;
+		var writeln : string;
+	end;
+
+	var e : real;
+	var f: string;
+end.

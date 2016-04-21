@@ -11,6 +11,7 @@ namespace CodeGenCourseProject.AST
         private readonly IList<ASTNode> children;
         private readonly int line;
         private readonly int column;
+        private string type;
 
         public IList<ASTNode> Children
         {
@@ -66,5 +67,19 @@ namespace CodeGenCourseProject.AST
 
         protected abstract Tuple<String, String> GetStringRepresentation();
         public abstract void Accept(ASTVisitor visitor);
+
+        public virtual string NodeType()
+        {
+            if (type == "" || type == null)
+            {
+                throw new InternalCompilerError("Node has no type");
+            }
+            return type;
+        }
+
+        public virtual void SetNodeType(string type)
+        {
+            this.type = type;
+        }
     }
 }

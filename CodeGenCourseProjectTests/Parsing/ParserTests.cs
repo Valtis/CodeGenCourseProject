@@ -1947,7 +1947,17 @@ namespace CodeGenCourseProject.Parsing.Tests
                                 new IdentifierNode(0, 0, "real"),
                                 new IdentifierNode(0, 0, "c")
                             )
-
+                        ),
+                        new ProcedureNode(0, 0,
+                            new IdentifierNode(0, 0, "outer"),
+                            new BlockNode(0, 0,
+                                new ProcedureNode(0, 0,
+                                    new IdentifierNode(0, 0, "inner"),
+                                    new BlockNode(0, 0, 
+                                        new ReturnNode(0, 0)
+                                    )
+                                )
+                            )
                         )
                     )
                 ),

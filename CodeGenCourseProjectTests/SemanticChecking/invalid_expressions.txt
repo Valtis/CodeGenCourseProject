@@ -1,0 +1,70 @@
+﻿program invalid_expressions;
+begin
+	var i : integer;
+	var s : string;
+	var r : real;
+	var b : boolean;
+
+	undeclared := 4;
+	true := 5;
+	false := 3;
+
+	i := "hello";
+	i := 3.123;
+	i := true;
+	i := false;
+	
+	s := 1;
+	s := 3.123;
+	s := true;
+	s := false;
+
+	r := 1;
+	r := "hello";
+	r := true;
+	r := false;
+
+	b := 1;
+	b := "hello";
+	b := 123.456;
+
+	i := "hello" + 1;	
+	i := true + 123.456;
+	i := i + s;
+	i := true + false;
+
+	s := 2 - 1.234;
+	s := "a" - s;
+
+	b := 1 * true;
+	b := true * false;
+
+	r := 1 / 23.45;
+	r := "hello" / "world";
+
+	i := i % 123.4;
+	i := 1.2 % 3.4;
+
+	i := i = "hello";
+	i := false = 123.4;
+
+	i := 1 <> "hello";
+	b := true <> 1.23;
+
+	i := 1 < "hello";
+	i := 1324.12 < true;
+
+	r := 1 <= "hello";
+	r := 1324.12 <= true;
+
+	r := 1 >= "hello";
+	r := 1324.12 >= true;
+	
+	r := 1 > "hello";
+	r := 1324.12 > true;
+
+	{*
+	s := +"hello";
+	i := -"hello";
+	*}
+end.

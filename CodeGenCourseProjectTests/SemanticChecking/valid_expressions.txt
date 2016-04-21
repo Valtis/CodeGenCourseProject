@@ -1,0 +1,80 @@
+﻿program valid_expressions;
+begin
+	var i : integer;
+	var i2 : integer;
+	var r : real;
+	var r2 : real;
+	var s : string;
+	var s2 : string;
+	var b : boolean;
+	var b2 : boolean;
+
+	i := 20;
+	i := 2 + 4;
+	i := i2 + 3;
+	i := i2 - i3;
+	i := (2 * 3) + (i / 4);
+	i := 4 % 3;
+
+
+	r := 23.124e2;
+	r2 := 21.3 - r;
+	r := r1 * r2;
+	r := r1 / r2;
+	r := (3.0 * 1.0) - (1 / (2.2 + 3.1));
+
+	s := "hello";
+	s2 := s + " world";
+	s := (s2 + " - ") + " test";
+
+	b := i = i2;
+	b := (1 = 2) = ("hello" = world);
+	b2 := r2 <> r;
+	b := s < s2;
+	b2:= s <= s2;
+	b := b >= b2;
+	b := i2 > i2;
+
+	b:= b and b2;
+	b := b or b2;
+	b:= not b;
+
+	b := true;
+	b := false;
+
+	var true : integer;
+	var false : integer;
+
+	true := 4;
+	false := 3;
+
+	i := true + false;
+
+	begin
+		i := +3;
+		i2 := -4;
+		var i : string;
+		i := "hello";
+	end;
+	i := 4;
+
+
+	procedure foo(a : integer, b : string);
+	begin
+	    var i := string;
+		i := "hello";
+	end;
+
+	foo(3, "hello");
+
+	function bar(i : boolean) : real;
+	begin
+		if i then
+			0.4;
+		else
+			0.1;
+	end;
+
+	r := bar(1 < 2) * 1.23;
+
+end.

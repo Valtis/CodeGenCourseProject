@@ -67,6 +67,8 @@
     <Compile Include="Lexing\StringTokenTests.cs" />
     <Compile Include="Parsing\ParserTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SemanticChecking\SemanticCheckerTests.cs" />
+    <Compile Include="TestHelper.cs" />
     <Compile Include="Tokens\IdentifierTokenTests.cs" />
     <Compile Include="Tokens\IntegerTokenTests.cs" />
     <Compile Include="Tokens\RealTokenTests.cs" />
@@ -121,6 +123,10 @@
     <Content Include="Parsing\valid_variable_declarations.txt" />
     <Content Include="Parsing\valid_while_statements.txt" />
     <Content Include="Parsing\valid_write_statements.txt" />
+    <Content Include="SemanticChecking\invalid_expressions.txt" />
+    <Content Include="SemanticChecking\invalid_variable_declarations.txt" />
+    <Content Include="SemanticChecking\valid_expressions.txt" />
+    <Content Include="SemanticChecking\valid_variable_declarations.txt" />
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

@@ -76,6 +76,7 @@
     <Compile Include="AST\ReturnNode.cs" />
     <Compile Include="AST\StringNode.cs" />
     <Compile Include="AST\SubtractNode.cs" />
+    <Compile Include="AST\UnaryPlusNode.cs" />
     <Compile Include="AST\VariableAssignmentNode.cs" />
     <Compile Include="AST\VariableDeclarationNode.cs" />
     <Compile Include="AST\WhileNode.cs" />
@@ -90,6 +91,9 @@
     <Compile Include="Lexing\OperatorScanner.cs" />
     <Compile Include="Parsing\InvalidParseException.cs" />
     <Compile Include="Parsing\Parser.cs" />
+    <Compile Include="SemanticChecking\SemanticChecker.cs" />
+    <Compile Include="SemanticChecking\Symbol.cs" />
+    <Compile Include="SemanticChecking\SymbolTable.cs" />
     <Compile Include="Tokens\StringToken.cs" />
     <Compile Include="Tokens\OperatorToken.cs" />
     <Compile Include="Lexing\StringScanner.cs" />

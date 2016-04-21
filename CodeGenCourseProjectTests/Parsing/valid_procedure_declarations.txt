@@ -20,4 +20,12 @@ begin
 	begin
 		return;
 	end;
+
+	procedure outer();
+	begin
+		procedure inner();
+		begin
+			return
+		end;
+	end;
 end.

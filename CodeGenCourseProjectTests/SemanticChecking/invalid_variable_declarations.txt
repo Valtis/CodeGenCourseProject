@@ -1,0 +1,18 @@
+﻿program invalid_variable_declarations;
+begin
+	var a : integer;
+	var a : string;
+
+	var d : boolean;
+
+	var a, b, c, d : boolean;
+
+	var integer : real;
+
+	var e : integer;
+	var e : string;
+
+	begin
+		var f : integer;
+	end;
+end.
