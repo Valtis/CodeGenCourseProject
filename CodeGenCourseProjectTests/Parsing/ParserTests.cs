@@ -246,12 +246,12 @@ namespace CodeGenCourseProject.Parsing.Tests
                             new IntegerNode(0, 0, 235)
                         ),
                         new VariableAssignmentNode(0, 0, new IdentifierNode(0, 0, "assignment_of_array_value"),
-                            new ArrayIndexNode(0, 0, new IdentifierToken("arr"),
+                            new ArrayIndexNode(0, 0, new IdentifierNode(0, 0, "arr"),
                                 new IntegerNode(0, 0, 4)
                             )
                         ),
                         new VariableAssignmentNode(0, 0, new IdentifierNode(0, 0, "assignment_with_array_index_negation"),
-                            new ArrayIndexNode(0, 0, new IdentifierToken("arr"),
+                            new ArrayIndexNode(0, 0, new IdentifierNode(0, 0, "arr"),
                                 new IntegerNode(0, 0, -5)
                             )
                         ),
@@ -271,7 +271,7 @@ namespace CodeGenCourseProject.Parsing.Tests
                             )
                         ),
                         new VariableAssignmentNode(0, 0, new IdentifierNode(0, 0, "array_index_with_array_length"),
-                            new ArrayIndexNode(0, 0, new IdentifierToken("arr"),
+                            new ArrayIndexNode(0, 0, new IdentifierNode(0, 0, "arr"),
                                 new ArraySizeNode(0, 0,
                                     new IdentifierNode(0, 0, "arr")
                                 )
@@ -281,8 +281,8 @@ namespace CodeGenCourseProject.Parsing.Tests
                             new IntegerNode(0, 0, 2)
                         ),
                         new VariableAssignmentNode(0, 0, new IdentifierNode(0, 0, "array_access_with_plus_sign"),
-                            new ArrayIndexNode(0, 0, new IdentifierToken("arr"),
-                                new IntegerNode(0, 0, 2)
+                            new ArrayIndexNode(0, 0, new IdentifierNode(0, 0, "arr"),
+                                new IntegerNode(0, 0, 42)
                             )
                         ),
                         new VariableAssignmentNode(0, 0, new IdentifierNode(0, 0, "multiplication"),
@@ -311,7 +311,7 @@ namespace CodeGenCourseProject.Parsing.Tests
                         ),
                         new VariableAssignmentNode(0, 0, new IdentifierNode(0, 0, "multiplication_with_array"),
                             new MultiplyNode(0, 0,
-                                new ArrayIndexNode(0, 0, new IdentifierToken("a"),
+                                new ArrayIndexNode(0, 0, new IdentifierNode(0, 0, "a"),
                                     new IntegerNode(0, 0, 4)
                                 ),
                                 new IntegerNode(0, 0, 2)
@@ -320,7 +320,7 @@ namespace CodeGenCourseProject.Parsing.Tests
                         new VariableAssignmentNode(0, 0, new IdentifierNode(0, 0, "multiplication_with_array2"),
                             new MultiplyNode(0, 0,
                                 new IntegerNode(0, 0, 2),
-                                new ArrayIndexNode(0, 0, new IdentifierToken("b"),
+                                new ArrayIndexNode(0, 0, new IdentifierNode(0, 0, "b"),
                                     new IntegerNode(0, 0, 13)
                                 )
                             )
@@ -564,13 +564,13 @@ namespace CodeGenCourseProject.Parsing.Tests
                             )
                         ),
                         new VariableAssignmentNode(0, 0,
-                            new ArrayIndexNode(0, 0, new IdentifierToken("array_assignment"),
-                                    new IntegerNode(0, 0, 2)
+                            new ArrayIndexNode(0, 0, new IdentifierNode(0, 0, "array_assignment"),
+                                    new IntegerNode(0, 0, 4)
                                 ),
                             new IntegerNode(0, 0, 2)
                         ),
                         new VariableAssignmentNode(0, 0,
-                            new ArrayIndexNode(0, 0, new IdentifierToken("array_assignment_with_expression"),
+                            new ArrayIndexNode(0, 0, new IdentifierNode(0, 0, "array_assignment_with_expression"),
                                     new AddNode(0, 0,
                                         new IntegerNode(0, 0, 5),
                                         new IntegerNode(0, 0, 2)
@@ -579,13 +579,29 @@ namespace CodeGenCourseProject.Parsing.Tests
                             new IntegerNode(0, 0, 19)
                         ),
                         new VariableAssignmentNode(0, 0,
-                            new ArrayIndexNode(0, 0, new IdentifierToken("array_assignment_with_boolean_expression"),
+                            new ArrayIndexNode(0, 0, new IdentifierNode(0, 0, "array_assignment_with_boolean_expression"),
                                     new AndNode(0, 0,
                                         new IdentifierNode(0, 0, "hello"),
                                         new IntegerNode(0, 0, 452)
                                     )
                                 ),
                             new IntegerNode(0, 0, 12)
+                        ),
+                        new VariableAssignmentNode(0, 0, 
+                            new IdentifierNode(0, 0, "a"),
+                            new IntegerNode(0, 0, 4)
+                        ),
+                        new VariableAssignmentNode(0, 0,
+                            new IdentifierNode(0, 0, "a"),
+                            new UnaryPlusNode(0, 0, 
+                                new IdentifierNode(0, 0, "a")
+                            )
+                        ),
+                        new VariableAssignmentNode(0, 0,
+                            new IdentifierNode(0, 0, "a"),
+                            new UnaryPlusNode(0, 0,
+                                new StringNode(0, 0, "hello")
+                            )
                         )
                     )
                 ),
@@ -1079,15 +1095,15 @@ namespace CodeGenCourseProject.Parsing.Tests
                         new CallNode(0, 0,
                             new IdentifierNode(0, 0, "read"),
                             new ArrayIndexNode(0, 0,
-                                new IdentifierToken("foo"),
+                                new IdentifierNode(0, 0, "foo"),
                                 new IntegerNode(0, 0, 54)
                             ),
                             new ArrayIndexNode(0, 0,
-                                new IdentifierToken("bar"),
+                                new IdentifierNode(0, 0, "bar"),
                                 new IntegerNode(0, 0, 12)
                             ),
                             new ArrayIndexNode(0, 0,
-                                new IdentifierToken("baz"),
+                                new IdentifierNode(0, 0, "baz"),
                                 new SubtractNode(0, 0,
                                     new MultiplyNode(0, 0,
                                         new IntegerNode(0, 0, 12),
@@ -1341,7 +1357,7 @@ namespace CodeGenCourseProject.Parsing.Tests
                             new BlockNode(0, 0,
                                 new VariableAssignmentNode(0, 0,
                                     new ArrayIndexNode(0, 0,
-                                        new IdentifierToken("b"),
+                                        new IdentifierNode(0, 0, "b"),
                                         new IntegerNode(0, 0, 4)
                                     ),
                                     new RealNode(0, 0, 4.335e6)

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace CodeGenCourseProject.SemanticChecking
 {
-    internal class Symbol
+    internal abstract class Symbol
     {
         private readonly string name;
         private readonly string type;
@@ -61,6 +61,21 @@ namespace CodeGenCourseProject.SemanticChecking
             this.name = name;
             this.type = type;
             this.id = id;
+        }
+    }
+
+
+    internal class VariableSymbol : Symbol
+    {
+        public VariableSymbol(int line, int column, string name, string type, int id) : base(line, column, name, type, id)
+        {
+        }
+    }
+
+    internal class ArraySymbol : Symbol
+    {
+        public ArraySymbol(int line, int column, string name, string type, int id) : base(line, column, name, type, id)
+        {
         }
     }
 }

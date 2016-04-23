@@ -72,4 +72,9 @@ begin
 	array_assignment[4] := 2;
 	array_assignment_with_expression[5 + 2] := 19;
 	array_assignment_with_boolean_expression[hello and 452] := 12;  {* Semantic error, but should not be a parse error *}
+
+	{* Unary plus *}
+	a := +4;
+	a := +a;
+	a := +"hello";
 end.

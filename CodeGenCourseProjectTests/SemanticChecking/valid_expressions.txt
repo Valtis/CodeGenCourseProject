@@ -8,27 +8,27 @@ begin
 	var s2 : string;
 	var b : boolean;
 	var b2 : boolean;
-
+		
 	i := 20;
 	i := 2 + 4;
 	i := i2 + 3;
-	i := i2 - i3;
+	i := i2 - i;
 	i := (2 * 3) + (i / 4);
 	i := 4 % 3;
 
 
 	r := 23.124e2;
 	r2 := 21.3 - r;
-	r := r1 * r2;
-	r := r1 / r2;
-	r := (3.0 * 1.0) - (1 / (2.2 + 3.1));
+	r := r * r2;
+	r := r2 / r;
+	r := (3.0 * 1.0) - (r / (2.2 + 3.1));
 
 	s := "hello";
 	s2 := s + " world";
 	s := (s2 + " - ") + " test";
 
 	b := i = i2;
-	b := (1 = 2) = ("hello" = world);
+	b := (1 = 2) = ("hello" = " world");
 	b2 := r2 <> r;
 	b := s < s2;
 	b2:= s <= s2;
@@ -38,6 +38,7 @@ begin
 	b:= b and b2;
 	b := b or b2;
 	b:= not b;
+	b := (b and b2) or (b or b2);
 
 	b := true;
 	b := false;
@@ -49,32 +50,46 @@ begin
 	false := 3;
 
 	i := true + false;
-
 	begin
 		i := +3;
 		i2 := -4;
 		var i : string;
 		i := "hello";
+
+		begin
+			var i : array [25] of string;
+			i[221] := "hello";
+		end;
 	end;
-	i := 4;
+	i := 4;	
+
+	
+	i := -i;
+	i := +i;
+
+	r := -r;
+	r := +r;
+	
+	var ai : array [1] of integer;
+	var ar : array [10] of real;
+	var as : array [1] of string;
+	var ab : array [124] of boolean;
+	
+	var ai2, ai3, ai4 : array [1] of integer;
+
+	ai[23] := 1;
+	ar[4] := 2.1;
+	as[i + 4] := "hello";
+	ab[i - i2] := b and b2;
+
+	ai2[1] := ai3[3] + ai4[12 + 34];
+
+	i := (3 +4 ) * i;
+	r := (r - 12.3) / (r + 12.4e2);
+	s := ("hello " + "world ") + " this";
 
 
-	procedure foo(a : integer, b : string);
-	begin
-	    var i := string;
-		i := "hello";
-	end;
-
-	foo(3, "hello");
-
-	function bar(i : boolean) : real;
-	begin
-		if i then
-			0.4;
-		else
-			0.1;
-	end;
-
-	r := bar(1 < 2) * 1.23;
+	i := ai.size + 2;
+	i := ai.size * 9;
 
 end.

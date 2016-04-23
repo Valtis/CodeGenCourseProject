@@ -1,0 +1,15 @@
+﻿program invalid_functions_and_procedures;
+begin
+
+	procedure proc();
+	begin
+		a := 4;
+	end.
+	
+
+	proc := 4;
+	proc[12] := 42;
+	
+	i := proc + 2;
+
+end.

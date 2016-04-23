@@ -624,33 +624,39 @@ namespace CodeGenCourseProject.Parsing
 
         private ASTNode ParseSimpleExpression()
         {
-            Token negate = null;
+            Type sign = null;
+            Token signToken = null;
             if (lexer.PeekToken() is MinusToken)
             {
-                negate = Expect<MinusToken>();
-            }
-
-            // discard plus sign
-            if (lexer.PeekToken() is PlusToken)
+                signToken = Expect<MinusToken>();
+                sign = typeof(NegateNode);
+            } else if (lexer.PeekToken() is PlusToken)
             {
-                Expect<PlusToken>();
+                signToken = Expect<PlusToken>();
+                sign = typeof(UnaryPlusNode);                
             }
 
             var term = ParseTerm();
 
-            if (negate != null)
+            if (sign != null)
             {
                 if (term is IntegerNode)
                 {
-                    term = new IntegerNode(term.Line, term.Column, -((IntegerNode)term).Value);
+                    if (sign == typeof(NegateNode))
+                    {
+                        term = new IntegerNode(term.Line, term.Column, -((IntegerNode)term).Value);
+                    }
                 }
                 else if (term is RealNode)
                 {
-                    term = new RealNode(term.Line, term.Column, -((RealNode)term).Value);
+                    if (sign == typeof(NegateNode))
+                    {
+                        term = new RealNode(term.Line, term.Column, -((RealNode)term).Value);
+                    }
                 }
                 else
                 {
-                    term = new NegateNode(negate.Line, negate.Column, term);
+                    term = (ASTNode)Activator.CreateInstance(sign, signToken.Line, signToken.Column, term);
                 }
             }
 
@@ -780,7 +786,7 @@ namespace CodeGenCourseProject.Parsing
 
                 Expect<RBracketToken>();
 
-                return new ArrayIndexNode(identifier.Line, identifier.Column, identifier, expr);
+                return new ArrayIndexNode(identifier.Line, identifier.Column, new IdentifierNode(identifier.Line, identifier.Column, identifier.Value), expr);
             }
 
             return new IdentifierNode(identifier.Line, identifier.Column, identifier.Value);

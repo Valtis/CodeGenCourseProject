@@ -5,26 +5,28 @@ namespace CodeGenCourseProject.AST
 {
     public class ArrayIndexNode : ASTNode
     {
-        private IdentifierToken value;
-
-        public ArrayIndexNode(int line, int column, IdentifierToken array, ASTNode index) : base(line, column)
+        
+        public ArrayIndexNode(int line, int column, IdentifierNode array, ASTNode index) : base(line, column)
         {
-            this.value = array;
+            Children.Add(array);
+            Children.Add(index);
         }
 
         protected override Tuple<string, string> GetStringRepresentation()
         {
-            return new Tuple<string, string>("ArrayIndexNode", value.Value);
+            return new Tuple<string, string>("ArrayIndexNode", ((IdentifierNode)Children[0]).Value);
         }
 
         public override bool Equals(object obj)
         {
-            return obj is ArrayIndexNode && value.Equals(((ArrayIndexNode)obj).value);
+            return obj is ArrayIndexNode && 
+                ((IdentifierNode)Children[0]).Value.Equals(
+                    ((IdentifierNode)((ArrayIndexNode)obj).Children[0]).Value);
         }
 
         public override int GetHashCode()
         {
-            return value.GetHashCode();
+            return ((IdentifierNode)Children[0]).Value.GetHashCode();
         }
 
         public override void Accept(ASTVisitor visitor)

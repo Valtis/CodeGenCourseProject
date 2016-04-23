@@ -15,20 +15,93 @@ namespace CodeGenCourseProject.SemanticChecking
         private const string STRING_TYPE = "string";
         private const string BOOLEAN_TYPE = "boolean";
 
+        private List<string> predeclaredIdentifiers;
+
         public SemanticChecker(ErrorReporter reporter)
         {
             this.reporter = reporter;
             table = new SymbolTable();
+
+            predeclaredIdentifiers = new List<string>
+            { INTEGER_TYPE, REAL_TYPE, STRING_TYPE, BOOLEAN_TYPE };
         }
 
         public void Visit(ArrayIndexNode node)
         {
-            throw new NotImplementedException();
+            if (node.Children.Count != 2)
+            {
+                throw new InternalCompilerError("Invalid child count for ArrayIndexNode: " + node.Children.Count);
+            }
+
+            node.Children[0].Accept(this);
+
+            var expr = node.Children[1];
+            expr.Accept(this);
+
+            if (expr.NodeType() != ERROR_TYPE && expr.NodeType() != INTEGER_TYPE)
+            {
+                reporter.ReportError(
+                    Error.SEMANTIC_ERROR,
+                    "Invalid type '" + expr.NodeType() + "' for array indexing",
+                    expr.Line,
+                    expr.Column);
+            }
+
+            var name = (IdentifierNode)node.Children[0];
+            var symbol = table.GetSymbol(name.Value);
+
+            // the caller will handle undeclared identifiers, we merely check that symbol is an array
+
+            if (symbol == null)
+            {
+                node.SetNodeType(ERROR_TYPE);
+                return;
+            }
+
+            if (!(symbol is ArraySymbol))
+            {
+                reporter.ReportError(
+                    Error.SEMANTIC_ERROR,
+                    "Cannot index '" + name.Value +"' as it is not an array",
+                    node.Line,
+                    node.Column);
+
+                ReportPreviousDeclaration(symbol);
+
+                node.SetNodeType(ERROR_TYPE);
+                return;
+            }
+
+            node.SetNodeType(symbol.Type);
+
         }
 
         public void Visit(ArrayTypeNode arrayTypeNode)
         {
-            throw new NotImplementedException();
+            if (arrayTypeNode.Children.Count != 2)
+            {
+                throw new InternalCompilerError("Invalid child count for ArrayTypeNode: " + arrayTypeNode.Children.Count);
+            } 
+
+            foreach (var child in arrayTypeNode.Children)
+            {
+                child.Accept(this);
+            }
+
+            var exprChild = arrayTypeNode.Children[1];
+            if (exprChild.NodeType() == ERROR_TYPE)
+            {
+                return;
+            }
+
+            if (exprChild.NodeType() != INTEGER_TYPE)
+            {
+                reporter.ReportError(
+                    Error.SEMANTIC_ERROR,
+                    "Invalid type '" + exprChild.NodeType() + "' for array size expression",
+                    exprChild.Line,
+                    exprChild.Column);
+            }            
         }
 
         public void Visit(BlockNode blockNode)
@@ -43,7 +116,7 @@ namespace CodeGenCourseProject.SemanticChecking
 
         public void Visit(DivideNode divideNode)
         {
-            HandleBinaryNode(divideNode, "/", new List<string> { INTEGER_TYPE, REAL_TYPE });
+            HandleBinaryOperator(divideNode, "/", new List<string> { INTEGER_TYPE, REAL_TYPE });
         }
 
         public void Visit(ErrorNode errorNode)
@@ -63,17 +136,17 @@ namespace CodeGenCourseProject.SemanticChecking
 
         public void Visit(SubtractNode subtractNode)
         {
-            HandleBinaryNode(subtractNode, "-", new List<string> { INTEGER_TYPE, REAL_TYPE });
+            HandleBinaryOperator(subtractNode, "-", new List<string> { INTEGER_TYPE, REAL_TYPE });
         }
 
         public void Visit(OrNode orNode)
         {
-            throw new NotImplementedException();
+            HandleBinaryOperator(orNode, "or", new List<string> { BOOLEAN_TYPE });
         }
 
         public void Visit(MultiplyNode multiplyNode)
         {
-            HandleBinaryNode(multiplyNode, "*", new List<string> { INTEGER_TYPE, REAL_TYPE });
+            HandleBinaryOperator(multiplyNode, "*", new List<string> { INTEGER_TYPE, REAL_TYPE });
         }
 
         public void Visit(ProcedureNode procedureNode)
@@ -83,7 +156,7 @@ namespace CodeGenCourseProject.SemanticChecking
 
         public void Visit(GreaterThanOrEqualNode greaterThanOrEqualNode)
         {
-            HandleBinaryNode(greaterThanOrEqualNode, ">=", new List<string> { INTEGER_TYPE, REAL_TYPE, STRING_TYPE, BOOLEAN_TYPE });
+            HandleBinaryOperator(greaterThanOrEqualNode, ">=", new List<string> { INTEGER_TYPE, REAL_TYPE, STRING_TYPE, BOOLEAN_TYPE });
             if (greaterThanOrEqualNode.NodeType() != ERROR_TYPE)
             {
                 greaterThanOrEqualNode.SetNodeType(BOOLEAN_TYPE);
@@ -105,7 +178,7 @@ namespace CodeGenCourseProject.SemanticChecking
 
         public void Visit(GreaterThanNode greaterThanNode)
         {
-            HandleBinaryNode(greaterThanNode, ">", new List<string> { INTEGER_TYPE, REAL_TYPE, STRING_TYPE, BOOLEAN_TYPE });
+            HandleBinaryOperator(greaterThanNode, ">", new List<string> { INTEGER_TYPE, REAL_TYPE, STRING_TYPE, BOOLEAN_TYPE });
             if (greaterThanNode.NodeType() != ERROR_TYPE)
             {
                 greaterThanNode.SetNodeType(BOOLEAN_TYPE);
@@ -132,11 +205,20 @@ namespace CodeGenCourseProject.SemanticChecking
             {
                 identifierNode.SetNodeType(BOOLEAN_TYPE);
             }
+            else if (!predeclaredIdentifiers.Contains(identifierNode.Value))
+            {
+                identifierNode.SetNodeType(ERROR_TYPE);
+                reporter.ReportError(
+                    Error.SEMANTIC_ERROR,
+                    "Identifier '" + identifierNode.Value + "' has not been declared",
+                    identifierNode.Line,
+                    identifierNode.Column);
+            }
         }
 
         public void Visit(LessThanOrEqualNode lessThanOrEqualNode)
         {
-            HandleBinaryNode(lessThanOrEqualNode, "<=", new List<string> { INTEGER_TYPE, REAL_TYPE, STRING_TYPE, BOOLEAN_TYPE });
+            HandleBinaryOperator(lessThanOrEqualNode, "<=", new List<string> { INTEGER_TYPE, REAL_TYPE, STRING_TYPE, BOOLEAN_TYPE });
             if (lessThanOrEqualNode.NodeType() != ERROR_TYPE)
             {
                 lessThanOrEqualNode.SetNodeType(BOOLEAN_TYPE);
@@ -145,7 +227,7 @@ namespace CodeGenCourseProject.SemanticChecking
 
         public void Visit(LessThanNode lessThanNode)
         {
-            HandleBinaryNode(lessThanNode, "<", new List<string> { INTEGER_TYPE, REAL_TYPE, STRING_TYPE, BOOLEAN_TYPE });
+            HandleBinaryOperator(lessThanNode, "<", new List<string> { INTEGER_TYPE, REAL_TYPE, STRING_TYPE, BOOLEAN_TYPE });
             if (lessThanNode.NodeType() != ERROR_TYPE)
             {
                 lessThanNode.SetNodeType(BOOLEAN_TYPE);
@@ -154,17 +236,17 @@ namespace CodeGenCourseProject.SemanticChecking
 
         public void Visit(ModuloNode moduloNode)
         {
-            HandleBinaryNode(moduloNode, "%", new List<string> { INTEGER_TYPE });
+            HandleBinaryOperator(moduloNode, "%", new List<string> { INTEGER_TYPE });
         }
 
         public void Visit(UnaryPlusNode unaryPlusNode)
         {
-            throw new NotImplementedException();
+            HandleUnaryOperator(unaryPlusNode, "+", new List<string> { INTEGER_TYPE, REAL_TYPE });
         }
 
         public void Visit(NegateNode negateNode)
         {
-            throw new NotImplementedException();
+            HandleUnaryOperator(negateNode, "-", new List<string> { INTEGER_TYPE, REAL_TYPE });
         }
 
         public void Visit(StringNode stringNode)
@@ -174,7 +256,7 @@ namespace CodeGenCourseProject.SemanticChecking
 
         public void Visit(NotNode notNode)
         {
-            throw new NotImplementedException();
+            HandleUnaryOperator(notNode, "not", new List<string> { BOOLEAN_TYPE });
         }
 
         public void Visit(VariableAssignmentNode variableAssignmentNode)
@@ -182,29 +264,64 @@ namespace CodeGenCourseProject.SemanticChecking
             if (variableAssignmentNode.Children.Count != 2)
             {
                 throw new InternalCompilerError(
-                    "Invalid child count for the VariableAssingmentNode: " + 
+                    "Invalid child count for the VariableAssignmentNode: " + 
                     variableAssignmentNode.Children.Count);
             }
-            var nameNode = (IdentifierNode)variableAssignmentNode.Children[0];
 
+            var child = variableAssignmentNode.Children[0];
 
+            child.Accept(this);
 
-            var expression = variableAssignmentNode.Children[1];
-            expression.Accept(this);
-
-
-            var symbol = table.GetSymbol(nameNode.Value);
-
-            if (symbol == null)
+            IdentifierNode nameNode = null;
+            if (child is IdentifierNode)
             {
-                reporter.ReportError(
-                    Error.SEMANTIC_ERROR,
-                    "Variable '" + nameNode.Value + "' has not been declared",
-                    nameNode.Line,
-                    nameNode.Column);
+                nameNode = (IdentifierNode)variableAssignmentNode.Children[0];
             }
             else
             {
+                nameNode = (IdentifierNode)variableAssignmentNode.Children[0].Children[0];
+            }
+
+            var expression = variableAssignmentNode.Children[1];
+            expression.Accept(this);
+            
+            var symbol = table.GetSymbol(nameNode.Value);
+
+            
+            if (symbol == null)
+            {
+                // special case check - true/valid are not reported by Visit(IdentifierNode), but treated as a keyword, 
+                // if no such variable is declared -> we must check if the variable name is true/false, and check if they are
+                // declared
+
+
+                if (nameNode.Value == "true" || nameNode.Value == "false")
+                {
+                    reporter.ReportError(
+                        Error.SEMANTIC_ERROR,
+                        "Identifier '" + nameNode.Value + "' has not been declared",
+                        nameNode.Line,
+                        nameNode.Column);
+                }
+                return;
+            }
+            else
+            {
+                // check that if variable we are assigning to is actually a variable, and not something else
+
+                if (child is IdentifierNode && !(symbol is VariableSymbol))
+                {
+                    reporter.ReportError(
+                        Error.SEMANTIC_ERROR,
+                        "Cannot assign into '" + nameNode.Value + "' as it is not a regular variable",
+                        child.Line,
+                        child.Column);
+
+
+                    ReportPreviousDeclaration(symbol);
+                    return;
+                }
+                
                 if (expression.NodeType() != ERROR_TYPE && symbol.Type != expression.NodeType())
                 {
                     reporter.ReportError(
@@ -229,18 +346,28 @@ namespace CodeGenCourseProject.SemanticChecking
                     childCount
                     );
             }
+            var typeChild = variableDeclarationNode.Children[0];
+            typeChild.Accept(this);
 
-            var type = (IdentifierNode)variableDeclarationNode.Children[0];
+            IdentifierNode name = null;
+            if (typeChild is IdentifierNode)
+            {
+                name = (IdentifierNode)typeChild;
+            }
+            else
+            {
+                name = (IdentifierNode)typeChild.Children[0];
+            }
 
-            if (table.Contains(type.Value))
+            if (table.Contains(name.Value))
             {
                 reporter.ReportError(
                     Error.SEMANTIC_ERROR,
-                    "Type '" + type.Value + "' is inaccessible",
-                    type.Line, 
-                    type.Column);
+                    "Type '" + name.Value + "' is inaccessible",
+                    name.Line, 
+                    name.Column);
 
-                var symbol = table.GetSymbol(type.Value);
+                var symbol = table.GetSymbol(name.Value);
 
                 reporter.ReportError(
                         Error.NOTE,
@@ -269,31 +396,28 @@ namespace CodeGenCourseProject.SemanticChecking
                 }
                 else
                 {
-                    table.InsertSymbol(nameNode.Line, nameNode.Column, nameNode.Value, type.Value);
+                    if (typeChild is ArrayTypeNode)
+                    {
+                        table.InsertArray(nameNode.Line, nameNode.Column, nameNode.Value, name.Value);
+                    }
+                    else if (typeChild is IdentifierNode)
+                    {
+                        table.InsertVariable(nameNode.Line, nameNode.Column, nameNode.Value, name.Value);
+                    }
+                    else
+                    {
+                        throw new InternalCompilerError("Invalid typeNode: " + typeChild.GetType());
+                    }
+                    
                 }
                     
 
             }
-            
-            foreach (var name in names)
-            {
-                
-            }
-            
-        }
-
-        private void ReportPreviousDeclaration(Symbol symbol)
-        {
-            reporter.ReportError(
-                Error.NOTE,
-                "Declared here",
-                symbol.Line,
-                symbol.Column);
         }
 
         public void Visit(NotEqualsNode notEqualsNode)
         {
-            HandleBinaryNode(notEqualsNode, "<>", new List<string> { INTEGER_TYPE, REAL_TYPE, STRING_TYPE, BOOLEAN_TYPE });
+            HandleBinaryOperator(notEqualsNode, "<>", new List<string> { INTEGER_TYPE, REAL_TYPE, STRING_TYPE, BOOLEAN_TYPE });
             if (notEqualsNode.NodeType() != ERROR_TYPE)
             {
                 notEqualsNode.SetNodeType(BOOLEAN_TYPE);
@@ -307,7 +431,7 @@ namespace CodeGenCourseProject.SemanticChecking
 
         public void Visit(EqualsNode equalsNode)
         {
-            HandleBinaryNode(equalsNode, "=", new List<string> { INTEGER_TYPE, REAL_TYPE, STRING_TYPE, BOOLEAN_TYPE });
+            HandleBinaryOperator(equalsNode, "=", new List<string> { INTEGER_TYPE, REAL_TYPE, STRING_TYPE, BOOLEAN_TYPE });
             if (equalsNode.NodeType() != ERROR_TYPE)
             {
                 equalsNode.SetNodeType(BOOLEAN_TYPE);
@@ -327,21 +451,84 @@ namespace CodeGenCourseProject.SemanticChecking
 
         public void Visit(ArraySizeNode node)
         {
-            throw new NotImplementedException();
+            if (node.Children.Count != 1)
+            {
+                throw new InternalCompilerError("Invalid child count for ArraySizeNode: " + node.Children.Count);
+            }
+            node.Children[0].Accept(this);
+
+            var array = (IdentifierNode)node.Children[0];
+            var symbol = table.GetSymbol(array.Value);
+            if (symbol != null && !(symbol is ArraySymbol))
+            {
+                reporter.ReportError(
+                    Error.SEMANTIC_ERROR,
+                    "Cannot get the size of an non-array object '" + array.Value + "'",
+                    node.Line,
+                    node.Column);
+                
+                ReportPreviousDeclaration(symbol);
+                node.SetNodeType(ERROR_TYPE);
+                return;
+            }
+
+            
+            node.SetNodeType(INTEGER_TYPE);
         }
 
         public void Visit(AndNode node)
         {
-            throw new NotImplementedException();
+            HandleBinaryOperator(node, "and", new List<string> { BOOLEAN_TYPE });
         }
 
         public void Visit(AddNode node)
         {
-            HandleBinaryNode(node, "+", new List<string> { INTEGER_TYPE, REAL_TYPE, STRING_TYPE });
+            HandleBinaryOperator(node, "+", new List<string> { INTEGER_TYPE, REAL_TYPE, STRING_TYPE });
+        }
+
+        private void HandleUnaryOperator(ASTNode node, string op, IList<string> acceptableTypes)
+        {
+            if (node.Children.Count != 1)
+            {
+                throw new InternalCompilerError(
+                    "Invalid child count for unary node '" + op + "': " +
+                    node.Children.Count);
+            }
+
+            var child = node.Children[0];
+            child.Accept(this);
+
+
+            if (child.NodeType() == ERROR_TYPE)
+            {
+                node.SetNodeType(ERROR_TYPE);
+                return;
+            }
+
+            if (!acceptableTypes.Contains(child.NodeType()))
+            {
+                var types = string.Join(", ", acceptableTypes);
+                if (acceptableTypes.Count > 1)
+                {
+                    types = "one of " + types;
+                }
+                reporter.ReportError(
+                    Error.SEMANTIC_ERROR,
+                    "Invalid type '" + child.NodeType() + "' for operator '" + op + "'",
+                    node.Line,
+                    node.Column);
+
+                reporter.ReportError(Error.NOTE_GENERIC, "Operator expects " + types, 0, 0);
+
+                node.SetNodeType(ERROR_TYPE);
+                return;
+            }
+
+            node.SetNodeType(child.NodeType());
         }
 
 
-        private void HandleBinaryNode(ASTNode node, string op, IList<string> acceptableTypes)
+        private void HandleBinaryOperator(ASTNode node, string op, IList<string> acceptableTypes)
         {
             if (node.Children.Count != 2)
             {
@@ -407,6 +594,14 @@ namespace CodeGenCourseProject.SemanticChecking
             node.SetNodeType(lhs.NodeType());
         }
 
+        private void ReportPreviousDeclaration(Symbol symbol)
+        {
+            reporter.ReportError(
+                Error.NOTE,
+                "Identifier was previously declared here",
+                symbol.Line,
+                symbol.Column);
+        }
 
     }
 }

@@ -4,7 +4,7 @@ begin
 	var s : string;
 	var r : real;
 	var b : boolean;
-
+	
 	undeclared := 4;
 	true := 5;
 	false := 3;
@@ -63,8 +63,83 @@ begin
 	r := 1 > "hello";
 	r := 1324.12 > true;
 
-	{*
-	s := +"hello";
+	i := 1 and "foo";
+	i := 1.23 and true;
+	i := 1 and 2;
+	
+	i := 1 or "foo";
+	i := 1.23 or true;
+	i := 1 or 2;
+	
+	i := not 3;
+	i := not "hello";
+	i := not 21.34;
+		
 	i := -"hello";
-	*}
+	i := -true;
+	
+	s := +"hello";
+	s := +false;
+
+	i := 12.3  * (1.235 - 12.6e-3);
+	i := "hello" + (1 * 2);
+		
+	var ai : array["hello"] of integer;
+	var ar : array[true and false] of real;
+	var as : array[1.23] of string;
+	var ab : array[1 + "hello"] of boolean;	
+	
+	var ai2 : array[1] of integer;
+	var ar2 : array[2] of real;
+	var as2 : array[3] of string;
+	var ab2 : array[4] of boolean;
+
+	ai2[45] := "hello";
+	ar2[12] := true;
+	as2[1] := 543;
+	ab2[14] := 1.24;
+
+	i[452] := 4;
+	r[12] := 12.34;
+	s[124] := "hello";
+	b[2] := true;
+	undeclared[43] := 4;
+	
+	ai["hello"] := 43;
+	ar2[134.453] := 143.2;
+	as[true] := "hello"; 
+	ab2[13.4 * 2] := "false";
+
+	ai := 4;
+	as2 := "true";
+	ab := 1;
+	ar2 := false;
+	
+	i := ai2[12123.4] + i;
+	r := as[4];
+	s := ab2["false"] + 2;
+	s := i[2] - 34;
+	b := undeclared[234] * 3;
+	
+	true[4] := 2;
+	false[4] := 2;
+
+	var true : integer;
+	var false : integer;
+
+	b := true;
+	b := false;
+	b := true and false;
+
+	i := ("hello" * 2.3) - "world";
+	i := "hello" = undeclared;
+
+	begin
+		var i : boolean;
+		i := true;
+	end;
+
+	i := 4.2 + ai2.size;
+	i := i.size;
+	i := undeclared.size;	
 end.

@@ -10,16 +10,16 @@ namespace CodeGenCourseProject.AST.Tests
         public void TwoArrayIndexNodesAreEqualWhenValuesAreEqual()
         {
             Assert.AreEqual(
-                new ArrayIndexNode(1, 2, new IdentifierToken("hello"), null),
-                new ArrayIndexNode(6, 32, new IdentifierToken("hello"), null));
+                new ArrayIndexNode(1, 2, new IdentifierNode(0, 0, "hello"), null),
+                new ArrayIndexNode(6, 32, new IdentifierNode(0, 0, "hello"), null));
         }
 
         [TestMethod()]
         public void TwoArrayIndexNodessAreNotEqualWhenValuesAreNotEqual()
         {
             Assert.AreNotEqual(
-                new ArrayIndexNode(1, 2, new IdentifierToken("hello"), null),
-                new ArrayIndexNode(6, 32, new IdentifierToken("world"), null));
+                new ArrayIndexNode(1, 2, new IdentifierNode(0, 0, "hello"), null),
+                new ArrayIndexNode(6, 32, new IdentifierNode(0, 0, "world"), null));
         }
 
         [TestMethod()]
@@ -27,7 +27,7 @@ namespace CodeGenCourseProject.AST.Tests
         {
             Assert.AreEqual(
                 "<ArrayIndexNode - 'hello'>",
-                new ArrayIndexNode(6, 32, new IdentifierToken("hello"), null).ToString());
+                new ArrayIndexNode(6, 32, new IdentifierNode(0, 0, "hello"), null).ToString());
         }
     }
 }
