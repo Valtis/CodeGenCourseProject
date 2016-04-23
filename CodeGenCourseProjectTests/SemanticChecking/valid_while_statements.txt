@@ -1,0 +1,53 @@
+﻿program valid_while_statements;
+begin
+	var b : boolean;
+	
+	while true do
+	begin
+		var i : integer;
+	end;
+
+	while false do
+	begin
+		var i : integer;
+	end;
+
+	while b do
+	begin
+		var i : integer;
+	end;
+
+	while 4 - 3 <> 3 - 4 do
+	begin
+		var i : integer;
+	end;
+
+	var j : integer;
+
+	while j < 4 do
+	begin
+		j := j + 1;
+	end;
+
+	while b <> false do
+	begin
+		var i : boolean;
+	end;
+
+	while true do
+	begin
+		var i : integer;
+		while true do
+		begin
+			var i : string;
+			while i < "foobar" do
+			begin
+				var i : real;
+				i := 32.423;
+			end;
+			i := "hello";
+		end;
+		i := 4;
+	end
+
+end.

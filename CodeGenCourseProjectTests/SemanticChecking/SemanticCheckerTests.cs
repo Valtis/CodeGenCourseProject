@@ -55,6 +55,45 @@ namespace CodeGenCourseProject.SemanticChecking.Tests
         }
 
         [TestMethod()]
+        public void ValidWhileStatementsAreAccepted()
+        {
+            var reporter = new ErrorReporter();
+            var lexer = new Lexer(@"..\..\SemanticChecking\valid_while_statements.txt", reporter);
+            var parser = new Parser(lexer, reporter);
+
+            var node = parser.Parse();
+
+            var semanticChecker = new SemanticChecker(reporter);
+            node.Accept(semanticChecker);
+
+            Assert.AreEqual(0, reporter.Errors.Count);
+        }
+
+        [TestMethod()]
+        public void InvalidWhileStatementsAreRejected()
+        {
+            var reporter = new ErrorReporter();
+            var lexer = new Lexer(@"..\..\SemanticChecking\invalid_while_statements.txt", reporter);
+            var parser = new Parser(lexer, reporter);
+
+            var node = parser.Parse();
+
+            var semanticChecker = new SemanticChecker(reporter);
+            node.Accept(semanticChecker);
+
+            Assert.AreEqual(7, reporter.Errors.Count);
+
+            var helper = new TestHelper(reporter);
+            helper.AssertErrorMessage(0, Error.SEMANTIC_ERROR, 3, 14, "Invalid type 'integer' for while "); 
+            helper.AssertErrorMessage(1, Error.SEMANTIC_ERROR, 8, 14, "Invalid type 'string' for while ");
+            helper.AssertErrorMessage(2, Error.SEMANTIC_ERROR, 12, 14, "Invalid type 'real' for while ");
+            helper.AssertErrorMessage(3, Error.SEMANTIC_ERROR, 20, 14, "Invalid type 'string' for while ");
+            helper.AssertErrorMessage(4, Error.SEMANTIC_ERROR, 25, 14, "Invalid type 'integer' for while ");
+            helper.AssertErrorMessage(5, Error.SEMANTIC_ERROR, 30, 14, "Identifier 'undeclared' has not");
+            helper.AssertErrorMessage(6, Error.SEMANTIC_ERROR, 38, 21, "Cannot assign an expression with type 'integer' into a variable with type 'string'");
+        }
+
+        [TestMethod()]
         public void ValidExpressionsAreAccepted()
         {
             var reporter = new ErrorReporter();
@@ -68,7 +107,7 @@ namespace CodeGenCourseProject.SemanticChecking.Tests
 
             Assert.AreEqual(0, reporter.Errors.Count);
         }
-
+        
         [TestMethod()]
         public void InvalidExpressionsAreRejected()
         {
@@ -213,7 +252,6 @@ namespace CodeGenCourseProject.SemanticChecking.Tests
             helper.AssertErrorMessage(93, Error.SEMANTIC_ERROR, 141, 17, "Invalid types 'real' and 'integer' for operator '+'");
             helper.AssertErrorMessage(94, Error.SEMANTIC_ERROR, 142, 13, "Cannot get the size of an non-array object 'i'");
             helper.AssertErrorMessage(95, Error.SEMANTIC_ERROR, 143, 13, "Identifier 'undeclared' has not been declared");
-
         }
     }
 }

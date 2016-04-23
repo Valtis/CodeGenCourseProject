@@ -126,7 +126,33 @@ namespace CodeGenCourseProject.SemanticChecking
 
         public void Visit(WhileNode whileNode)
         {
-            throw new NotImplementedException();
+            if (whileNode.Children.Count != 2)
+            {
+                throw new InternalCompilerError("Invalid child count for WhileNode: " + whileNode.Children.Count);
+            }
+
+            foreach (var child in whileNode.Children)
+            {
+                child.Accept(this);
+            }
+
+            var expr = whileNode.Children[0];
+
+
+            if (expr.NodeType() != ERROR_TYPE & expr.NodeType() != BOOLEAN_TYPE)
+            {
+                reporter.ReportError(
+                    Error.SEMANTIC_ERROR,
+                    "Invalid type '" + expr.NodeType() +"' for while statement condition",
+                    expr.Line,
+                    expr.Column
+                    );
+
+                reporter.ReportError(
+                    Error.NOTE_GENERIC,
+                    "While statement condition must have type 'boolean'", 0, 0);
+
+            }
         }
 
         public void Visit(ReturnNode returnNode)

@@ -1,0 +1,41 @@
+﻿program invalid_while_statements;
+begin
+	var a : integer;
+	while 1 do
+	begin
+		a := 1;
+	end;
+
+	while "hello" do
+	begin
+		a := 1;
+	end;
+	while 1.32 do
+	begin
+		a := 1;
+	end;
+	
+	var true : string;
+	var false : integer;
+
+	while true do
+	begin
+		a := 1;
+	end;
+
+	while false do
+	begin
+		a := 1;
+	end;
+	
+	while undeclared do
+	begin
+		a := 1;
+	end;
+
+	while a < 4 do
+	begin
+		var i : string;
+		i := 4;
+	end
+end.

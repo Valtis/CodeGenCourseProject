@@ -126,8 +126,10 @@
     <Content Include="SemanticChecking\invalid_expressions.txt" />
     <Content Include="SemanticChecking\invalid_procedures_and_functions.txt" />
     <Content Include="SemanticChecking\invalid_variable_declarations.txt" />
+    <Content Include="SemanticChecking\invalid_while_statements.txt" />
     <Content Include="SemanticChecking\valid_expressions.txt" />
     <Content Include="SemanticChecking\valid_variable_declarations.txt" />
+    <Content Include="SemanticChecking\valid_while_statements.txt" />
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
