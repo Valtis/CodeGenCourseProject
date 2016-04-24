@@ -74,8 +74,20 @@ namespace CodeGenCourseProject.SemanticChecking
 
     internal class ArraySymbol : Symbol
     {
-        public ArraySymbol(int line, int column, string name, string type, int id) : base(line, column, name, type, id)
+        private readonly string baseType;
+
+        public ArraySymbol(int line, int column, string name, string type, int id) : 
+            base(line, column, name, "Array<" + type + ">", id)
         {
+            baseType = type;
+        }
+
+        public string BaseType
+        {
+            get
+            {
+                return baseType;
+            }
         }
     }
 }

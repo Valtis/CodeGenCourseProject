@@ -15,7 +15,7 @@ namespace CodeGenCourseProject.AST
 
         protected override Tuple<string, string> GetStringRepresentation()
         {
-            return new Tuple<string, string>("VariableDeclarationNOde", "");
+            return new Tuple<string, string>("VariableDeclarationNode", "");
         }
 
         public override void Accept(ASTVisitor visitor)

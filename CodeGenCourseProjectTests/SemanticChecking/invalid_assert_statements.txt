@@ -1,0 +1,7 @@
+﻿program invalid_assert_statements;
+begin
+	assert(1);
+	assert("hello");
+	assert(223.3);
+	assert(not "hello");
+end.

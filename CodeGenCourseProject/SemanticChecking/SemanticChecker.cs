@@ -23,7 +23,7 @@ namespace CodeGenCourseProject.SemanticChecking
             table = new SymbolTable();
 
             predeclaredIdentifiers = new List<string>
-            { INTEGER_TYPE, REAL_TYPE, STRING_TYPE, BOOLEAN_TYPE };
+            { INTEGER_TYPE, REAL_TYPE, STRING_TYPE, BOOLEAN_TYPE, "true", "false" };
         }
 
         public void Visit(ArrayIndexNode node)
@@ -62,7 +62,7 @@ namespace CodeGenCourseProject.SemanticChecking
             {
                 reporter.ReportError(
                     Error.SEMANTIC_ERROR,
-                    "Cannot index '" + name.Value +"' as it is not an array",
+                    "Cannot index '" + name.Value + "' as it is not an array",
                     node.Line,
                     node.Column);
 
@@ -72,36 +72,37 @@ namespace CodeGenCourseProject.SemanticChecking
                 return;
             }
 
-            node.SetNodeType(symbol.Type);
-
+            node.SetNodeType(((ArraySymbol)symbol).BaseType);
         }
 
         public void Visit(ArrayTypeNode arrayTypeNode)
         {
-            if (arrayTypeNode.Children.Count != 2)
+            if (arrayTypeNode.Children.Count < 1 || arrayTypeNode.Children.Count > 2)
             {
                 throw new InternalCompilerError("Invalid child count for ArrayTypeNode: " + arrayTypeNode.Children.Count);
-            } 
+            }
 
             foreach (var child in arrayTypeNode.Children)
             {
                 child.Accept(this);
             }
-
-            var exprChild = arrayTypeNode.Children[1];
-            if (exprChild.NodeType() == ERROR_TYPE)
+            if (arrayTypeNode.Children.Count == 2)
             {
-                return;
+                var exprChild = arrayTypeNode.Children[1];
+                if (exprChild.NodeType() == ERROR_TYPE)
+                {
+                    return;
+                }
+
+                if (exprChild.NodeType() != INTEGER_TYPE)
+                {
+                    reporter.ReportError(
+                        Error.SEMANTIC_ERROR,
+                        "Invalid type '" + exprChild.NodeType() + "' for array size expression",
+                        exprChild.Line,
+                        exprChild.Column);
+                }
             }
-
-            if (exprChild.NodeType() != INTEGER_TYPE)
-            {
-                reporter.ReportError(
-                    Error.SEMANTIC_ERROR,
-                    "Invalid type '" + exprChild.NodeType() + "' for array size expression",
-                    exprChild.Line,
-                    exprChild.Column);
-            }            
         }
 
         public void Visit(BlockNode blockNode)
@@ -138,12 +139,11 @@ namespace CodeGenCourseProject.SemanticChecking
 
             var expr = whileNode.Children[0];
 
-
-            if (expr.NodeType() != ERROR_TYPE & expr.NodeType() != BOOLEAN_TYPE)
+            if (expr.NodeType() != ERROR_TYPE && expr.NodeType() != BOOLEAN_TYPE)
             {
                 reporter.ReportError(
                     Error.SEMANTIC_ERROR,
-                    "Invalid type '" + expr.NodeType() +"' for while statement condition",
+                    "Invalid type '" + expr.NodeType() + "' for while statement condition",
                     expr.Line,
                     expr.Column
                     );
@@ -177,7 +177,27 @@ namespace CodeGenCourseProject.SemanticChecking
 
         public void Visit(ProcedureNode procedureNode)
         {
-            throw new NotImplementedException();
+            var children = procedureNode.Children.Count;
+            if (children < 2)
+            {
+                throw new InternalCompilerError("Invalid child count for ProcedureNode: " + children);
+            }
+
+            var name = (IdentifierNode)procedureNode.Children[0];
+            var block = procedureNode.Children[1];
+
+            // while block is a BlockNode, and we could just call block.Accept(), 
+            // I do not want to open two new symtable levels; this would make it acceptable to shadow
+            // function arguments with new declarations. 
+
+            table.PushLevel();
+
+            foreach (var child in block.Children)
+            {
+                child.Accept(this);
+            }
+
+            table.PopLevel();
         }
 
         public void Visit(GreaterThanOrEqualNode greaterThanOrEqualNode)
@@ -213,7 +233,30 @@ namespace CodeGenCourseProject.SemanticChecking
 
         public void Visit(IfNode ifNode)
         {
-            throw new NotImplementedException();
+            var children = ifNode.Children.Count;
+            if (children < 2 || children > 3)
+            {
+                throw new InternalCompilerError("Invalid child count for IfNode: " + children);
+            }
+
+            foreach (var child in ifNode.Children)
+            {
+                child.Accept(this);
+            }
+
+            var expr = ifNode.Children[0];
+
+            if (expr.NodeType() != ERROR_TYPE && expr.NodeType() != BOOLEAN_TYPE)
+            {
+                reporter.ReportError(
+                    Error.SEMANTIC_ERROR,
+                    "Invalid type '" + expr.NodeType() + "' for if statement condition",
+                    expr.Line,
+                    expr.Column);
+
+                reporter.ReportError(Error.NOTE_GENERIC, "If statement condition must have type 'boolean'", 0, 0);
+            }
+
         }
 
         public void Visit(IntegerNode integerNode)
@@ -290,7 +333,7 @@ namespace CodeGenCourseProject.SemanticChecking
             if (variableAssignmentNode.Children.Count != 2)
             {
                 throw new InternalCompilerError(
-                    "Invalid child count for the VariableAssignmentNode: " + 
+                    "Invalid child count for the VariableAssignmentNode: " +
                     variableAssignmentNode.Children.Count);
             }
 
@@ -310,10 +353,10 @@ namespace CodeGenCourseProject.SemanticChecking
 
             var expression = variableAssignmentNode.Children[1];
             expression.Accept(this);
-            
+
             var symbol = table.GetSymbol(nameNode.Value);
 
-            
+
             if (symbol == null)
             {
                 // special case check - true/valid are not reported by Visit(IdentifierNode), but treated as a keyword, 
@@ -333,27 +376,13 @@ namespace CodeGenCourseProject.SemanticChecking
             }
             else
             {
-                // check that if variable we are assigning to is actually a variable, and not something else
-
-                if (child is IdentifierNode && !(symbol is VariableSymbol))
-                {
-                    reporter.ReportError(
-                        Error.SEMANTIC_ERROR,
-                        "Cannot assign into '" + nameNode.Value + "' as it is not a regular variable",
-                        child.Line,
-                        child.Column);
-
-
-                    ReportPreviousDeclaration(symbol);
-                    return;
-                }
-                
-                if (expression.NodeType() != ERROR_TYPE && symbol.Type != expression.NodeType())
+                if (expression.NodeType() != ERROR_TYPE && child.NodeType() != ERROR_TYPE && 
+                    child.NodeType() != expression.NodeType())
                 {
                     reporter.ReportError(
                         Error.SEMANTIC_ERROR,
                         "Cannot assign an expression with type '" + expression.NodeType() + "' into a variable " +
-                        "with type '" + symbol.Type + "'", 
+                        "with type '" + child.NodeType() + "'",
                         expression.Line,
                         expression.Column);
 
@@ -361,6 +390,7 @@ namespace CodeGenCourseProject.SemanticChecking
                 }
             }
         }
+
 
         public void Visit(VariableDeclarationNode variableDeclarationNode)
         {
@@ -390,7 +420,7 @@ namespace CodeGenCourseProject.SemanticChecking
                 reporter.ReportError(
                     Error.SEMANTIC_ERROR,
                     "Type '" + name.Value + "' is inaccessible",
-                    name.Line, 
+                    name.Line,
                     name.Column);
 
                 var symbol = table.GetSymbol(name.Value);
@@ -434,9 +464,9 @@ namespace CodeGenCourseProject.SemanticChecking
                     {
                         throw new InternalCompilerError("Invalid typeNode: " + typeChild.GetType());
                     }
-                    
+
                 }
-                    
+
 
             }
         }
@@ -463,7 +493,7 @@ namespace CodeGenCourseProject.SemanticChecking
                 equalsNode.SetNodeType(BOOLEAN_TYPE);
             }
         }
-    
+
 
         public void Visit(CallNode callNode)
         {
@@ -472,7 +502,26 @@ namespace CodeGenCourseProject.SemanticChecking
 
         public void Visit(AssertNode assertNode)
         {
-            throw new NotImplementedException();
+            if (assertNode.Children.Count != 1)
+            {
+                throw new InternalCompilerError("Invalid child count for assert statement: " + assertNode.Children.Count);
+            }
+
+            var expr = assertNode.Children[0];
+            expr.Accept(this);
+
+            if (expr.NodeType() != ERROR_TYPE && expr.NodeType() != BOOLEAN_TYPE)
+            {
+                reporter.ReportError(
+                    Error.SEMANTIC_ERROR,
+                    "Invalid type '" + expr.NodeType() + "' for assert statement",
+                    expr.Line,
+                    expr.Column);
+
+                reporter.ReportError(
+                    Error.NOTE_GENERIC,
+                    "Assert statement must have type 'boolean'", 0, 0);
+            }
         }
 
         public void Visit(ArraySizeNode node)
@@ -492,13 +541,13 @@ namespace CodeGenCourseProject.SemanticChecking
                     "Cannot get the size of an non-array object '" + array.Value + "'",
                     node.Line,
                     node.Column);
-                
+
                 ReportPreviousDeclaration(symbol);
                 node.SetNodeType(ERROR_TYPE);
                 return;
             }
 
-            
+
             node.SetNodeType(INTEGER_TYPE);
         }
 
@@ -510,6 +559,16 @@ namespace CodeGenCourseProject.SemanticChecking
         public void Visit(AddNode node)
         {
             HandleBinaryOperator(node, "+", new List<string> { INTEGER_TYPE, REAL_TYPE, STRING_TYPE });
+        }
+
+        public void Visit(FunctionParameterVariableNode functionParameterNode)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Visit(FunctionParameterArrayNode functionParameterArrayNode)
+        {
+            throw new NotImplementedException();
         }
 
         private void HandleUnaryOperator(ASTNode node, string op, IList<string> acceptableTypes)
@@ -553,7 +612,6 @@ namespace CodeGenCourseProject.SemanticChecking
             node.SetNodeType(child.NodeType());
         }
 
-
         private void HandleBinaryOperator(ASTNode node, string op, IList<string> acceptableTypes)
         {
             if (node.Children.Count != 2)
@@ -576,12 +634,13 @@ namespace CodeGenCourseProject.SemanticChecking
             }
             else if (lhs.NodeType() != rhs.NodeType())
             {
+                node.SetNodeType(ERROR_TYPE);
+
                 reporter.ReportError(
                     Error.SEMANTIC_ERROR,
                     "Invalid types '" + lhs.NodeType() + "' and '" + rhs.NodeType() + "' for operator '" + op + "'",
                     node.Line,
                     node.Column);
-                node.SetNodeType(ERROR_TYPE);
 
                 reporter.ReportError(
                     Error.NOTE,
@@ -624,10 +683,11 @@ namespace CodeGenCourseProject.SemanticChecking
         {
             reporter.ReportError(
                 Error.NOTE,
-                "Identifier was previously declared here",
+                "Identifier '" + symbol.Name + "' was declared here",
                 symbol.Line,
                 symbol.Column);
         }
+
 
     }
 }

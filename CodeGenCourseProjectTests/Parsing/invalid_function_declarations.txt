@@ -19,5 +19,10 @@ begin
 	function qux() : ;
 	begin
 		d()
-	end
+	end;
+
+	function abcdef(var a, b, c : integer) : integer;
+	begin
+		a := 4;
+	end;
 end.

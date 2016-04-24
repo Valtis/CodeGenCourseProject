@@ -92,4 +92,16 @@ begin
 	i := ai.size + 2;
 	i := ai.size * 9;
 
+
+	{* array assignment *}
+	var testArray : array [] of integer;
+	testArray := ai2;
+
+	begin
+		var true : array [] of integer;
+		var false : array [] of boolean;
+
+		ai := true;
+		ab := false;
+	end;
 end.

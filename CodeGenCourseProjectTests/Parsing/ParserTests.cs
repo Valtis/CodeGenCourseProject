@@ -4,6 +4,7 @@ using CodeGenCourseProject.ErrorHandling;
 using CodeGenCourseProject.AST;
 using System.Collections.Generic;
 using CodeGenCourseProject.Tokens;
+using CodeGenCourseProjectTests;
 
 namespace CodeGenCourseProject.Parsing.Tests
 {
@@ -1783,6 +1784,13 @@ namespace CodeGenCourseProject.Parsing.Tests
                             ),
                             new IdentifierNode(0, 0, "n"),
                             new IdentifierNode(0, 0, "o")
+                        ),
+                        new VariableDeclarationNode(0, 0,
+                            new ArrayTypeNode(0, 0,
+                                new IdentifierNode(0, 0, "boolean"),
+                                null
+                            ),
+                            new IdentifierNode(0, 0, "abc")
                         )
                     )
                 ),
@@ -1918,10 +1926,7 @@ namespace CodeGenCourseProject.Parsing.Tests
                                     )
                                 )
                             ),
-                            new VariableDeclarationNode(0, 0,
-                                new IdentifierNode(0, 0, "integer"),
-                                new IdentifierNode(0, 0, "a")
-                            )
+                            new FunctionParameterVariableNode(0, 0, "a", "integer", true)
                         ),
                         new ProcedureNode(0, 0,
                             new IdentifierNode(0, 0, "baz"),
@@ -1933,17 +1938,10 @@ namespace CodeGenCourseProject.Parsing.Tests
                                     )
                                 )
                             ),
-                            new VariableDeclarationNode(0, 0,
-                                new IdentifierNode(0, 0, "integer"),
-                                new IdentifierNode(0, 0, "a")
-                            ),
-                            new VariableDeclarationNode(0, 0,
-                                new ArrayTypeNode(0, 0,
-                                    new IdentifierNode(0, 0, "integer"),
-                                    new IntegerNode(0, 0, 4)
-                                ),
-                                new IdentifierNode(0, 0, "b")
-                            )
+                            new FunctionParameterVariableNode(0, 0, "a", "integer", true),
+                            new FunctionParameterArrayNode(0, 0, 
+                            new IntegerNode(0, 0, 4),
+                            "b", "integer", true)
 
                         ),
                         new ProcedureNode(0, 0,
@@ -1951,18 +1949,10 @@ namespace CodeGenCourseProject.Parsing.Tests
                             new BlockNode(0, 0,
                                 new ReturnNode(0, 0)
                             ),
-                            new VariableDeclarationNode(0, 0,
-                                new IdentifierNode(0, 0, "integer"),
-                                new IdentifierNode(0, 0, "a")
-                            ),
-                            new VariableDeclarationNode(0, 0,
-                                new IdentifierNode(0, 0, "boolean"),
-                                new IdentifierNode(0, 0, "b")
-                            ),
-                            new VariableDeclarationNode(0, 0,
-                                new IdentifierNode(0, 0, "real"),
-                                new IdentifierNode(0, 0, "c")
-                            )
+
+                            new FunctionParameterVariableNode(0, 0, "a", "integer", false),
+                            new FunctionParameterVariableNode(0, 0, "b", "boolean", false),
+                            new FunctionParameterVariableNode(0, 0, "c", "real", false)
                         ),
                         new ProcedureNode(0, 0,
                             new IdentifierNode(0, 0, "outer"),
@@ -1974,6 +1964,18 @@ namespace CodeGenCourseProject.Parsing.Tests
                                     )
                                 )
                             )
+                        ),
+                        new ProcedureNode(0, 0,
+                            new IdentifierNode(0, 0, "arr"),
+                            new BlockNode(0, 0, 
+                                new ReturnNode(0, 0)
+                            ),
+                            new FunctionParameterArrayNode(0, 0,
+                                null,
+                                "a", "boolean", false),
+                            new FunctionParameterArrayNode(0, 0,
+                                new IdentifierNode(0, 0, "foo"),
+                                "b", "string", true)
                         )
                     )
                 ),
@@ -1989,7 +1991,7 @@ namespace CodeGenCourseProject.Parsing.Tests
 
             var node = parser.Parse();
 
-            Assert.AreEqual(10, reporter.Errors.Count);
+            Assert.AreEqual(11, reporter.Errors.Count);
             ASTMatches(
                 new ProgramNode(0, 0, new IdentifierToken("invalid_procedure_declarations"),
                     new BlockNode(0, 0,
@@ -2060,90 +2062,32 @@ namespace CodeGenCourseProject.Parsing.Tests
                             new CallNode(0, 0,
                                 new IdentifierNode(0, 0, "vfr")
                             )
+                        ),
+                        new ErrorNode(),
+                        new BlockNode(0, 0,
+                            new CallNode(0, 0,
+                                new IdentifierNode(0, 0, "a")
+                            )
                         )
                     )
                 ),
                 node);
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[0].Type);
-            Assert.AreEqual(2, reporter.Errors[0].Line);
-            Assert.AreEqual(18, reporter.Errors[0].Column);
-            Assert.IsTrue(reporter.Errors[0].Message.Contains("Expected token <identifier>"));
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[1].Type);
-            Assert.AreEqual(8, reporter.Errors[1].Line);
-            Assert.AreEqual(24, reporter.Errors[1].Column);
-            Assert.IsTrue(reporter.Errors[1].Message.Contains("Expected token <operator - '('>"));
+            var helper = new TestHelper(reporter);
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[2].Type);
-            Assert.AreEqual(13, reporter.Errors[2].Line);
-            Assert.AreEqual(25, reporter.Errors[2].Column);
-            Assert.IsTrue(reporter.Errors[2].Message.Contains("Expected token <identifier>"));
-
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[3].Type);
-            Assert.AreEqual(18, reporter.Errors[3].Line);
-            Assert.AreEqual(25, reporter.Errors[3].Column);
-            Assert.IsTrue(reporter.Errors[3].Message.Contains("Expected token <identifier>"));
-
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[4].Type);
-            Assert.AreEqual(23, reporter.Errors[4].Line);
-            Assert.AreEqual(29, reporter.Errors[4].Column);
-            Assert.IsTrue(reporter.Errors[4].Message.Contains("Expected token <identifier>"));
-
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[5].Type);
-            Assert.AreEqual(28, reporter.Errors[5].Line);
-            Assert.AreEqual(29, reporter.Errors[5].Column);
-            Assert.IsTrue(reporter.Errors[5].Message.Contains("Expected token <operator - ':'>"));
-
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[6].Type);
-            Assert.AreEqual(33, reporter.Errors[6].Line);
-            Assert.AreEqual(31, reporter.Errors[6].Column);
-            Assert.IsTrue(reporter.Errors[6].Message.Contains("'bar' is not a valid type"));
-
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[7].Type);
-            Assert.AreEqual(38, reporter.Errors[7].Line);
-            Assert.AreEqual(31, reporter.Errors[7].Column);
-            Assert.IsTrue(reporter.Errors[7].Message.Contains("Expected token <identifier>"));
-
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[8].Type);
-            Assert.AreEqual(43, reporter.Errors[8].Line);
-            Assert.AreEqual(40, reporter.Errors[8].Column);
-            Assert.IsTrue(reporter.Errors[8].Message.Contains("Expected token <identifier>"));
-
+            helper.AssertErrorMessage(0, Error.SYNTAX_ERROR, 2, 18, "Expected token <identifier>");
+            helper.AssertErrorMessage(1, Error.SYNTAX_ERROR, 8, 24, "Expected token <operator - '('>");
+            helper.AssertErrorMessage(2, Error.SYNTAX_ERROR, 13, 25, "Expected token <identifier>");
+            helper.AssertErrorMessage(3, Error.SYNTAX_ERROR, 18, 25, "Expected token <identifier>");
+            helper.AssertErrorMessage(4, Error.SYNTAX_ERROR, 23, 29, "Expected token <identifier>");
+            helper.AssertErrorMessage(5, Error.SYNTAX_ERROR, 28, 29, "Expected token <operator - ':'>");
+            helper.AssertErrorMessage(6, Error.SYNTAX_ERROR, 33, 31, "'bar' is not a valid type");
+            helper.AssertErrorMessage(7, Error.SYNTAX_ERROR, 38, 31, "Expected token <identifier>");
+            helper.AssertErrorMessage(8, Error.SYNTAX_ERROR, 43, 40, "Expected token <identifier>");
+            helper.AssertErrorMessage(9, Error.SYNTAX_ERROR, 47, 39, "Expected token <operator - ')'> but was actually");
+            helper.AssertErrorMessage(10, Error.SYNTAX_ERROR, 52, 30, "Expected token <operator - ':'> but was actually");
         }
-
-        /*
-                 program valid_function_declarations;
-        begin
-
-            function foobar() : integer;
-	begin
-        a()
-
-    end;
-
-	function foobar(var a : integer, var b : real, var c : string) : real;
-	begin
-        b()
-
-    end;
-
-	function foobar(a : integer, b : real, c : string) : BOOLEAN;
-	begin
-        c()
-
-    end;
-
-	function foobar(a : integer, var b : real, c : string) : string;
-	begin
-        d()
-
-    end;
-
-
-end.
-             
-             */
 
         [TestMethod()]
         public void ParserAcceptsValidFunctionDeclarations()
@@ -2175,17 +2119,20 @@ end.
                                     new IdentifierNode(0, 0, "b")
                                 )
                             ),
-                            new VariableDeclarationNode(0, 0,
-                                new IdentifierNode(0, 0, "integer"),
-                                new IdentifierNode(0, 0, "a")
+                            new FunctionParameterVariableNode(0, 0,
+                                "a",
+                                "integer",
+                                true
                             ),
-                            new VariableDeclarationNode(0, 0,
-                                new IdentifierNode(0, 0, "real"),
-                                new IdentifierNode(0, 0, "b")
+                            new FunctionParameterVariableNode(0, 0,
+                                "b",
+                                "real",
+                                true
                             ),
-                            new VariableDeclarationNode(0, 0,
-                                new IdentifierNode(0, 0, "string"),
-                                new IdentifierNode(0, 0, "c")
+                            new FunctionParameterVariableNode(0, 0,
+                                "c",
+                                "string",
+                                true
                             )
                         ),
                         new FunctionNode(0, 0,
@@ -2196,17 +2143,20 @@ end.
                                     new IdentifierNode(0, 0, "c")
                                 )
                             ),
-                            new VariableDeclarationNode(0, 0,
-                                new IdentifierNode(0, 0, "integer"),
-                                new IdentifierNode(0, 0, "a")
+                            new FunctionParameterVariableNode(0, 0,
+                                "a",
+                                "integer",
+                                false
                             ),
-                            new VariableDeclarationNode(0, 0,
-                                new IdentifierNode(0, 0, "real"),
-                                new IdentifierNode(0, 0, "b")
+                            new FunctionParameterVariableNode(0, 0,
+                                "b",
+                                "real",
+                                false
                             ),
-                            new VariableDeclarationNode(0, 0,
-                                new IdentifierNode(0, 0, "string"),
-                                new IdentifierNode(0, 0, "c")
+                            new FunctionParameterVariableNode(0, 0,
+                                "c",
+                                "string",
+                                false
                             )
                         ),
                         new FunctionNode(0, 0,
@@ -2217,17 +2167,68 @@ end.
                                     new IdentifierNode(0, 0, "d")
                                 )
                             ),
-                            new VariableDeclarationNode(0, 0,
+                            new FunctionParameterVariableNode(0, 0,
+                                "a",
+                                "integer",
+                                false
+                            ),
+                            new FunctionParameterVariableNode(0, 0,
+                                "b",
+                                "real",
+                                true
+                            ),
+                            new FunctionParameterVariableNode(0, 0,
+                                "c",
+                                "string",
+                                false
+                            )
+                        ),
+                        new FunctionNode(0, 0,
+                            new IdentifierNode(0, 0, "abcd"),
+                            new ArrayTypeNode(0, 0, 
                                 new IdentifierNode(0, 0, "integer"),
-                                new IdentifierNode(0, 0, "a")
+                                null
                             ),
-                            new VariableDeclarationNode(0, 0,
+                            new BlockNode(0, 0,
+                                new CallNode(0, 0,
+                                    new IdentifierNode(0, 0, "d")
+                                )
+                            )
+                        ),
+                        new FunctionNode(0, 0,
+                            new IdentifierNode(0, 0, "efgh"),
+                            new ArrayTypeNode(0, 0,
                                 new IdentifierNode(0, 0, "real"),
-                                new IdentifierNode(0, 0, "b")
+                                new IntegerNode(0, 0, 25)
                             ),
-                            new VariableDeclarationNode(0, 0,
-                                new IdentifierNode(0, 0, "string"),
-                                new IdentifierNode(0, 0, "c")
+                            new BlockNode(0, 0,
+                                new CallNode(0, 0,
+                                    new IdentifierNode(0, 0, "d")
+                                )
+                            )
+                        ),
+                        new FunctionNode(0, 0,
+                            new IdentifierNode(0, 0, "ijkl"),
+                            new IdentifierNode(0, 0, "integer"),
+                            new BlockNode(0, 0,
+                                new CallNode(0, 0,
+                                    new IdentifierNode(0, 0, "d")
+                                )
+                            ),
+                            new FunctionParameterArrayNode(0, 0,
+                                null,
+                                "a",
+                                "boolean",
+                                false
+                            ),
+                            new FunctionParameterArrayNode(0, 0,
+                                new MultiplyNode(0, 0, 
+                                    new IntegerNode(0, 0, 14),
+                                    new IntegerNode(0, 0, 2)
+                                ),
+                                "b",
+                                "integer",
+                                true
                             )
                         )
                     )
@@ -2244,7 +2245,7 @@ end.
 
             var node = parser.Parse();
 
-            Assert.AreEqual(4, reporter.Errors.Count);
+            Assert.AreEqual(5, reporter.Errors.Count);
             ASTMatches(
                 new ProgramNode(0, 0, new IdentifierToken("invalid_function_declarations"),
                     new BlockNode(0, 0,
@@ -2271,30 +2272,25 @@ end.
                             new CallNode(0, 0,
                                 new IdentifierNode(0, 0, "d")
                             )
+                        ),
+                        new ErrorNode(),
+                        new BlockNode(0, 0,
+                            new VariableAssignmentNode(0, 0,
+                                new IdentifierNode(0, 0, "a"),
+                                new IntegerNode(0, 0, 4)
+                            )
                         )
                     )
                 ),
                 node);
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[0].Type);
-            Assert.AreEqual(3, reporter.Errors[0].Line);
-            Assert.AreEqual(22, reporter.Errors[0].Column);
-            Assert.IsTrue(reporter.Errors[0].Message.Contains("Expected token <identifier>"));
+            var helper = new TestHelper(reporter);
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[1].Type);
-            Assert.AreEqual(8, reporter.Errors[1].Line);
-            Assert.AreEqual(23, reporter.Errors[1].Column);
-            Assert.IsTrue(reporter.Errors[1].Message.Contains("Expected token <operator - ':'>"));
-
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[2].Type);
-            Assert.AreEqual(13, reporter.Errors[2].Line);
-            Assert.AreEqual(43, reporter.Errors[2].Column);
-            Assert.IsTrue(reporter.Errors[2].Message.Contains("'abcdef' is not a valid"));
-
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[3].Type);
-            Assert.AreEqual(18, reporter.Errors[3].Line);
-            Assert.AreEqual(25, reporter.Errors[3].Column);
-            Assert.IsTrue(reporter.Errors[3].Message.Contains("Expected token <identifier>"));
+            helper.AssertErrorMessage(0, Error.SYNTAX_ERROR, 3, 22, "Expected token <identifier>");
+            helper.AssertErrorMessage(1, Error.SYNTAX_ERROR, 8, 23, "Expected token <operator - ':'>");
+            helper.AssertErrorMessage(2, Error.SYNTAX_ERROR, 13, 43, "'abcdef' is not a valid");
+            helper.AssertErrorMessage(3, Error.SYNTAX_ERROR, 18, 25, "Expected token <identifier>");            helper.AssertErrorMessage(0, Error.SYNTAX_ERROR, 3, 22, "");
+            helper.AssertErrorMessage(4, Error.SYNTAX_ERROR, 23, 29, "Expected token <operator - ':'>");
         }
 
         [TestMethod()]

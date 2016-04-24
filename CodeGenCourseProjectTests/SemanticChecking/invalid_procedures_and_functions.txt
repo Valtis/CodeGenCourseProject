@@ -1,15 +1,46 @@
 ﻿program invalid_functions_and_procedures;
 begin
+	procedure proc_body_errors_handled();
+	begin
+		var a : integer;
+		a := "hello";
+	end;
 
+	procedure shadowing_is_error(a : integer, b : integer);
+	begin
+		var a : boolean;
+	end;
+	
+
+	{*
 	procedure proc();
 	begin
 		a := 4;
-	end.
+	end;
 	
+	proc(4, 2);
 
 	proc := 4;
 	proc[12] := 42;
 	
 	i := proc + 2;
+	i := proc() + 2;
 
+	undeclared();
+
+	read();
+	writeln
+
+
+	var real : integer;
+
+	procedure(a : real);
+	begin
+		return;
+	end;
+
+	var arr : array [] of integer;
+	arr := proc;
+
+	*}
 end.

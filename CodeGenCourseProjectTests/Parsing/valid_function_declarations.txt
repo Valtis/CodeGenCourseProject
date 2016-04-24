@@ -20,4 +20,20 @@ begin
 	begin
 		d()
 	end;
+
+	function abcd() : array [] of integer;
+	begin
+		d();
+	end;
+
+	
+	function efgh() : array [25] of real;
+	begin
+		d();
+	end;
+
+	function ijkl(a : array [] of boolean, var b : array [14*2] of integer) : integer;
+	begin
+		d();
+	end;
 end.

@@ -1,0 +1,26 @@
+﻿program invalid_if_statements;
+begin
+	if 1 then
+		var a : integer;
+			
+	if 3.14159 then
+		var a : integer;
+
+	if "true" then
+		var a : integer;
+			
+	if 4 < false then
+		var a : integer;
+
+	if true then
+	begin
+		var a : integer;
+		a := true;
+	end
+	else
+	begin
+		var a : array[25] of integer;
+		a := 23;
+	end
+
+end.

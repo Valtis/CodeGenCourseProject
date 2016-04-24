@@ -464,12 +464,25 @@ namespace CodeGenCourseProject.Parsing
 
             Expect<ColonToken>();
 
+            var typeNode = ParseType();
+
+            return new VariableDeclarationNode(token.Line, token.Column, typeNode, identifiers.ToArray());
+        }
+
+        private ASTNode ParseType()
+        {
+            IdentifierToken identifier;
             ASTNode typeNode;
             if (lexer.PeekToken() is ArrayToken)
             {
                 var array = Expect<ArrayToken>();
                 Expect<LBracketToken>();
-                var expression = ParseExpression();
+                ASTNode expression = null;
+                if (!(lexer.PeekToken() is RBracketToken))
+                {
+                    expression = ParseExpression();
+                }
+
                 Expect<RBracketToken>();
                 Expect<OfToken>();
                 identifier = Expect<IdentifierToken>();
@@ -488,7 +501,7 @@ namespace CodeGenCourseProject.Parsing
                 typeNode = new IdentifierNode(typeToken.Line, typeToken.Column, typeToken.Value);
             }
 
-            return new VariableDeclarationNode(token.Line, token.Column, typeNode, identifiers.ToArray());
+            return typeNode;
         }
 
         private void ValidateType(IdentifierToken type)
@@ -549,14 +562,13 @@ namespace CodeGenCourseProject.Parsing
                 var arguments = ParseParameters();
                 Expect<RParenToken>();
                 Expect<ColonToken>();
-                var type = Expect<IdentifierToken>();
-                ValidateType(type);
+                var type = ParseType();
                 Expect<SemicolonToken>();
 
                 var block = ParseBlock();
                 return new FunctionNode(procedure.Line, procedure.Column,
                     new IdentifierNode(identifier.Line, identifier.Column, identifier.Value),
-                    new IdentifierNode(type.Line, type.Column, type.Value),
+                    type,
                     block,
                     arguments.ToArray()
                     );
@@ -580,26 +592,53 @@ namespace CodeGenCourseProject.Parsing
             {
                 return nodes;
             }
-            var token = lexer.PeekToken();
-            if (token is VarToken)
-            {
-                lexer.NextToken();
-            }
 
-            nodes.Add(ParseVariableDeclaration(token));
+            nodes.Add(ParseFunctionParameter());
             while (lexer.PeekToken() is CommaToken)
             {
                 Expect<CommaToken>();
-                token = lexer.PeekToken();
-                if (token is VarToken)
-                {
-                    lexer.NextToken();
-                }
-                nodes.Add(ParseVariableDeclaration(token));
+                nodes.Add(ParseFunctionParameter());                
             }
 
             return nodes;
         }
+
+        private ASTNode ParseFunctionParameter()
+        {
+            bool isReference = false;
+            if (lexer.PeekToken() is VarToken)
+            {
+                isReference = true;
+                lexer.NextToken();
+            }
+
+            var name = Expect<IdentifierToken>();
+            Expect <ColonToken>();
+            var type = ParseType();
+            
+            if (type is IdentifierNode)
+            {
+
+                return new FunctionParameterVariableNode(
+                    name.Line,
+                    name.Column,
+                    name.Value,
+                    ((IdentifierNode)type).Value,
+                    isReference);
+            }
+            else
+            {
+                ArrayTypeNode arType = (ArrayTypeNode)type;
+                return new FunctionParameterArrayNode(
+                    name.Line,
+                    name.Column,
+                    arType.Children.Count > 1 ? arType.Children[1] : null,
+                    name.Value,
+                    ((IdentifierNode)arType.Children[0]).Value,
+                    isReference);
+            }
+        }            
+
 
         private ASTNode ParseExpression()
         {

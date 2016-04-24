@@ -48,6 +48,8 @@ begin
 			i := "hello";
 		end;
 		i := 4;
-	end
+	end;
 
+	while true do
+		var a : array [4] of integer;
 end.

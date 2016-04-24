@@ -45,9 +45,14 @@ begin
 	begin
 		abcde()
 	end;
-		
 	procedure foobar(foo : integer var bar : real);
 	begin
 		vfr()
 	end;
+
+	procedure abcededf(foo, bar, baz : integer);
+	begin
+		a();
+	end;
+
 end.

@@ -16,12 +16,14 @@
         void Visit(ErrorNode errorNode);
         void Visit(FunctionNode functionNode);
         void Visit(WhileNode whileNode);
+        void Visit(FunctionParameterVariableNode functionParameterNode);
         void Visit(NotEqualsNode notEqualsNode);
         void Visit(ReturnNode returnNode);
         void Visit(VariableDeclarationNode variableDeclarationNode);
         void Visit(SubtractNode subtractNode);
         void Visit(VariableAssignmentNode variableAssignmentNode);
         void Visit(OrNode orNode);
+        void Visit(FunctionParameterArrayNode functionParameterArrayNode);
         void Visit(NotNode notNode);
         void Visit(MultiplyNode multiplyNode);
         void Visit(StringNode stringNode);

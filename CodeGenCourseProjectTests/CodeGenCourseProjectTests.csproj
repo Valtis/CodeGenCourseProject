@@ -123,11 +123,16 @@
     <Content Include="Parsing\valid_variable_declarations.txt" />
     <Content Include="Parsing\valid_while_statements.txt" />
     <Content Include="Parsing\valid_write_statements.txt" />
+    <Content Include="SemanticChecking\invalid_assert_statements.txt" />
     <Content Include="SemanticChecking\invalid_expressions.txt" />
+    <Content Include="SemanticChecking\invalid_if_statements.txt" />
     <Content Include="SemanticChecking\invalid_procedures_and_functions.txt" />
     <Content Include="SemanticChecking\invalid_variable_declarations.txt" />
     <Content Include="SemanticChecking\invalid_while_statements.txt" />
+    <Content Include="SemanticChecking\valid_assert_statements.txt" />
     <Content Include="SemanticChecking\valid_expressions.txt" />
+    <Content Include="SemanticChecking\valid_if_statements.txt" />
+    <Content Include="SemanticChecking\valid_procedures_and_functions.txt" />
     <Content Include="SemanticChecking\valid_variable_declarations.txt" />
     <Content Include="SemanticChecking\valid_while_statements.txt" />
   </ItemGroup>

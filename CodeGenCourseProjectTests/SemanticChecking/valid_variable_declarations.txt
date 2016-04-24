@@ -29,4 +29,8 @@ begin
 
 	var e : real;
 	var f: string;
+
+	var g, h : array [] of string;
+	var i, j : array [343] of string;
+
 end.

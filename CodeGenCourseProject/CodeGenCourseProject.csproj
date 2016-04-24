@@ -56,7 +56,9 @@
     <Compile Include="AST\DivideNode.cs" />
     <Compile Include="AST\EqualsNode.cs" />
     <Compile Include="AST\ErrorNode.cs" />
+    <Compile Include="AST\FunctionParameterArrayNode.cs" />
     <Compile Include="AST\FunctionNode.cs" />
+    <Compile Include="AST\FunctionParameterVariableNode.cs" />
     <Compile Include="AST\GreaterThanNode.cs" />
     <Compile Include="AST\GreaterThanOrEqualNode.cs" />
     <Compile Include="AST\IdentifierNode.cs" />

@@ -1,0 +1,50 @@
+﻿program valid_if_statements;
+begin
+	var i : integer;
+	
+	if true then
+		i := 4;
+			
+	if false then
+		i := 8;
+	
+	var b : boolean;
+
+	if b then 
+	begin
+		var a : integer;
+		a := 4;
+	end;
+
+	if i < 24 * 4 then
+	begin
+		var f : real;
+		f := 24.12;
+	end;
+	
+	var r : real;
+	if r <> 0.0 then
+		r := 0.1;
+	
+
+	if r < 0.0 then
+		r := -r
+	else
+		r := r*2.423;
+
+	if "hello" <> "world" then
+	begin
+		var r : string;
+		r := "hello world";
+	end
+	else
+	begin
+		var a : boolean;
+		a := r < 12.3;
+	end;
+
+	if true then
+		var i : integer;
+	if false then
+		var i : string;
+end.

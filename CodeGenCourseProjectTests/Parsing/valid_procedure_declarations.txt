@@ -28,4 +28,9 @@ begin
 			return
 		end;
 	end;
+
+	procedure arr(a : array [] of boolean, var b : array [foo] of string);
+	begin
+		return;
+	end
 end.

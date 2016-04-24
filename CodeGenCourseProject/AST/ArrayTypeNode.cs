@@ -7,7 +7,10 @@ namespace CodeGenCourseProject.AST
         public ArrayTypeNode(int line, int column, ASTNode type, ASTNode expression) : base(line, column)
         {
             Children.Add(type);
-            Children.Add(expression);
+            if (expression != null)
+            {
+                Children.Add(expression);
+            }
         }
 
         protected override Tuple<string, string> GetStringRepresentation()

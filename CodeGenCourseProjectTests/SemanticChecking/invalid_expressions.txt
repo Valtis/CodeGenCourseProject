@@ -13,12 +13,12 @@ begin
 	i := 3.123;
 	i := true;
 	i := false;
-	
+
 	s := 1;
 	s := 3.123;
 	s := true;
 	s := false;
-
+	
 	r := 1;
 	r := "hello";
 	r := true;
@@ -99,12 +99,12 @@ begin
 	as2[1] := 543;
 	ab2[14] := 1.24;
 
-	i[452] := 4;
+	i[452] := 4;	
 	r[12] := 12.34;
 	s[124] := "hello";
 	b[2] := true;
 	undeclared[43] := 4;
-	
+
 	ai["hello"] := 43;
 	ar2[134.453] := 143.2;
 	as[true] := "hello"; 
@@ -142,4 +142,14 @@ begin
 	i := 4.2 + ai2.size;
 	i := i.size;
 	i := undeclared.size;	
+
+	var invalid_type_test : array [] of string;
+	invalid_type_test := ai2; 
+	var integer : real;
+	var foobarbaz : array [] of integer;	
+
+	i := ai2 + 4;
+	b := not ab2;
+	b := ab2;
+	i := ai2 + ai2;
 end.

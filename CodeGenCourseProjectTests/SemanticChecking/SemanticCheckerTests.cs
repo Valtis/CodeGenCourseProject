@@ -1,10 +1,4 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using CodeGenCourseProject.SemanticChecking;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using CodeGenCourseProject.ErrorHandling;
 using CodeGenCourseProject.Lexing;
 using CodeGenCourseProject.Parsing;
@@ -15,7 +9,6 @@ namespace CodeGenCourseProject.SemanticChecking.Tests
     [TestClass()]
     public class SemanticCheckerTests
     {
-
         [TestMethod()]
         public void ValidVariableDeclarationsAreAccepted()
         {
@@ -81,7 +74,7 @@ namespace CodeGenCourseProject.SemanticChecking.Tests
             var semanticChecker = new SemanticChecker(reporter);
             node.Accept(semanticChecker);
 
-            Assert.AreEqual(7, reporter.Errors.Count);
+            Assert.AreEqual(8, reporter.Errors.Count);
 
             var helper = new TestHelper(reporter);
             helper.AssertErrorMessage(0, Error.SEMANTIC_ERROR, 3, 14, "Invalid type 'integer' for while "); 
@@ -91,6 +84,115 @@ namespace CodeGenCourseProject.SemanticChecking.Tests
             helper.AssertErrorMessage(4, Error.SEMANTIC_ERROR, 25, 14, "Invalid type 'integer' for while ");
             helper.AssertErrorMessage(5, Error.SEMANTIC_ERROR, 30, 14, "Identifier 'undeclared' has not");
             helper.AssertErrorMessage(6, Error.SEMANTIC_ERROR, 38, 21, "Cannot assign an expression with type 'integer' into a variable with type 'string'");
+            helper.AssertErrorMessage(7, Error.SEMANTIC_ERROR, 41, 16, "Invalid types 'integer' and 'string' for operator '<'");
+        }
+
+        [TestMethod()]
+        public void ValidAssertStatementsAreAccepted()
+        {
+            var reporter = new ErrorReporter();
+            var lexer = new Lexer(@"..\..\SemanticChecking\valid_assert_statements.txt", reporter);
+            var parser = new Parser(lexer, reporter);
+
+            var node = parser.Parse();
+
+            var semanticChecker = new SemanticChecker(reporter);
+            node.Accept(semanticChecker);
+
+            Assert.AreEqual(0, reporter.Errors.Count);
+        }
+
+        [TestMethod()]
+        public void InvalidAssertStatementsAreRejected()
+        {
+            var reporter = new ErrorReporter();
+            var lexer = new Lexer(@"..\..\SemanticChecking\invalid_assert_statements.txt", reporter);
+            var parser = new Parser(lexer, reporter);
+
+            var node = parser.Parse();
+
+            var semanticChecker = new SemanticChecker(reporter);
+            node.Accept(semanticChecker);
+
+            Assert.AreEqual(4, reporter.Errors.Count);
+            var helper = new TestHelper(reporter);
+            helper.AssertErrorMessage(0, Error.SEMANTIC_ERROR, 2, 15, "Invalid type 'integer' for assert");
+            helper.AssertErrorMessage(1, Error.SEMANTIC_ERROR, 3, 15, "Invalid type 'string' for assert");
+            helper.AssertErrorMessage(2, Error.SEMANTIC_ERROR, 4, 15, "Invalid type 'real' for assert");
+            helper.AssertErrorMessage(3, Error.SEMANTIC_ERROR, 5, 15, "Invalid type 'string' for operator 'not'");
+        }
+
+        [TestMethod()]
+        public void ValidIfExpressionsAreAccepted()
+        {
+            var reporter = new ErrorReporter();
+            var lexer = new Lexer(@"..\..\SemanticChecking\valid_if_statements.txt", reporter);
+            var parser = new Parser(lexer, reporter);
+
+            var node = parser.Parse();
+
+            var semanticChecker = new SemanticChecker(reporter);
+            node.Accept(semanticChecker);
+
+            Assert.AreEqual(0, reporter.Errors.Count);
+        }
+
+        [TestMethod()]
+        public void InvalidIfExpressionsAreRejected()
+        {
+            var reporter = new ErrorReporter();
+            var lexer = new Lexer(@"..\..\SemanticChecking\invalid_if_statements.txt", reporter);
+            var parser = new Parser(lexer, reporter);
+
+            var node = parser.Parse();
+
+            var semanticChecker = new SemanticChecker(reporter);
+            node.Accept(semanticChecker);
+
+            Assert.AreEqual(6, reporter.Errors.Count);
+            var helper = new TestHelper(reporter);
+            helper.AssertErrorMessage(0, Error.SEMANTIC_ERROR, 2, 11, "Invalid type 'integer' for if");
+            helper.AssertErrorMessage(1, Error.SEMANTIC_ERROR, 5, 11, "Invalid type 'real' for if");
+            helper.AssertErrorMessage(2, Error.SEMANTIC_ERROR, 8, 11, "Invalid type 'string' for if");
+            helper.AssertErrorMessage(3, Error.SEMANTIC_ERROR, 11, 13, "Invalid types 'integer' and 'boolean' for operator '<'");
+            helper.AssertErrorMessage(4, Error.SEMANTIC_ERROR, 17, 21, "Cannot assign an expression with type 'boolean' into a variable with type 'integer'");
+            helper.AssertErrorMessage(5, Error.SEMANTIC_ERROR, 22, 21, "Cannot assign an expression with type 'integer' into a variable with type 'Array<integer>'");
+        }
+
+        [TestMethod()]
+        public void ValidProceduresAndFunctionsAreAccepted()
+        {
+            var reporter = new ErrorReporter();
+            var lexer = new Lexer(@"..\..\SemanticChecking\valid_procedures_and_functions.txt", reporter);
+            var parser = new Parser(lexer, reporter);
+
+            var node = parser.Parse();
+
+            var semanticChecker = new SemanticChecker(reporter);
+            node.Accept(semanticChecker);
+
+            Assert.AreEqual(0, reporter.Errors.Count);
+        }
+
+        [TestMethod()]
+        public void InvalidProceduresAndFunctionsAreRejected()
+        {
+            var reporter = new ErrorReporter();
+            var lexer = new Lexer(@"..\..\SemanticChecking\invalid_procedures_and_functions.txt", reporter);
+            var parser = new Parser(lexer, reporter);
+
+            var node = parser.Parse();
+
+            var semanticChecker = new SemanticChecker(reporter);
+            node.Accept(semanticChecker);
+
+            Assert.AreEqual(2, reporter.Errors.Count);
+
+            var helper = new TestHelper(reporter);
+
+            helper.AssertErrorMessage(0, Error.SEMANTIC_ERROR, 5, 21, "Cannot assign an expression with type 'string' into a variable with type 'integer'");
+            helper.AssertErrorMessage(0, Error.SEMANTIC_ERROR, 5, 21, "Cannot assign an expression with type 'string' into a variable with type 'integer'");
+
         }
 
         [TestMethod()]
@@ -107,7 +209,7 @@ namespace CodeGenCourseProject.SemanticChecking.Tests
 
             Assert.AreEqual(0, reporter.Errors.Count);
         }
-        
+
         [TestMethod()]
         public void InvalidExpressionsAreRejected()
         {
@@ -120,7 +222,7 @@ namespace CodeGenCourseProject.SemanticChecking.Tests
             var semanticChecker = new SemanticChecker(reporter);
             node.Accept(semanticChecker);
 
-            Assert.AreEqual(96, reporter.Errors.Count);
+            Assert.AreEqual(102, reporter.Errors.Count);
 
             var helper = new TestHelper(reporter);
 
@@ -225,10 +327,10 @@ namespace CodeGenCourseProject.SemanticChecking.Tests
             helper.AssertErrorMessage(73, Error.SEMANTIC_ERROR, 110, 17, "Invalid types 'real' and 'integer' for operator '*'");
             helper.AssertErrorMessage(74, Error.SEMANTIC_ERROR, 110, 25, "Cannot assign an expression with type 'string' into a variable with type 'boolean'");
 
-            helper.AssertErrorMessage(75, Error.SEMANTIC_ERROR, 112, 8, "Cannot assign into 'ai' as it is not a regular variable");
-            helper.AssertErrorMessage(76, Error.SEMANTIC_ERROR, 113, 8, "Cannot assign into 'as2' as it is not a regular variable");
-            helper.AssertErrorMessage(77, Error.SEMANTIC_ERROR, 114, 8, "Cannot assign into 'ab' as it is not a regular variable");
-            helper.AssertErrorMessage(78, Error.SEMANTIC_ERROR, 115, 8, "Cannot assign into 'ar2' as it is not a regular variable");
+            helper.AssertErrorMessage(75, Error.SEMANTIC_ERROR, 112, 14, "Cannot assign an expression with type 'integer' into a variable with type 'Array<integer>'");
+            helper.AssertErrorMessage(76, Error.SEMANTIC_ERROR, 113, 15, "Cannot assign an expression with type 'string' into a variable with type 'Array<string>'");
+            helper.AssertErrorMessage(77, Error.SEMANTIC_ERROR, 114, 14, "Cannot assign an expression with type 'integer' into a variable with type 'Array<boolean>'");
+            helper.AssertErrorMessage(78, Error.SEMANTIC_ERROR, 115, 15, "Cannot assign an expression with type 'boolean' into a variable with type 'Array<real>'");
 
             helper.AssertErrorMessage(79, Error.SEMANTIC_ERROR, 117, 17, "Invalid type 'real' for array indexing");
             helper.AssertErrorMessage(80, Error.SEMANTIC_ERROR, 118, 13, "Cannot assign an expression with type 'string' into a variable with type 'real'");
@@ -252,6 +354,14 @@ namespace CodeGenCourseProject.SemanticChecking.Tests
             helper.AssertErrorMessage(93, Error.SEMANTIC_ERROR, 141, 17, "Invalid types 'real' and 'integer' for operator '+'");
             helper.AssertErrorMessage(94, Error.SEMANTIC_ERROR, 142, 13, "Cannot get the size of an non-array object 'i'");
             helper.AssertErrorMessage(95, Error.SEMANTIC_ERROR, 143, 13, "Identifier 'undeclared' has not been declared");
+
+            helper.AssertErrorMessage(96, Error.SEMANTIC_ERROR, 146, 29, "Cannot assign an expression with type 'Array<integer>' into a variable with type 'Array<string>'");
+            helper.AssertErrorMessage(97, Error.SEMANTIC_ERROR, 148, 36, "Type 'integer' is inaccessible");
+            helper.AssertErrorMessage(98, Error.SEMANTIC_ERROR, 150, 17, "Invalid types 'Array<integer>' and 'integer' for operator '+'");
+            helper.AssertErrorMessage(99, Error.SEMANTIC_ERROR, 151, 13, "Invalid type 'Array<boolean>' for operator 'not'");
+            helper.AssertErrorMessage(100, Error.SEMANTIC_ERROR, 152, 13, "Cannot assign an expression with type 'Array<boolean>' into ");
+            helper.AssertErrorMessage(101, Error.SEMANTIC_ERROR, 153, 17, "Invalid type 'Array<integer>' for operator '+'");
+
         }
     }
 }

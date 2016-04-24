@@ -67,8 +67,7 @@ namespace CodeGenCourseProject.SemanticChecking
         {
             AssertNotEmpty();
             Symbol s = null;
-
-            // FIXME: Stupid way to iterate through the stack
+            
             foreach (var level in stack)
             {
                 s = level.GetSymbol(name);

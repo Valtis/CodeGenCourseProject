@@ -9,4 +9,6 @@ begin
 	var m : array[(8 + 4) * bar <> 2] of real;
 	var n, o : array["invalid_semantically" + 23] of boolean;
 
+	var abc : array [] of boolean;
+
 end.
