@@ -554,7 +554,7 @@ namespace CodeGenCourseProject.Parsing
 
         private ASTNode ParseFunctionDeclaration()
         {
-            var procedure = Expect<FunctionToken>();
+            var function = Expect<FunctionToken>();
             try
             {
                 var identifier = Expect<IdentifierToken>();
@@ -566,7 +566,7 @@ namespace CodeGenCourseProject.Parsing
                 Expect<SemicolonToken>();
 
                 var block = ParseBlock();
-                return new FunctionNode(procedure.Line, procedure.Column,
+                return new FunctionNode(function.Line, function.Column,
                     new IdentifierNode(identifier.Line, identifier.Column, identifier.Value),
                     type,
                     block,
@@ -578,8 +578,8 @@ namespace CodeGenCourseProject.Parsing
                 reporter.ReportError(
                    Error.NOTE,
                    "Error occured while parsing function declaration",
-                   procedure.Line,
-                   procedure.Column);
+                   function.Line,
+                   function.Column);
                 SyncAfterError();
                 return new ErrorNode();
             }
@@ -622,8 +622,8 @@ namespace CodeGenCourseProject.Parsing
                 return new FunctionParameterVariableNode(
                     name.Line,
                     name.Column,
-                    name.Value,
-                    ((IdentifierNode)type).Value,
+                    new IdentifierNode(name.Line, name.Column, name.Value),
+                    (IdentifierNode)type,
                     isReference);
             }
             else
@@ -633,8 +633,8 @@ namespace CodeGenCourseProject.Parsing
                     name.Line,
                     name.Column,
                     arType.Children.Count > 1 ? arType.Children[1] : null,
-                    name.Value,
-                    ((IdentifierNode)arType.Children[0]).Value,
+                    new IdentifierNode(name.Line, name.Column, name.Value),
+                    (IdentifierNode)arType.Children[0],
                     isReference);
             }
         }            

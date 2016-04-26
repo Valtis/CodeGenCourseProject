@@ -6,41 +6,150 @@ begin
 		a := "hello";
 	end;
 
-	procedure shadowing_is_error(a : integer, b : integer);
+	procedure shadowing_is_error(a : integer, b : array [] of string);
 	begin
-		var a : boolean;
+		var a, b : boolean;
+	end;
+
+	procedure bad_array_size(a : real, b : array ["hello"] of string);
+	begin
+		var foo : integer;
+	end;
+
+	var real : integer;
+	procedure type_unavailable(a : real, b : array [] of real);
+	begin
+		var foo : integer;
 	end;
 	
-
-	{*
-	procedure proc();
+	procedure param_redeclaration(var a : integer, var a : boolean, var a : array [] of string);
 	begin
 		a := 4;
 	end;
 	
-	proc(4, 2);
-
-	proc := 4;
-	proc[12] := 42;
+	procedure proc();
+	begin
+		var a : integer;
+		a := 4;
+	end;	
 	
-	i := proc + 2;
-	i := proc() + 2;
+	procedure proc(a : integer); {* Redeclaration *}
+	begin
+		var b : integer;
+	end;
 
+	var proc : integer;
+	
+	var variable : integer;
+	procedure variable();
+	begin
+		var f : integer;
+	end;
+	
+	procedure proc2(a : integer, b : array [] of string);
+	begin
+		var c : boolean;
+	end;
+	
 	undeclared();
+	variable();
 
-	read();
-	writeln
+	proc(4, 2); {* invalid argument count *}
+	proc2(1.231, true); {* invalid argument types *}
 
+	proc := 4; {* Assinging into procedure *}
+	proc[12] := 42;
 
-	var real : integer;
+	var i : integer;
+	i := proc + 2;		
+	i := proc() + 2;
+	
+	{* Testing invalid predefined words as functions, and invalid arguments for predefined procedures *}
+	integer();
+	read(); 
+	read(ff);
+	read(4 + 2);
+	read(integer);
+	read(proc);
+	var arr : array [] of integer;
+	read(arr);
 
-	procedure(a : real);
+	writeln(proc, proc());
+	writeln(5 = "hello");
+
+	arr := proc;
+
+	procedure bad_return_type();
+	begin
+		return 5;
+		return barf;
+	end;
+	
+	return 434; {* return statement outside function body *}
+
+	procedure test_proc();
+	begin
+		procedure inner();
+		begin
+			return 3*"hello"; {* ensure return statement expression is evaluated *}
+		end;		
+		return inner(); {* cannot return void type either *}
+	end;
+
+	function param_type_unavailable(a : real, var b : array [] of real) : integer;
+	begin
+		var a : integer;
+	end;
+		
+	function bad_return_type_function(a : string, var b : array [] of string) : integer;
+	begin
+		return 42.31;
+	end;
+
+	function missing_return_expression(a : string, var b : array [] of boolean) : integer;
 	begin
 		return;
 	end;
 
-	var arr : array [] of integer;
-	arr := proc;
+	function returning_non_array(a : string, var b : array [] of boolean) : array [] of integer;
+	begin
+		return 5;
+	end;
 
-	*}
+	function variable_redeclarations_f(var a : integer, a : integer) : integer;
+	begin
+		return 4;
+	end;
+
+	function return_type_is_unavailable(var a : integer, b : integer) : real;
+	begin
+		return 4;
+	end;
+	
+	function valid() : integer;
+	begin
+		return 1;
+	end;
+
+	procedure param_shadows_function(valid : boolean);
+	begin
+		valid();
+	end;
+	
+	var str : string;
+	str := "hello" + valid();
+	
+	
+	function valid2(a : string) : boolean;
+	begin
+		return true;
+	end;
+
+	valid(4);
+	valid2(4);
+
+	procedure foo(a : boolean);
+	begin
+		foo(2.3, 2.1);
+	end;
 end.

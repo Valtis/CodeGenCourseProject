@@ -152,4 +152,20 @@ begin
 	b := not ab2;
 	b := ab2;
 	i := ai2 + ai2;
+
+	boolean := 4;
+	writeln := 4;
+	read := 4;
+	i := i + writeln;
+	i := i + read;
+	i := writeln;
+	i := boolean;
+	i := -boolean;
+	i := -writeln;
+	read := read;
+
+	i := (5).size;
+	i := ("foobar").size;
+	i := (ab[5]).size;
+	i := (i < 23).size;
 end.

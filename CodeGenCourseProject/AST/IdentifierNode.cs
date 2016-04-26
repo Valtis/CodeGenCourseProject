@@ -9,7 +9,6 @@ namespace CodeGenCourseProject.AST
     public class IdentifierNode : ASTNode
     {
         private readonly string value;
-        private string type;
 
         public string Value
         {
@@ -43,16 +42,6 @@ namespace CodeGenCourseProject.AST
         public override void Accept(ASTVisitor visitor)
         {
             visitor.Visit(this);
-        }
-
-        public override string NodeType()
-        {
-            return type;
-        }
-
-        public override void SetNodeType(string type)
-        {
-            this.type = type;
         }
     }
 }

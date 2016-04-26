@@ -79,6 +79,10 @@ namespace CodeGenCourseProject.AST
 
         public virtual void SetNodeType(string type)
         {
+            if (type == "" || type == null)
+            {
+                throw new InternalCompilerError("Node has no type");
+            }
             this.type = type;
         }
     }

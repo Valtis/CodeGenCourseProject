@@ -1,4 +1,5 @@
 ﻿
+using CodeGenCourseProject.ErrorHandling;
 using System.Collections.Generic;
 
 namespace CodeGenCourseProject.SemanticChecking
@@ -7,18 +8,19 @@ namespace CodeGenCourseProject.SemanticChecking
     internal class SymbolTable
     {
         private int id;
-
+        private ErrorReporter reporter;
         Stack<SymbolTableLevel> stack;
 
-        public SymbolTable()
+        public SymbolTable(ErrorReporter reporter)
         {
+            this.reporter = reporter;
             stack = new Stack<SymbolTableLevel>();
             id = 0;
         }
 
         public void PushLevel()
         {
-            stack.Push(new SymbolTableLevel());
+            stack.Push(new SymbolTableLevel(reporter));
         }
 
         public void PopLevel()
@@ -41,6 +43,11 @@ namespace CodeGenCourseProject.SemanticChecking
             AssertNotEmpty();
 
             stack.Peek().Add(new ArraySymbol(line, column, name, type, id++));
+        }
+
+        public void InsertFunction(int line, int column, string name, string type, IList<string> paramTypes)
+        {
+            stack.Peek().Add(new FunctionSymbol(line, column, name, type, id++, paramTypes));
         }
 
         public bool ContainsOnLevel(string name)
@@ -83,7 +90,7 @@ namespace CodeGenCourseProject.SemanticChecking
         {
             if (stack.Count == 0)
             {
-                throw new InternalCompilerError("Attempting to operate on symbol table");
+                throw new InternalCompilerError("Attempting to operate on empty symbol table");
             }
         }
 
@@ -91,9 +98,10 @@ namespace CodeGenCourseProject.SemanticChecking
         private class SymbolTableLevel
         {
             private IDictionary<string, Symbol> symbols;
-
-            public SymbolTableLevel()
+            private ErrorReporter reporter;
+            public SymbolTableLevel(ErrorReporter reporter)
             {
+                this.reporter = reporter;
                 symbols = new Dictionary<string, Symbol>();
             }
 
@@ -101,8 +109,20 @@ namespace CodeGenCourseProject.SemanticChecking
             {
                 if (symbols.ContainsKey(s.Name))
                 {
-                    throw new InternalCompilerError(
-                        "Attempting to insert a variable which is already present on level: " + s.Name);
+                    reporter.ReportError(
+                        Error.SEMANTIC_ERROR,
+                        "Redeclaration of identifier '" + s.Name + "'",
+                        s.Line,
+                        s.Column);
+
+                    var original = GetSymbol(s.Name);
+
+                    reporter.ReportError(
+                        Error.NOTE,
+                        "Identifier '" + original.Name + "' was declared here",
+                        original.Line,
+                        original.Column);
+                    return;
                 }
                 symbols.Add(s.Name, s);
             }

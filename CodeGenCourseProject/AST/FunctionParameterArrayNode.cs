@@ -6,17 +6,14 @@ namespace CodeGenCourseProject.AST
     {
         private readonly bool isReferenceParameter;
 
-        private readonly string name;
-        private readonly string type;
-
-        public FunctionParameterArrayNode(int line, int column, ASTNode expr, string name, string type, bool isReference) : base(line, column)
+        public FunctionParameterArrayNode(int line, int column, ASTNode expr, ASTNode name, ASTNode type, bool isReference) : base(line, column)
         {
+            Children.Add(name);
+            Children.Add(type);
             if (expr != null)
             {
                 Children.Add(expr);
             }
-            this.name = name;
-            this.type = type;
             this.isReferenceParameter = isReference;
         }
 
@@ -28,19 +25,19 @@ namespace CodeGenCourseProject.AST
             }
         }
 
-        public string Name
+        public IdentifierNode Name
         {
             get
             {
-                return name;
+                return (IdentifierNode)Children[0];
             }
         }
 
-        public string Type
+        public IdentifierNode Type
         {
             get
             {
-                return type;
+                return (IdentifierNode)Children[1];
             }
         }
 
@@ -51,14 +48,14 @@ namespace CodeGenCourseProject.AST
 
         protected override Tuple<string, string> GetStringRepresentation()
         {
-            return new Tuple<string, string>("FunctionParameterArrayNode", "" + name + "," + type + "," + isReferenceParameter);
+            return new Tuple<string, string>("FunctionParameterArrayNode", "" + Name.Value + "," + Type.Value + "," + isReferenceParameter);
         }
 
         public override bool Equals(object obj)
         {
             return obj is FunctionParameterArrayNode &&
-                Name == ((FunctionParameterArrayNode)obj).Name &&
-                Type == ((FunctionParameterArrayNode)obj).Type &&
+                Name.Value == ((FunctionParameterArrayNode)obj).Name.Value &&
+                Type.Value == ((FunctionParameterArrayNode)obj).Type.Value &&
                 IsReferenceParameter == ((FunctionParameterArrayNode)obj).IsReferenceParameter;
         }
     }

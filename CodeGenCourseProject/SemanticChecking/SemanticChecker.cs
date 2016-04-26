@@ -8,22 +8,27 @@ namespace CodeGenCourseProject.SemanticChecking
     public class SemanticChecker : ASTVisitor
     {
         private ErrorReporter reporter;
-        private SymbolTable table;
+        private SymbolTable symbolTable;
         private const string ERROR_TYPE = "errortype";
         private const string INTEGER_TYPE = "integer";
         private const string REAL_TYPE = "real";
         private const string STRING_TYPE = "string";
         private const string BOOLEAN_TYPE = "boolean";
+        private const string VOID_TYPE = "void";
 
         private List<string> predeclaredIdentifiers;
+
+        // used to verify return statement type
+        private Stack<string> functionReturnTypeStack;
 
         public SemanticChecker(ErrorReporter reporter)
         {
             this.reporter = reporter;
-            table = new SymbolTable();
+            symbolTable = new SymbolTable(reporter);
+            functionReturnTypeStack = new Stack<string>();
 
             predeclaredIdentifiers = new List<string>
-            { INTEGER_TYPE, REAL_TYPE, STRING_TYPE, BOOLEAN_TYPE, "true", "false" };
+            { INTEGER_TYPE, REAL_TYPE, STRING_TYPE, BOOLEAN_TYPE, "true", "false", "read", "writeln", "size" };
         }
 
         public void Visit(ArrayIndexNode node)
@@ -48,7 +53,7 @@ namespace CodeGenCourseProject.SemanticChecking
             }
 
             var name = (IdentifierNode)node.Children[0];
-            var symbol = table.GetSymbol(name.Value);
+            var symbol = symbolTable.GetSymbol(name.Value);
 
             // the caller will handle undeclared identifiers, we merely check that symbol is an array
 
@@ -107,12 +112,12 @@ namespace CodeGenCourseProject.SemanticChecking
 
         public void Visit(BlockNode blockNode)
         {
-            table.PushLevel();
+            symbolTable.PushLevel();
             foreach (var child in blockNode.Children)
             {
                 child.Accept(this);
             }
-            table.PopLevel();
+            symbolTable.PopLevel();
         }
 
         public void Visit(DivideNode divideNode)
@@ -157,7 +162,60 @@ namespace CodeGenCourseProject.SemanticChecking
 
         public void Visit(ReturnNode returnNode)
         {
-            throw new NotImplementedException();
+            if (returnNode.Children.Count > 1)
+            {
+                throw new InternalCompilerError("Invalid child count for ReturnNode: " + returnNode.Children.Count);
+            }
+
+            if (functionReturnTypeStack.Count == 0)
+            {
+                reporter.ReportError(
+                    Error.SEMANTIC_ERROR,
+                    "Return statement outside function or procedure body",
+                    returnNode.Line,
+                    returnNode.Column);
+                return;
+            }
+
+            foreach (var child in returnNode.Children)
+            {
+                child.Accept(this);
+            }
+
+            var returnType = functionReturnTypeStack.Peek();
+
+            if (returnNode.Children.Count == 1 && returnType == VOID_TYPE && returnNode.Children[0].NodeType() != ERROR_TYPE)
+            {
+                reporter.ReportError(
+                    Error.SEMANTIC_ERROR,
+                    "Return statement in procedure cannot return a value",
+                    returnNode.Line,
+                    returnNode.Column);
+                return;
+            }
+
+            if (returnNode.Children.Count == 1 && returnNode.Children[0].NodeType() != returnType &&
+               returnNode.Children[0].NodeType() != ERROR_TYPE && returnType != ERROR_TYPE)
+            {
+                reporter.ReportError(
+                    Error.SEMANTIC_ERROR,
+                    "Return statement has type '" + returnNode.Children[0].NodeType() +
+                    "' when enclosing function has type '" + returnType + "'",
+                    returnNode.Children[0].Line,
+                    returnNode.Children[0].Column);
+                return;
+            }
+
+            if (returnNode.Children.Count == 0 && returnType != VOID_TYPE && returnType != ERROR_TYPE)
+            {
+                reporter.ReportError(
+                    Error.SEMANTIC_ERROR,
+                    "Return statement must have an expression with type '" + returnType +
+                    "', as it is enclosed by a function, not procedure",
+                    returnNode.Line,
+                    returnNode.Column);
+                return;
+            }
         }
 
         public void Visit(SubtractNode subtractNode)
@@ -173,31 +231,6 @@ namespace CodeGenCourseProject.SemanticChecking
         public void Visit(MultiplyNode multiplyNode)
         {
             HandleBinaryOperator(multiplyNode, "*", new List<string> { INTEGER_TYPE, REAL_TYPE });
-        }
-
-        public void Visit(ProcedureNode procedureNode)
-        {
-            var children = procedureNode.Children.Count;
-            if (children < 2)
-            {
-                throw new InternalCompilerError("Invalid child count for ProcedureNode: " + children);
-            }
-
-            var name = (IdentifierNode)procedureNode.Children[0];
-            var block = procedureNode.Children[1];
-
-            // while block is a BlockNode, and we could just call block.Accept(), 
-            // I do not want to open two new symtable levels; this would make it acceptable to shadow
-            // function arguments with new declarations. 
-
-            table.PushLevel();
-
-            foreach (var child in block.Children)
-            {
-                child.Accept(this);
-            }
-
-            table.PopLevel();
         }
 
         public void Visit(GreaterThanOrEqualNode greaterThanOrEqualNode)
@@ -266,9 +299,9 @@ namespace CodeGenCourseProject.SemanticChecking
 
         public void Visit(IdentifierNode identifierNode)
         {
-            if (table.Contains(identifierNode.Value))
+            if (symbolTable.Contains(identifierNode.Value))
             {
-                identifierNode.SetNodeType(table.GetSymbol(identifierNode.Value).Type);
+                identifierNode.SetNodeType(symbolTable.GetSymbol(identifierNode.Value).Type);
             }
             else if (identifierNode.Value == "true" || identifierNode.Value == "false")
             {
@@ -277,12 +310,13 @@ namespace CodeGenCourseProject.SemanticChecking
             else if (!predeclaredIdentifiers.Contains(identifierNode.Value))
             {
                 identifierNode.SetNodeType(ERROR_TYPE);
-                reporter.ReportError(
-                    Error.SEMANTIC_ERROR,
-                    "Identifier '" + identifierNode.Value + "' has not been declared",
-                    identifierNode.Line,
-                    identifierNode.Column);
+                ReportUndeclaredIdentifier(identifierNode);
             }
+            else
+            {
+                identifierNode.SetNodeType("<predefined identifier>");
+            }
+
         }
 
         public void Visit(LessThanOrEqualNode lessThanOrEqualNode)
@@ -354,43 +388,41 @@ namespace CodeGenCourseProject.SemanticChecking
             var expression = variableAssignmentNode.Children[1];
             expression.Accept(this);
 
-            var symbol = table.GetSymbol(nameNode.Value);
+            var symbol = symbolTable.GetSymbol(nameNode.Value);
 
-
-            if (symbol == null)
+            // special case check for predefined identifiers, as these do not get declared as undefined otherwise
+            if (symbol == null && predeclaredIdentifiers.Contains(nameNode.Value))
             {
-                // special case check - true/valid are not reported by Visit(IdentifierNode), but treated as a keyword, 
-                // if no such variable is declared -> we must check if the variable name is true/false, and check if they are
-                // declared
+                ReportUndeclaredIdentifier(nameNode);
 
-
-                if (nameNode.Value == "true" || nameNode.Value == "false")
-                {
-                    reporter.ReportError(
-                        Error.SEMANTIC_ERROR,
-                        "Identifier '" + nameNode.Value + "' has not been declared",
-                        nameNode.Line,
-                        nameNode.Column);
-                }
                 return;
             }
-            else
+
+            if (symbol is FunctionSymbol)
             {
-                if (expression.NodeType() != ERROR_TYPE && child.NodeType() != ERROR_TYPE && 
-                    child.NodeType() != expression.NodeType())
-                {
-                    reporter.ReportError(
-                        Error.SEMANTIC_ERROR,
-                        "Cannot assign an expression with type '" + expression.NodeType() + "' into a variable " +
-                        "with type '" + child.NodeType() + "'",
-                        expression.Line,
-                        expression.Column);
-
-                    ReportPreviousDeclaration(symbol);
-                }
+                reporter.ReportError(
+                    Error.SEMANTIC_ERROR,
+                    "Cannot assign into function or procedure",
+                    nameNode.Line,
+                    nameNode.Column);
+                ReportPreviousDeclaration(symbol);
+                return;
             }
-        }
 
+            if (expression.NodeType() != ERROR_TYPE && child.NodeType() != ERROR_TYPE &&
+                child.NodeType() != expression.NodeType())
+            {
+                reporter.ReportError(
+                    Error.SEMANTIC_ERROR,
+                    "Cannot assign an expression with type '" + expression.NodeType() + "' into a variable " +
+                    "with type '" + child.NodeType() + "'",
+                    expression.Line,
+                    expression.Column);
+
+                ReportPreviousDeclaration(symbol);
+            }
+
+        }
 
         public void Visit(VariableDeclarationNode variableDeclarationNode)
         {
@@ -405,31 +437,19 @@ namespace CodeGenCourseProject.SemanticChecking
             var typeChild = variableDeclarationNode.Children[0];
             typeChild.Accept(this);
 
-            IdentifierNode name = null;
+            IdentifierNode varType = null;
             if (typeChild is IdentifierNode)
             {
-                name = (IdentifierNode)typeChild;
+                varType = (IdentifierNode)typeChild;
             }
             else
             {
-                name = (IdentifierNode)typeChild.Children[0];
+                varType = (IdentifierNode)typeChild.Children[0];
             }
 
-            if (table.Contains(name.Value))
+            if (symbolTable.Contains(varType.Value))
             {
-                reporter.ReportError(
-                    Error.SEMANTIC_ERROR,
-                    "Type '" + name.Value + "' is inaccessible",
-                    name.Line,
-                    name.Column);
-
-                var symbol = table.GetSymbol(name.Value);
-
-                reporter.ReportError(
-                        Error.NOTE,
-                        "Previous declaration overrides the type",
-                        symbol.Line,
-                        symbol.Column);
+                ReportUnavailableType(varType);
                 return;
             }
 
@@ -439,26 +459,19 @@ namespace CodeGenCourseProject.SemanticChecking
             {
                 var nameNode = ((IdentifierNode)variableDeclarationNode.Children[i]);
 
-                if (table.ContainsOnLevel(nameNode.Value))
+                if (symbolTable.ContainsOnLevel(nameNode.Value))
                 {
-                    reporter.ReportError(
-                        Error.SEMANTIC_ERROR,
-                        "Redeclaration of identifier '" + nameNode.Value + "'",
-                        nameNode.Line,
-                        nameNode.Column);
-
-                    var symbol = table.GetSymbol(nameNode.Value);
-                    ReportPreviousDeclaration(symbol);
+                    ReportRedeclaration(nameNode);
                 }
                 else
                 {
                     if (typeChild is ArrayTypeNode)
                     {
-                        table.InsertArray(nameNode.Line, nameNode.Column, nameNode.Value, name.Value);
+                        symbolTable.InsertArray(nameNode.Line, nameNode.Column, nameNode.Value, varType.Value);
                     }
                     else if (typeChild is IdentifierNode)
                     {
-                        table.InsertVariable(nameNode.Line, nameNode.Column, nameNode.Value, name.Value);
+                        symbolTable.InsertVariable(nameNode.Line, nameNode.Column, nameNode.Value, varType.Value);
                     }
                     else
                     {
@@ -466,8 +479,6 @@ namespace CodeGenCourseProject.SemanticChecking
                     }
 
                 }
-
-
             }
         }
 
@@ -480,9 +491,61 @@ namespace CodeGenCourseProject.SemanticChecking
             }
         }
 
+        public void Visit(ProcedureNode procedureNode)
+        {
+            var children = procedureNode.Children.Count;
+            if (children < 2)
+            {
+                throw new InternalCompilerError("Invalid child count for ProcedureNode: " + children);
+            }
+
+            var name = (IdentifierNode)procedureNode.Children[0];
+            var block = procedureNode.Children[1];
+
+            // while block is a BlockNode, and we could just call block.Accept(), 
+            // I do not want to open two new symtable levels; this would make it acceptable to shadow
+            // function arguments with new declarations. 
+
+            var returnType = VOID_TYPE;
+            var paramStartPoint = 2;
+            HandleFunctionOrProcedure(procedureNode, name, block, returnType, paramStartPoint);
+        }
+
+
+
         public void Visit(FunctionNode functionNode)
         {
-            throw new NotImplementedException();
+            var children = functionNode.Children.Count;
+            if (children < 3)
+            {
+                throw new InternalCompilerError("Invalid child count for FunctionNode: " + children);
+            }
+
+            var name = (IdentifierNode)functionNode.Children[0];
+            var type = functionNode.Children[1];
+            var block = functionNode.Children[2];
+
+            IdentifierNode returnTypeNode = null;
+            string returnType = "";
+            if (type is IdentifierNode)
+            {
+                returnTypeNode = (IdentifierNode)type;
+                returnType = returnTypeNode.Value;
+            }
+            else
+            {
+                returnTypeNode = (IdentifierNode)type.Children[0];
+                returnType = "Array<" + returnTypeNode.Value + ">";
+            }
+
+            if (symbolTable.Contains(returnTypeNode.Value))
+            {
+                ReportUnavailableType(returnTypeNode);
+                returnType = ERROR_TYPE;
+            }
+
+            var parameterStartPoint = 3;
+            HandleFunctionOrProcedure(functionNode, name, block, returnType, parameterStartPoint);
         }
 
         public void Visit(EqualsNode equalsNode)
@@ -497,14 +560,158 @@ namespace CodeGenCourseProject.SemanticChecking
 
         public void Visit(CallNode callNode)
         {
-            throw new NotImplementedException();
+            if (callNode.Children.Count < 1)
+            {
+                throw new InternalCompilerError("Invalid child count for CallNode" + callNode.Children.Count);
+            }
+            var nameNode = (IdentifierNode)callNode.Children[0];
+            var non_arg_children = 1;
+            var argumentCount = callNode.Children.Count - non_arg_children;
+
+            var symbol = symbolTable.GetSymbol(nameNode.Value);
+
+            foreach (var child in callNode.Children)
+            {
+                child.Accept(this);
+            }
+
+            callNode.SetNodeType(ERROR_TYPE);
+            if (symbol == null)
+            {
+                // if this is predefined identifier, it is accepted by visit(IdentifierNode)
+                // we need to check for the valid use here
+                if (predeclaredIdentifiers.Contains(nameNode.Value))
+                {
+                    var acceptableTypes = new List<string> { ERROR_TYPE, INTEGER_TYPE, BOOLEAN_TYPE, STRING_TYPE, REAL_TYPE };
+
+                    // predefined functions
+                    if (nameNode.Value == "read")
+                    {
+                        if (argumentCount == 0)
+                        {
+                            reporter.ReportError(
+                                Error.SEMANTIC_ERROR,
+                                "Predefined procedure 'read' expects at least one argument",
+                                nameNode.Line,
+                                nameNode.Column);
+                            return;
+                        }
+
+                        // arguments must be variables, or indexed arrays
+                        for (int i = 1; i < argumentCount + 1; ++i)
+                        {
+                            //    
+                            var child = callNode.Children[i];
+                            // I'm about 110% sure I will have no idea what this condition does 5 minutes after I'm done with it
+                            if (!(child is IdentifierNode || child is ArrayIndexNode) ||
+                                // following condition (hopefully) rejects declared identifiers, which have invalid type
+                                // which eliminates things like functions  and predeclared identifiers as arguments
+                                (child is IdentifierNode &&
+                                    ((predeclaredIdentifiers.Contains(((IdentifierNode)child).Value) && !symbolTable.Contains(((IdentifierNode)child).Value)) ||
+                                        (symbolTable.Contains(((IdentifierNode)child).Value) &&
+                                            !acceptableTypes.Contains(symbolTable.GetSymbol(((IdentifierNode)child).Value).Type))
+                                    )
+                                )
+                            )
+                            {
+                                reporter.ReportError(
+                                    Error.SEMANTIC_ERROR,
+                                    "Invalid argument for predefined function 'read'",
+                                    child.Line,
+                                    child.Column);
+
+                                reporter.ReportError(
+                                    Error.NOTE_GENERIC,
+                                    "Argument must be a non-array variable or indexed array",
+                                    child.Line,
+                                    child.Column);
+                            }
+                        }
+                    }
+                    else if (nameNode.Value == "writeln")
+                    {
+                        for (int i = 1; i < argumentCount + 1; ++i)
+                        {
+
+                            var child = callNode.Children[i];
+                            // I'm about 110% sure I will have no idea what this condition does 5 minutes after I'm done with it
+                            if (!acceptableTypes.Contains(child.NodeType()))
+                            {
+                                reporter.ReportError(
+                                    Error.SEMANTIC_ERROR,
+                                    "Invalid argument type '" + child.NodeType() + "' for predefined function 'writeln'",
+                                    child.Line,
+                                    child.Column);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        ReportUndeclaredIdentifier(nameNode);
+                    }
+                }
+
+
+                return;
+            }
+            else if (!(symbol is FunctionSymbol))
+            {
+                reporter.ReportError(
+                    Error.SEMANTIC_ERROR,
+                    "Identifier '" + symbol.Name + "' is not callable",
+                    callNode.Line,
+                    callNode.Column
+                    );
+                ReportPreviousDeclaration(symbol);
+                return;
+            }
+
+            var functionSymbol = (FunctionSymbol)symbol;
+
+            if (functionSymbol.ParamTypes.Count != argumentCount)
+            {
+                reporter.ReportError(
+                    Error.SEMANTIC_ERROR,
+                    "Call to '" + symbol.Name + "' has " + argumentCount + " arguments but '" +
+                    symbol.Name + "' has " + functionSymbol.ParamTypes.Count + " parameters",
+                    callNode.Line,
+                    callNode.Column
+                    );
+                ReportPreviousDeclaration(symbol);
+                return;
+            }
+
+
+            int argErrors = 0;
+            for (int i = 0; i < argumentCount; ++i)
+            {
+                var argType = callNode.Children[i + 1].NodeType();
+                var paramType = functionSymbol.ParamTypes[i];
+                if (argType != ERROR_TYPE && paramType != ERROR_TYPE && argType != paramType)
+                {
+                    reporter.ReportError(
+                        Error.SEMANTIC_ERROR,
+                        "Argument " + (i + 1) + " for '" + symbol.Name + "' has type '" +
+                        argType + "' but corresponding parameter has type '" + paramType + "'",
+                        callNode.Children[i + 1].Line,
+                        callNode.Children[i + 1].Column);
+                    ++argErrors;
+                }
+            }
+
+            if (argErrors != 0)
+            {
+                ReportPreviousDeclaration(symbol);
+            }
+
+            callNode.SetNodeType(functionSymbol.BaseType);
         }
 
         public void Visit(AssertNode assertNode)
         {
             if (assertNode.Children.Count != 1)
             {
-                throw new InternalCompilerError("Invalid child count for assert statement: " + assertNode.Children.Count);
+                throw new InternalCompilerError("Invalid child count for AssertNode: " + assertNode.Children.Count);
             }
 
             var expr = assertNode.Children[0];
@@ -531,18 +738,16 @@ namespace CodeGenCourseProject.SemanticChecking
                 throw new InternalCompilerError("Invalid child count for ArraySizeNode: " + node.Children.Count);
             }
             node.Children[0].Accept(this);
+            var type = node.Children[0].NodeType();
 
-            var array = (IdentifierNode)node.Children[0];
-            var symbol = table.GetSymbol(array.Value);
-            if (symbol != null && !(symbol is ArraySymbol))
+            if (!type.Contains("Array") && type != ERROR_TYPE)
             {
                 reporter.ReportError(
                     Error.SEMANTIC_ERROR,
-                    "Cannot get the size of an non-array object '" + array.Value + "'",
+                    "Cannot get the size of an expression with type '" + type + "'",
                     node.Line,
                     node.Column);
 
-                ReportPreviousDeclaration(symbol);
                 node.SetNodeType(ERROR_TYPE);
                 return;
             }
@@ -563,12 +768,64 @@ namespace CodeGenCourseProject.SemanticChecking
 
         public void Visit(FunctionParameterVariableNode functionParameterNode)
         {
-            throw new NotImplementedException();
+            if (functionParameterNode.Children.Count != 2)
+            {
+                throw new InternalCompilerError("Invalid child count for FunctionParameterVariableNode: " +
+                    functionParameterNode.Children.Count);
+            }
+
+            if (symbolTable.Contains(functionParameterNode.Type.Value))
+            {
+                functionParameterNode.SetNodeType(ERROR_TYPE);
+                ReportUnavailableType(functionParameterNode.Type);
+                return;
+            }
+
+            symbolTable.InsertVariable(
+                functionParameterNode.Line,
+                functionParameterNode.Column,
+                functionParameterNode.Name.Value,
+                functionParameterNode.Type.Value);
+
+            functionParameterNode.SetNodeType(symbolTable.GetSymbol(functionParameterNode.Name.Value).Type);
         }
 
         public void Visit(FunctionParameterArrayNode functionParameterArrayNode)
         {
-            throw new NotImplementedException();
+            if (functionParameterArrayNode.Children.Count > 3 || functionParameterArrayNode.Children.Count < 2)
+            {
+                throw new InternalCompilerError("Invalid child count for FunctionParameterArrayNode: " +
+                    functionParameterArrayNode.Children.Count);
+            }
+
+            functionParameterArrayNode.SetNodeType(ERROR_TYPE);
+            if (functionParameterArrayNode.Children.Count == 3)
+            {
+                var child = functionParameterArrayNode.Children[2];
+                child.Accept(this);
+                if (child.NodeType() != ERROR_TYPE && child.NodeType() != INTEGER_TYPE)
+                {
+                    reporter.ReportError(
+                        Error.SEMANTIC_ERROR,
+                        "Invalid type '" + child.NodeType() + "' for array size expression",
+                        child.Line,
+                        child.Column);
+                }
+            }
+
+            if (symbolTable.Contains(functionParameterArrayNode.Type.Value))
+            {
+                ReportUnavailableType(functionParameterArrayNode.Type);
+                return;
+            }
+
+            symbolTable.InsertArray(
+                functionParameterArrayNode.Line,
+                functionParameterArrayNode.Column,
+                functionParameterArrayNode.Name.Value,
+                functionParameterArrayNode.Type.Value);
+
+            functionParameterArrayNode.SetNodeType(symbolTable.GetSymbol(functionParameterArrayNode.Name.Value).Type);
         }
 
         private void HandleUnaryOperator(ASTNode node, string op, IList<string> acceptableTypes)
@@ -677,6 +934,72 @@ namespace CodeGenCourseProject.SemanticChecking
             }
 
             node.SetNodeType(lhs.NodeType());
+        }
+
+        private void HandleFunctionOrProcedure(ASTNode mainNode, IdentifierNode name, ASTNode block, string returnType, int paramStartPoint)
+        {
+
+            var paramTypes = new List<string>();
+            symbolTable.InsertFunction(
+                name.Line,
+                name.Column,
+                name.Value,
+                returnType,
+                paramTypes);
+
+            symbolTable.PushLevel();
+            functionReturnTypeStack.Push(returnType);
+            for (int i = paramStartPoint; i < mainNode.Children.Count; ++i)
+            {
+                mainNode.Children[i].Accept(this);
+                paramTypes.Add(mainNode.Children[i].NodeType());
+            }
+            
+            foreach (var child in block.Children)
+            {
+                child.Accept(this);
+            }
+
+            symbolTable.PopLevel();
+            functionReturnTypeStack.Pop();
+        }
+
+        private void ReportUnavailableType(IdentifierNode name)
+        {
+            reporter.ReportError(
+                    Error.SEMANTIC_ERROR,
+                    "Type '" + name.Value + "' is inaccessible",
+                    name.Line,
+                    name.Column);
+
+            var symbol = symbolTable.GetSymbol(name.Value);
+
+            reporter.ReportError(
+                    Error.NOTE,
+                    "Previous declaration overrides the type",
+                    symbol.Line,
+                    symbol.Column);
+        }
+
+        private void ReportRedeclaration(IdentifierNode nameNode)
+        {
+            reporter.ReportError(
+                Error.SEMANTIC_ERROR,
+                "Redeclaration of identifier '" + nameNode.Value + "'",
+                nameNode.Line,
+                nameNode.Column);
+
+            var symbol = symbolTable.GetSymbol(nameNode.Value);
+            ReportPreviousDeclaration(symbol);
+        }
+
+        private void ReportUndeclaredIdentifier(IdentifierNode nameNode)
+        {
+            reporter.ReportError(
+                Error.SEMANTIC_ERROR,
+                "Identifier '" + nameNode.Value + "' has not been declared",
+                nameNode.Line,
+                nameNode.Column);
         }
 
         private void ReportPreviousDeclaration(Symbol symbol)

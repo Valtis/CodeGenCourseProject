@@ -1926,7 +1926,9 @@ namespace CodeGenCourseProject.Parsing.Tests
                                     )
                                 )
                             ),
-                            new FunctionParameterVariableNode(0, 0, "a", "integer", true)
+                            new FunctionParameterVariableNode(0, 0,
+                                new IdentifierNode(0, 0, "a"),
+                                new IdentifierNode(0, 0, "integer"), true)
                         ),
                         new ProcedureNode(0, 0,
                             new IdentifierNode(0, 0, "baz"),
@@ -1938,10 +1940,14 @@ namespace CodeGenCourseProject.Parsing.Tests
                                     )
                                 )
                             ),
-                            new FunctionParameterVariableNode(0, 0, "a", "integer", true),
+                            new FunctionParameterVariableNode(0, 0,
+                                new IdentifierNode(0, 0, "a"),
+                                new IdentifierNode(0, 0, "integer"), true),
                             new FunctionParameterArrayNode(0, 0, 
                             new IntegerNode(0, 0, 4),
-                            "b", "integer", true)
+                            new IdentifierNode(0, 0, "b"),
+                            new IdentifierNode(0, 0, "integer")
+                            , true)
 
                         ),
                         new ProcedureNode(0, 0,
@@ -1950,9 +1956,15 @@ namespace CodeGenCourseProject.Parsing.Tests
                                 new ReturnNode(0, 0)
                             ),
 
-                            new FunctionParameterVariableNode(0, 0, "a", "integer", false),
-                            new FunctionParameterVariableNode(0, 0, "b", "boolean", false),
-                            new FunctionParameterVariableNode(0, 0, "c", "real", false)
+                            new FunctionParameterVariableNode(0, 0,
+                                new IdentifierNode(0, 0, "a"),
+                                new IdentifierNode(0, 0, "integer"), false),
+                            new FunctionParameterVariableNode(0, 0, 
+                                new IdentifierNode(0, 0, "b"),
+                                new IdentifierNode(0, 0, "boolean"), false),
+                            new FunctionParameterVariableNode(0, 0, 
+                                new IdentifierNode(0, 0, "c"),
+                                new IdentifierNode(0, 0, "real"), false)
                         ),
                         new ProcedureNode(0, 0,
                             new IdentifierNode(0, 0, "outer"),
@@ -1972,10 +1984,13 @@ namespace CodeGenCourseProject.Parsing.Tests
                             ),
                             new FunctionParameterArrayNode(0, 0,
                                 null,
-                                "a", "boolean", false),
+                                new IdentifierNode(0, 0, "a"),
+                                new IdentifierNode(0, 0, "boolean"), 
+                                false),
                             new FunctionParameterArrayNode(0, 0,
                                 new IdentifierNode(0, 0, "foo"),
-                                "b", "string", true)
+                                new IdentifierNode(0, 0, "b"),
+                                new IdentifierNode(0, 0, "string"), true)
                         )
                     )
                 ),
@@ -2120,18 +2135,18 @@ namespace CodeGenCourseProject.Parsing.Tests
                                 )
                             ),
                             new FunctionParameterVariableNode(0, 0,
-                                "a",
-                                "integer",
+                                new IdentifierNode(0, 0, "a"),
+                                new IdentifierNode(0, 0, "integer"),
                                 true
                             ),
                             new FunctionParameterVariableNode(0, 0,
-                                "b",
-                                "real",
+                                new IdentifierNode(0, 0, "b"),
+                                new IdentifierNode(0, 0, "real"),
                                 true
                             ),
                             new FunctionParameterVariableNode(0, 0,
-                                "c",
-                                "string",
+                                new IdentifierNode(0, 0, "c"),
+                                new IdentifierNode(0, 0, "string"),
                                 true
                             )
                         ),
@@ -2144,18 +2159,18 @@ namespace CodeGenCourseProject.Parsing.Tests
                                 )
                             ),
                             new FunctionParameterVariableNode(0, 0,
-                                "a",
-                                "integer",
+                                new IdentifierNode(0, 0, "a"),
+                                new IdentifierNode(0, 0, "integer"),
                                 false
                             ),
                             new FunctionParameterVariableNode(0, 0,
-                                "b",
-                                "real",
+                                new IdentifierNode(0, 0, "b"),
+                                new IdentifierNode(0, 0, "real"),
                                 false
                             ),
                             new FunctionParameterVariableNode(0, 0,
-                                "c",
-                                "string",
+                                new IdentifierNode(0, 0, "c"),
+                                new IdentifierNode(0, 0, "string"),
                                 false
                             )
                         ),
@@ -2168,18 +2183,18 @@ namespace CodeGenCourseProject.Parsing.Tests
                                 )
                             ),
                             new FunctionParameterVariableNode(0, 0,
-                                "a",
-                                "integer",
+                                new IdentifierNode(0, 0, "a"),
+                                new IdentifierNode(0, 0, "integer"),
                                 false
                             ),
                             new FunctionParameterVariableNode(0, 0,
-                                "b",
-                                "real",
+                                new IdentifierNode(0, 0, "b"),
+                                new IdentifierNode(0, 0, "real"),
                                 true
                             ),
                             new FunctionParameterVariableNode(0, 0,
-                                "c",
-                                "string",
+                                new IdentifierNode(0, 0, "c"),
+                                new IdentifierNode(0, 0, "string"),
                                 false
                             )
                         ),
@@ -2217,8 +2232,8 @@ namespace CodeGenCourseProject.Parsing.Tests
                             ),
                             new FunctionParameterArrayNode(0, 0,
                                 null,
-                                "a",
-                                "boolean",
+                                new IdentifierNode(0, 0, "a"),
+                                new IdentifierNode(0, 0, "boolean"),
                                 false
                             ),
                             new FunctionParameterArrayNode(0, 0,
@@ -2226,8 +2241,8 @@ namespace CodeGenCourseProject.Parsing.Tests
                                     new IntegerNode(0, 0, 14),
                                     new IntegerNode(0, 0, 2)
                                 ),
-                                "b",
-                                "integer",
+                                new IdentifierNode(0, 0, "b"),
+                                new IdentifierNode(0, 0, "integer"),
                                 true
                             )
                         )

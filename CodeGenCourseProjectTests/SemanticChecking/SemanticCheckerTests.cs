@@ -186,14 +186,61 @@ namespace CodeGenCourseProject.SemanticChecking.Tests
             var semanticChecker = new SemanticChecker(reporter);
             node.Accept(semanticChecker);
 
-            Assert.AreEqual(2, reporter.Errors.Count);
+            Assert.AreEqual(49, reporter.Errors.Count);
 
             var helper = new TestHelper(reporter);
 
             helper.AssertErrorMessage(0, Error.SEMANTIC_ERROR, 5, 21, "Cannot assign an expression with type 'string' into a variable with type 'integer'");
-            helper.AssertErrorMessage(0, Error.SEMANTIC_ERROR, 5, 21, "Cannot assign an expression with type 'string' into a variable with type 'integer'");
-
+            helper.AssertErrorMessage(1, Error.SEMANTIC_ERROR, 10, 20, "Redeclaration of identifier 'a'");
+            helper.AssertErrorMessage(2, Error.SEMANTIC_ERROR, 10, 23, "Redeclaration of identifier 'b'");
+            helper.AssertErrorMessage(3, Error.SEMANTIC_ERROR, 13, 54, "Invalid type 'string' for array size expression");
+            helper.AssertErrorMessage(4, Error.SEMANTIC_ERROR, 19, 39, "Type 'real' is inaccessible");
+            helper.AssertErrorMessage(5, Error.SEMANTIC_ERROR, 19, 61, "Type 'real' is inaccessible");
+            helper.AssertErrorMessage(6, Error.SEMANTIC_ERROR, 24, 59, "Redeclaration of identifier 'a'");
+            helper.AssertErrorMessage(7, Error.SEMANTIC_ERROR, 24, 76, "Redeclaration of identifier 'a'");
+            helper.AssertErrorMessage(8, Error.SEMANTIC_ERROR, 35, 18, "Redeclaration of identifier 'proc'");
+            helper.AssertErrorMessage(9, Error.SEMANTIC_ERROR, 40, 12, "Redeclaration of identifier 'proc'");
+            helper.AssertErrorMessage(10, Error.SEMANTIC_ERROR, 43, 18, "Redeclaration of identifier 'variable'");
+            helper.AssertErrorMessage(11, Error.SEMANTIC_ERROR, 53, 8, "Identifier 'undeclared' has not been declared");
+            helper.AssertErrorMessage(12, Error.SEMANTIC_ERROR, 54, 8, "Identifier 'variable' is not callable");
+            helper.AssertErrorMessage(13, Error.SEMANTIC_ERROR, 56, 8, "Call to 'proc' has 2 arguments but 'proc' has 0 parameters");
+            helper.AssertErrorMessage(14, Error.SEMANTIC_ERROR, 57, 14, "Argument 1 for 'proc2' has type 'real' but corresponding parameter has type 'integer'");
+            helper.AssertErrorMessage(15, Error.SEMANTIC_ERROR, 57, 21, "Argument 2 for 'proc2' has type 'boolean' but corresponding parameter has type 'Array<string>'");
+            helper.AssertErrorMessage(16, Error.SEMANTIC_ERROR, 59, 8, "Cannot assign into function or procedure"); helper.AssertErrorMessage(17, Error.SEMANTIC_ERROR, 60, 8, "Cannot index 'proc' as it is not an array");
+            helper.AssertErrorMessage(17, Error.SEMANTIC_ERROR, 60, 8, "Cannot index 'proc' as it is not an array");
+            helper.AssertErrorMessage(18, Error.SEMANTIC_ERROR, 60, 8, "Cannot assign into function or procedure");
+            helper.AssertErrorMessage(19, Error.SEMANTIC_ERROR, 63, 18, "Invalid types 'Function<void>' and 'integer' for operator '+'");
+            helper.AssertErrorMessage(20, Error.SEMANTIC_ERROR, 64, 20, "Invalid types 'void' and 'integer' for operator '+'");
+            helper.AssertErrorMessage(21, Error.SEMANTIC_ERROR, 67, 8, "Identifier 'integer' has not been declared");
+            helper.AssertErrorMessage(22, Error.SEMANTIC_ERROR, 68, 8, "Predefined procedure 'read' expects at least one argument");
+            helper.AssertErrorMessage(23, Error.SEMANTIC_ERROR, 69, 13, "Identifier 'ff' has not been declared");
+            helper.AssertErrorMessage(24, Error.SEMANTIC_ERROR, 70, 15, "Invalid argument for predefined function 'read'");
+            helper.AssertErrorMessage(25, Error.SEMANTIC_ERROR, 71, 13, "Invalid argument for predefined function 'read'");
+            helper.AssertErrorMessage(26, Error.SEMANTIC_ERROR, 72, 13, "Invalid argument for predefined function 'read'");
+            helper.AssertErrorMessage(27, Error.SEMANTIC_ERROR, 74, 13, "Invalid argument for predefined function 'read'");
+            helper.AssertErrorMessage(28, Error.SEMANTIC_ERROR, 76, 16, "Invalid argument type 'Function<void>' for predefined function 'writeln'");
+            helper.AssertErrorMessage(29, Error.SEMANTIC_ERROR, 76, 22, "Invalid argument type 'void' for predefined function 'writeln'");
+            helper.AssertErrorMessage(30, Error.SEMANTIC_ERROR, 77, 18, "Invalid types 'integer' and 'string' for operator '='");
+            helper.AssertErrorMessage(31, Error.SEMANTIC_ERROR, 79, 15, "Cannot assign an expression with type 'Function<void>' into a variable with type 'Array<integer>'");
+            helper.AssertErrorMessage(32, Error.SEMANTIC_ERROR, 83, 16, "Return statement in procedure cannot return a value");
+            helper.AssertErrorMessage(33, Error.SEMANTIC_ERROR, 84, 23, "Identifier 'barf' has not been declared");
+            helper.AssertErrorMessage(34, Error.SEMANTIC_ERROR, 87, 8, "Return statement outside function or procedure body");
+            helper.AssertErrorMessage(35, Error.SEMANTIC_ERROR, 93, 32, "Invalid types 'integer' and 'string' for operator '*'");
+            helper.AssertErrorMessage(36, Error.SEMANTIC_ERROR, 95, 16, "Return statement in procedure cannot return a value");
+            helper.AssertErrorMessage(37, Error.SEMANTIC_ERROR, 98, 44, "Type 'real' is inaccessible");
+            helper.AssertErrorMessage(38, Error.SEMANTIC_ERROR, 98, 70, "Type 'real' is inaccessible");
+            helper.AssertErrorMessage(39, Error.SEMANTIC_ERROR, 105, 23, "Return statement has type 'real' when enclosing function has type 'integer'");
+            helper.AssertErrorMessage(40, Error.SEMANTIC_ERROR, 110, 16, "Return statement must have an expression with type 'integer', as it is enclosed by a function, not procedure");
+            helper.AssertErrorMessage(41, Error.SEMANTIC_ERROR, 115, 23, "Return statement has type 'integer' when enclosing function has type 'Array<integer>'");
+            helper.AssertErrorMessage(42, Error.SEMANTIC_ERROR, 118, 60, "Redeclaration of identifier 'a'");
+            helper.AssertErrorMessage(43, Error.SEMANTIC_ERROR, 123, 76, "Type 'real' is inaccessible");
+            helper.AssertErrorMessage(44, Error.SEMANTIC_ERROR, 135, 16, "Identifier 'valid' is not callable");
+            helper.AssertErrorMessage(45, Error.SEMANTIC_ERROR, 139, 23, "Invalid types 'string' and 'integer' for operator '+'");
+            helper.AssertErrorMessage(46, Error.SEMANTIC_ERROR, 147, 8, "Call to 'valid' has 1 arguments but 'valid' has 0 parameters");
+            helper.AssertErrorMessage(47, Error.SEMANTIC_ERROR, 148, 15, "Argument 1 for 'valid2' has type 'integer' but corresponding parameter has type 'string'");
+            helper.AssertErrorMessage(48, Error.SEMANTIC_ERROR, 152, 16, "Call to 'foo' has 2 arguments but 'foo' has 1 parameters");
         }
+        
 
         [TestMethod()]
         public void ValidExpressionsAreAccepted()
@@ -222,7 +269,7 @@ namespace CodeGenCourseProject.SemanticChecking.Tests
             var semanticChecker = new SemanticChecker(reporter);
             node.Accept(semanticChecker);
 
-            Assert.AreEqual(102, reporter.Errors.Count);
+            Assert.AreEqual(116, reporter.Errors.Count);
 
             var helper = new TestHelper(reporter);
 
@@ -352,7 +399,7 @@ namespace CodeGenCourseProject.SemanticChecking.Tests
             helper.AssertErrorMessage(92, Error.SEMANTIC_ERROR, 138, 21, "Cannot assign an expression with type 'integer' into a variable with type 'boolean'");
 
             helper.AssertErrorMessage(93, Error.SEMANTIC_ERROR, 141, 17, "Invalid types 'real' and 'integer' for operator '+'");
-            helper.AssertErrorMessage(94, Error.SEMANTIC_ERROR, 142, 13, "Cannot get the size of an non-array object 'i'");
+            helper.AssertErrorMessage(94, Error.SEMANTIC_ERROR, 142, 13, "Cannot get the size of an expression with type 'integer'");
             helper.AssertErrorMessage(95, Error.SEMANTIC_ERROR, 143, 13, "Identifier 'undeclared' has not been declared");
 
             helper.AssertErrorMessage(96, Error.SEMANTIC_ERROR, 146, 29, "Cannot assign an expression with type 'Array<integer>' into a variable with type 'Array<string>'");
@@ -362,6 +409,21 @@ namespace CodeGenCourseProject.SemanticChecking.Tests
             helper.AssertErrorMessage(100, Error.SEMANTIC_ERROR, 152, 13, "Cannot assign an expression with type 'Array<boolean>' into ");
             helper.AssertErrorMessage(101, Error.SEMANTIC_ERROR, 153, 17, "Invalid type 'Array<integer>' for operator '+'");
 
+            helper.AssertErrorMessage(102, Error.SEMANTIC_ERROR, 155, 8, "Identifier 'boolean' has not been declared");
+            helper.AssertErrorMessage(103, Error.SEMANTIC_ERROR, 156, 8, "Identifier 'writeln' has not been declared");
+            helper.AssertErrorMessage(104, Error.SEMANTIC_ERROR, 157, 8, "Identifier 'read' has not been declared");
+            helper.AssertErrorMessage(105, Error.SEMANTIC_ERROR, 158, 15, "Invalid types 'integer' and '<predefined identifier>' for operator '+'");
+            helper.AssertErrorMessage(106, Error.SEMANTIC_ERROR, 159, 15, "Invalid types 'integer' and '<predefined identifier>' for operator '+'");
+            helper.AssertErrorMessage(107, Error.SEMANTIC_ERROR, 160, 13, "Cannot assign an expression with type '<predefined identifier>' into a variable with type 'integer'");
+            helper.AssertErrorMessage(108, Error.SEMANTIC_ERROR, 161, 13, "Cannot assign an expression with type '<predefined identifier>' into a variable with type 'integer'");
+            helper.AssertErrorMessage(109, Error.SEMANTIC_ERROR, 162, 13, "Invalid type '<predefined identifier>' for operator '-'");
+            helper.AssertErrorMessage(110, Error.SEMANTIC_ERROR, 163, 13, "Invalid type '<predefined identifier>' for operator '-'");
+            helper.AssertErrorMessage(111, Error.SEMANTIC_ERROR, 164, 8, "Identifier 'read'");
+
+            helper.AssertErrorMessage(112, Error.SEMANTIC_ERROR, 166, 14, "Cannot get the size of an expression with type 'integer'");
+            helper.AssertErrorMessage(113, Error.SEMANTIC_ERROR, 167, 14, "Cannot get the size of an expression with type 'string'");
+            helper.AssertErrorMessage(114, Error.SEMANTIC_ERROR, 168, 14, "Cannot get the size of an expression with type 'boolean'");
+            helper.AssertErrorMessage(115, Error.SEMANTIC_ERROR, 169, 16, "Cannot get the size of an expression with type 'boolean'");
         }
     }
 }

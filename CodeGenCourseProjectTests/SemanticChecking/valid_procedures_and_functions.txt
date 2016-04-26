@@ -5,7 +5,7 @@ begin
 		var a : integer;
 	end;
 
-	procedure_args(a : integer, b : boolean);
+	procedure args(a : integer, b : boolean);
 	begin
 		if b then
 			return;
@@ -20,39 +20,53 @@ begin
 		return 4 * 2;
 	end;
 
-	function_args(a : integer, b : string, c : real) : boolean;
+	function f_args(a : integer, b : string, c : real) : boolean;
 	begin
 		a := 4 * 2;
 		writeln("hello");
-		if not b and c < 4.2 then
+		if not (b = "hello") and (c < 4.2) then
 			return true
 		else
 			return false;
 	end;
 	
 	p_no_args();
-	procedure_args(2 % 4, true);
+	args(2 % 4, true);
 	f_no_args();
 
+	function returns_integer() : integer;
+	begin
+		return 1;
+	end; 
+
+	args(returns_integer(), returns_integer() < 1);
+
 	var r : real;
-	f_args(3*32, "hello", r * 124);
+	f_args(3*32, "hello", r * 124.4e2);
 
 	var b : boolean;
 	var i : integer;
 	var s : string;
 
 	i := f_no_args() - 24;
-	b := function_args() and not true;
+	b := f_args(1, "foo", 12.34) and not true;
 
 	procedure recursive();
 	begin
 		recursive();
 	end;
 
-	function f_recursive(a : int) : string;
-	{
+	function f_recursive(a : integer) : string;
+	begin
 		return f_recursive(a + 1);
-	}
+	end;
+
+
+	begin
+		var integer : real;
+		writeln(integer);
+		read(integer);
+	end;
 
 	procedure nested_no_args();
 	begin
@@ -65,7 +79,7 @@ begin
 		end;
 	end;
 
-	procedure inner(a : int); {* redeclaration in outer scope *}
+	procedure inner(a : integer); {* redeclaration in outer scope *}
 	begin
 		return;
 	end;
@@ -84,12 +98,10 @@ begin
 		f_nested_args();
 	end;
 
-
-
-	writeln(2, 3, 4, "hello " + world, true <> false);
+	writeln(2, 3, 4, "hello " + "world", true <> false);
 	writeln();
-	read(a, b, c, d);
-	
+	var arr : array [] of boolean;
+	read(arr[4], b, i, s);
 
 	procedure read(a : string);
 	begin
@@ -102,8 +114,38 @@ begin
 	procedure writeln(var a : integer);
 	begin
 		a := a + 4;
+		procedure read();
+		begin
+			a := 4;
+		end;
+		read();
 	end;
 
 	writeln(4);
 
-end;
+	procedure arr_arg(a : array [] of integer);
+	begin
+		a[5] := 4;
+	end;
+
+	function arr_ret_val() : array [] of real;
+	begin
+		var a : integer;
+		var b : array [] of real;
+		return b;
+	end;
+
+
+	var retArr : array [] of real;
+	retArr := arr_ret_val();
+	var count : integer;
+	count := arr_ret_val().size;
+
+	var as : array [] of string;
+	read(as[4]);
+
+	function foo() : boolean;
+	begin
+		var foo : real;
+	end;
+end.
