@@ -82,6 +82,8 @@
     <Compile Include="AST\VariableAssignmentNode.cs" />
     <Compile Include="AST\VariableDeclarationNode.cs" />
     <Compile Include="AST\WhileNode.cs" />
+    <Compile Include="Codegen\CCodeGenerator.cs" />
+    <Compile Include="Codegen\CodeGenerator.cs" />
     <Compile Include="ErrorHandling\ErrorData.cs" />
     <Compile Include="ErrorHandling\ErrorReporter.cs" />
     <Compile Include="InternalCompilerError.cs" />
@@ -96,6 +98,17 @@
     <Compile Include="SemanticChecking\SemanticChecker.cs" />
     <Compile Include="SemanticChecking\Symbol.cs" />
     <Compile Include="SemanticChecking\SymbolTable.cs" />
+    <Compile Include="SemanticChecking\SymbolTableLevel.cs" />
+    <Compile Include="TAC\Function.cs" />
+    <Compile Include="TAC\TACGenerator.cs" />
+    <Compile Include="TAC\Values\TACArrayDeclaration.cs" />
+    <Compile Include="TAC\Values\TACArrayIndex.cs" />
+    <Compile Include="TAC\Values\TACCallWriteln.cs" />
+    <Compile Include="TAC\Values\TACIdentifier.cs" />
+    <Compile Include="TAC\Values\TACInteger.cs" />
+    <Compile Include="TAC\TACStatement.cs" />
+    <Compile Include="TAC\Values\TACValue.cs" />
+    <Compile Include="TAC\Values\TACVisitor.cs" />
     <Compile Include="Tokens\StringToken.cs" />
     <Compile Include="Tokens\OperatorToken.cs" />
     <Compile Include="Lexing\StringScanner.cs" />

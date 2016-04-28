@@ -1,0 +1,21 @@
+﻿program expressions;
+begin
+	var i, j : integer;
+
+	i := 3 + 4;
+	j := 13 * 20;
+	i := 10 - 7;
+	j := 1 / 4;
+	i := 4;
+	j := -25;
+
+	j := (4 * 2) / (5 - 9);
+	
+	i := j % 20 - 4;
+	
+	var ia : array [23 *20] of integer;
+	ia[7*43] := 20 + 4;
+	ia[25 % 2] := ia[1] + ia[j - i];
+	
+	writeln(i, j, ia[12]);
+end.

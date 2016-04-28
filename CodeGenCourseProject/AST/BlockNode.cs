@@ -4,6 +4,7 @@ namespace CodeGenCourseProject.AST
 {
     public class BlockNode : ASTNode
     {
+        private SymbolTableLevel symbols;
         public BlockNode(int line, int column) : base(line, column)
         {
 
@@ -26,5 +27,16 @@ namespace CodeGenCourseProject.AST
         {
             visitor.Visit(this);
         }
+
+        internal void SetSymbols(SymbolTableLevel symbols)
+        {
+            this.symbols = symbols;
+        }
+
+        internal SymbolTableLevel GetSymbols()
+        {
+            return symbols;
+        }
+
     }
 }

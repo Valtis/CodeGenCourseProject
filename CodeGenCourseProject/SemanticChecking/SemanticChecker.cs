@@ -10,11 +10,11 @@ namespace CodeGenCourseProject.SemanticChecking
         private ErrorReporter reporter;
         private SymbolTable symbolTable;
         private const string ERROR_TYPE = "errortype";
-        private const string INTEGER_TYPE = "integer";
-        private const string REAL_TYPE = "real";
-        private const string STRING_TYPE = "string";
-        private const string BOOLEAN_TYPE = "boolean";
-        private const string VOID_TYPE = "void";
+        public const string INTEGER_TYPE = "integer";
+        public const string REAL_TYPE = "real";
+        public const string STRING_TYPE = "string";
+        public const string BOOLEAN_TYPE = "boolean";
+        public const string VOID_TYPE = "void";
 
         private List<string> predeclaredIdentifiers;
 
@@ -117,7 +117,7 @@ namespace CodeGenCourseProject.SemanticChecking
             {
                 child.Accept(this);
             }
-            symbolTable.PopLevel();
+            blockNode.SetSymbols(symbolTable.PopLevel());
         }
 
         public void Visit(DivideNode divideNode)
