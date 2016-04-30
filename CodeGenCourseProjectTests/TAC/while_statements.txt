@@ -1,0 +1,48 @@
+﻿program while_statements;
+begin	
+
+	while true do 
+	begin
+		var a : integer;
+		a := 4;
+	end;
+
+	while false do 
+	begin
+		var a : integer;
+	end;
+	
+	var a : integer;
+	a := 0;
+	while a < 5 do
+	begin
+		a := a + 1;
+		writeln(a);
+	end;
+
+	var b : integer;
+
+	b := 0;
+
+	while b <= 5 do
+	begin
+		var a : integer;
+		a := 0;
+		writeln(1);
+		while a < 3 do
+		begin
+			writeln(2);
+			a := a + 1;
+		end;
+		b := b + 1;
+	end;	
+	
+	var ia : array[1] of integer;
+	ia[0] := 0;
+
+	while ia[0] < 5 do
+	begin
+		writeln(ia[0]);
+		ia[0] := ia[0] + 1;
+	end;
+end.

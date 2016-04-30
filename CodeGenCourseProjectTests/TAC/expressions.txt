@@ -1,6 +1,7 @@
 ﻿program expressions;
 begin
 	var i, j : integer;
+	
 
 	i := 3 + 4;
 	j := 13 * 20;
@@ -17,5 +18,51 @@ begin
 	ia[7*43] := 20 + 4;
 	ia[25 % 2] := ia[1] + ia[j - i];
 	
-	writeln(i, j, ia[12]);
+	var k, l : real;
+
+	k := 42.1;
+	l := 0.0;
+	k := 4.2 * l;
+	l := 3.14159 / k;
+	l := -l;
+	k := 1.23 - 32.1;
+
+	var ir : array [] of real;
+	ir[i] := (9.23 - 1.2) / k;
+
+	var m, n : boolean;
+	m := true;
+	n := false;
+
+	m := 1 < 2;	
+	n := 4.323 <= 32.13;	
+	m := i = j;
+	m := 1 >= 2;
+	n := 1 > 2;
+	m := m and true;
+	m := m or false;
+	m := not m;
+	
+	var true, false : boolean;
+	
+	m := true;
+	n := false;
+
+	var ib : array [99] of boolean;
+	ib[21] := m;
+
+	var o, p : string;
+	
+	o := "hello ";
+	p := "world";
+	o := o + p;
+	var is : array [i] of string;
+	is[j] := o;
+
+	var ia2 : array [] of integer;
+	ia := ia2;
+
+	i := 2 + ia.size;
+
+	m := i <> j;
 end.

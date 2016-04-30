@@ -127,7 +127,7 @@ namespace CodeGenCourseProject.Codegen
         private void GenerateCode(Function function)
         {
             EmitFunctionPrologue(function);
-            foreach (var code in function.Code)
+            foreach (var code in function.Statements)
             {
                 EmitStatement(code);
             }
@@ -149,7 +149,7 @@ namespace CodeGenCourseProject.Codegen
             EmitBlockStart();
         }
 
-        public void EmitStatement(TACStatement statement)
+        private void EmitStatement(TACStatement statement)
         {
 
             EmitAssignmentStatement(statement);
@@ -184,7 +184,7 @@ namespace CodeGenCourseProject.Codegen
             Emit(cStatement);
         }
 
-        public void EmitFunctionEpilogue(Function function)
+        private void EmitFunctionEpilogue(Function function)
         {
 
             if (function.Name == TACGenerator.ENTRY_POINT)
@@ -237,7 +237,7 @@ namespace CodeGenCourseProject.Codegen
             cValues.Push(tacArrayIndex.Name + ".arr[" + index + "]");
         }
 
-        public void Accept(TACArrayDeclaration tacArrayDeclaration)
+        public void Visit(TACArrayDeclaration tacArrayDeclaration)
         {
             var type = GetCType(tacArrayDeclaration.Type);
             var name = tacArrayDeclaration.Name;
@@ -246,7 +246,7 @@ namespace CodeGenCourseProject.Codegen
             cValues.Push("__create_" + type + "_array(&" + tacArrayDeclaration.Name + ", " + size + ", __LINE__)");
         }
 
-        public void Accept(TACCallWriteln tacCallWriteln)
+        public void Visit(TACCallWriteln tacCallWriteln)
         {
             var formatSpecifiers = new Dictionary<string, string>();
             formatSpecifiers.Add("int", "%d");
@@ -279,7 +279,8 @@ namespace CodeGenCourseProject.Codegen
             {
                 case SemanticChecker.INTEGER_TYPE:
                     return "int";
-                    break;
+                case SemanticChecker.BOOLEAN_TYPE:
+                    return "char";                    
                 default:
                     throw new InternalCompilerError("Should not be reached");
             }
@@ -306,5 +307,41 @@ namespace CodeGenCourseProject.Codegen
 
         }
 
+        public void Visit(TACReal tacReal)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Visit(TACBoolean tacBoolean)
+        {
+            cValues.Push((tacBoolean.Value ? 1 : 0).ToString());
+        }
+
+        public void Visit(TACString tacString)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Visit(TACArraySize tacArraySize)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Visit(TACLabel tacLabel)
+        {
+            cValues.Push("label_" + tacLabel.ID + ":");
+        }
+
+        public void Visit(TACJumpIfFalse tacJumpIfTrue)
+        {
+            tacJumpIfTrue.Condition.Accept(this);
+            Emit("if (!" + cValues.Pop()  + ")");
+            cValues.Push("goto label_" + tacJumpIfTrue.Label.ID);
+        }
+
+        public void Visit(TACJump tacJump)
+        {
+            cValues.Push("goto label_" + tacJump.Label.ID);
+        }
     }
 }

@@ -6,20 +6,20 @@ using System.Threading.Tasks;
 
 namespace CodeGenCourseProject.TAC.Values
 {
-    public class TACCallWriteln : TACValue
+    public class TACArraySize : TACValue
     {
-        private readonly IList<TACValue> arguments;
+        private readonly TACValue array;
 
-        public TACCallWriteln(IList<TACValue> arguments)
+        public TACArraySize(TACValue array)
         {
-            this.arguments = arguments;
+            this.array = array;
         }
 
-        public IList<TACValue> Arguments
+        public TACValue Array
         {
             get
             {
-                return arguments;
+                return array;
             }
         }
 
@@ -30,12 +30,12 @@ namespace CodeGenCourseProject.TAC.Values
 
         public override bool Equals(object obj)
         {
-            return (obj is TACCallWriteln) && ((TACCallWriteln)obj).arguments.SequenceEqual(arguments);
+            return obj is TACArraySize && ((TACArraySize)obj).array.Equals(array);
         }
 
         public override string ToString()
         {
-            return "writeln(" + string.Join(", ", arguments) + ")";
+            return array.ToString() + ".size";
         }
     }
 }

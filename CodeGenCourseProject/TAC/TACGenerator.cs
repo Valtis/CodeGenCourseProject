@@ -6,8 +6,12 @@ using System.Collections.Generic;
 
 namespace CodeGenCourseProject.TAC
 {
-    public enum Operator { PLUS, MINUS, MULTIPLY, DIVIDE, MODULO };
-    
+    public enum Operator
+    {
+        PLUS, MINUS, MULTIPLY, DIVIDE, MODULO, CONCAT,
+        LESS_THAN, LESS_THAN_OR_EQUAL, EQUAL, GREATER_THAN_OR_EQUAL, GREATER_THAN, NOT_EQUAL, AND, OR, NOT
+    };
+
     public static class OperatorExtension
     {
         public static string Name(this Operator op)
@@ -24,7 +28,26 @@ namespace CodeGenCourseProject.TAC
                     return "/";
                 case Operator.MODULO:
                     return "%";
-
+                case Operator.CONCAT:
+                    return "<concat>";
+                case Operator.LESS_THAN:
+                    return "<";
+                case Operator.LESS_THAN_OR_EQUAL:
+                    return "<=";
+                case Operator.EQUAL:
+                    return "==";
+                case Operator.GREATER_THAN_OR_EQUAL:
+                    return ">=";
+                case Operator.GREATER_THAN:
+                    return ">=";
+                case Operator.NOT_EQUAL:
+                    return "!=";
+                case Operator.AND:
+                    return "&&";
+                case Operator.OR:
+                    return "||";
+                case Operator.NOT:
+                    return "!";
                 default:
                     throw new InternalCompilerError("Default branch taken in Operator.Name()");
             }
@@ -37,7 +60,8 @@ namespace CodeGenCourseProject.TAC
         // working stack; functions will be eventually moved into the function list
         private readonly Stack<Function> functionStack;
         public const string ENTRY_POINT = "<ENTRY POINT>";
-        private int id;
+        private int tempID;
+        private int labelID;
         private SymbolTable symbolTable;
         private Stack<TACValue> tacValueStack; // used to store temporaries when evaluating sub-expressions
 
@@ -47,7 +71,8 @@ namespace CodeGenCourseProject.TAC
             functionStack = new Stack<Function>();
             tacValueStack = new Stack<TACValue>();
             symbolTable = new SymbolTable(null);
-            id = 0;
+            tempID = 0;
+            labelID = 0;
         }
 
         public IList<Function> Functions
@@ -62,14 +87,14 @@ namespace CodeGenCourseProject.TAC
         {
             var nameNode = (IdentifierNode)node.Children[0];
             var expr = node.Children[1];
-            
+
             expr.Accept(this);
-            
+
             var symbol = (ArraySymbol)symbolTable.GetSymbol(nameNode.Value);
 
             var exprTAC = tacValueStack.Pop();
             tacValueStack.Push(
-                new TACArrayIndex(nameNode.Value, exprTAC, symbol.BaseType, symbol.Id));            
+                new TACArrayIndex(nameNode.Value, exprTAC, symbol.BaseType, symbol.Id));
         }
 
         public void Visit(ArrayTypeNode arrayTypeNode)
@@ -95,6 +120,8 @@ namespace CodeGenCourseProject.TAC
             {
                 child.Accept(this);
             }
+
+            symbolTable.PopLevel();
         }
 
         public void Visit(CallNode callNode)
@@ -119,7 +146,7 @@ namespace CodeGenCourseProject.TAC
                 list.Reverse();
                 Emit(new TACCallWriteln(list));
                 AssertEmptyTacValueStack();
-                return;                   
+                return;
             }
 
             AssertEmptyTacValueStack();
@@ -128,7 +155,7 @@ namespace CodeGenCourseProject.TAC
 
         public void Visit(EqualsNode equalsNode)
         {
-            throw new NotImplementedException();
+            HandleBinaryOperator(equalsNode, Operator.EQUAL);
         }
 
         public void Visit(FunctionNode functionNode)
@@ -153,22 +180,23 @@ namespace CodeGenCourseProject.TAC
 
         public void Visit(OrNode orNode)
         {
-            throw new NotImplementedException();
+            HandleBinaryOperator(orNode, Operator.OR);
         }
 
         public void Visit(NotNode notNode)
         {
-            throw new NotImplementedException();
+            HandleUnaryOperator(notNode, Operator.NOT);
         }
 
         public void Visit(StringNode stringNode)
         {
-            throw new NotImplementedException();
+            tacValueStack.Push(
+                new TACString(stringNode.Value));
         }
 
         public void Visit(NegateNode negateNode)
         {
-            throw new NotImplementedException();
+            HandleUnaryOperator(negateNode, Operator.MINUS);
         }
 
         public void Visit(ModuloNode moduloNode)
@@ -178,21 +206,54 @@ namespace CodeGenCourseProject.TAC
 
         public void Visit(LessThanNode lessThanNode)
         {
-            throw new NotImplementedException();
+            HandleBinaryOperator(lessThanNode, Operator.LESS_THAN);
         }
 
         public void Visit(LessThanOrEqualNode lessThanOrEqualNode)
         {
-            throw new NotImplementedException();
+            HandleBinaryOperator(lessThanOrEqualNode, Operator.LESS_THAN_OR_EQUAL);
         }
 
         public void Visit(IdentifierNode identifierNode)
         {
             var name = identifierNode.Value;
             var symbol = symbolTable.GetSymbol(name);
-            if (symbol == null)
+
+            // if symbol is null, it's predeclared identifier and we need to check for true/false
+            // if the symbol is "true" or "false", it might still be a predefined identifier, as 
+            // the symbol table works at block scope. This means that for declarations like
+            //
+            // begin
+            //   a := true
+            //   var true : integer;
+            // end;
+            //  
+            // the true-identifier in a would show up as symbol, even if it is the boolean constant in this
+            // context
+            //
+            if (symbol == null || symbol.Name == "true" || symbol.Name == "false")
             {
-                return; // identifier is predeclared identifier - skip
+
+                // if the symbol is null, or it is declared after the identifier, the identifier
+                // is predeclared identifier
+                if (symbol == null || symbol.Line > identifierNode.Line)
+                {
+                    switch (name)
+                    {
+                        case "true":
+                            tacValueStack.Push(
+                                new TACBoolean(true));
+                            break;
+                        case "false":
+                            tacValueStack.Push(
+                                new TACBoolean(false));
+                            break;
+                        default:
+                            break;
+                    }
+                    return;
+                }
+
             }
             tacValueStack.Push(
                 new TACIdentifier(name, symbol.Type, symbol.Id));
@@ -205,12 +266,43 @@ namespace CodeGenCourseProject.TAC
 
         public void Visit(IfNode ifNode)
         {
-            throw new NotImplementedException();
+            AssertEmptyTacValueStack();
+            var expression = ifNode.Children[0];
+            var ifBlock = ifNode.Children[1];
+            var hasElseBlock = ifNode.Children.Count == 3;
+
+
+            var endIfBlock = GetLabel();
+            TACLabel endElseBlock = null;
+            if (hasElseBlock)
+            {
+                endElseBlock = GetLabel();
+            }
+
+            expression.Accept(this);
+            var condition = tacValueStack.Pop();
+            Emit(new TACJumpIfFalse(condition, endIfBlock));
+            ifBlock.Accept(this);
+            
+            if (hasElseBlock)
+            {
+                Emit(new TACJump(endElseBlock));
+            }
+            
+            Emit(endIfBlock);
+
+            if (hasElseBlock)
+            {
+                var elseBlock = ifNode.Children[2];
+                elseBlock.Accept(this);
+                Emit(endElseBlock);
+            }
+            AssertEmptyTacValueStack();
         }
 
         public void Visit(GreaterThanNode greaterThanNode)
         {
-            throw new NotImplementedException();
+            HandleBinaryOperator(greaterThanNode, Operator.GREATER_THAN);
         }
 
         public void Visit(ProgramNode programNode)
@@ -227,12 +319,12 @@ namespace CodeGenCourseProject.TAC
 
         public void Visit(RealNode realNode)
         {
-            throw new NotImplementedException();
+            tacValueStack.Push(new TACReal(realNode.Value));
         }
 
         public void Visit(GreaterThanOrEqualNode greaterThanOrEqualNode)
         {
-            throw new NotImplementedException();
+            HandleBinaryOperator(greaterThanOrEqualNode, Operator.GREATER_THAN_OR_EQUAL);
         }
 
         public void Visit(ProcedureNode procedureNode)
@@ -290,17 +382,31 @@ namespace CodeGenCourseProject.TAC
 
         public void Visit(NotEqualsNode notEqualsNode)
         {
-            throw new NotImplementedException();
+            HandleBinaryOperator(notEqualsNode, Operator.NOT_EQUAL);
         }
 
         public void Visit(WhileNode whileNode)
         {
-            throw new NotImplementedException();
+            AssertEmptyTacValueStack();
+            var beginLabel = GetLabel();
+            var endLabel = GetLabel();
+            Emit(beginLabel);
+
+            whileNode.Children[0].Accept(this);
+            var condition = tacValueStack.Pop();
+            Emit(new TACJumpIfFalse(condition, endLabel));
+            whileNode.Children[1].Accept(this);
+
+
+            Emit(new TACJump(beginLabel));
+            Emit(endLabel);
+          
+           AssertEmptyTacValueStack();
         }
 
         public void Visit(ErrorNode errorNode)
         {
-            throw new NotImplementedException();
+            throw new InternalCompilerError("ErrorNode present when error-free syntax tree is expected");
         }
 
         public void Visit(DivideNode divideNode)
@@ -320,17 +426,51 @@ namespace CodeGenCourseProject.TAC
 
         public void Visit(ArraySizeNode node)
         {
-            throw new NotImplementedException();
+            node.Children[0].Accept(this);
+            tacValueStack.Push(
+                new TACArraySize(tacValueStack.Pop()));
         }
 
         public void Visit(AndNode node)
         {
-            throw new NotImplementedException();
+            HandleBinaryOperator(node, Operator.AND);
         }
 
         public void Visit(AddNode node)
         {
-            HandleBinaryOperator(node, Operator.PLUS);
+            if (node.NodeType() == SemanticChecker.STRING_TYPE)
+            {
+                HandleBinaryOperator(node, Operator.CONCAT);
+            }
+            else
+            {
+                HandleBinaryOperator(node, Operator.PLUS);
+            }
+        }
+
+        private void HandleUnaryOperator(ASTNode node, Operator op)
+        {
+            foreach (var child in node.Children)
+            {
+                child.Accept(this);
+            }
+
+            var tacValue = GetTemporary(node);
+
+            var rhs = tacValueStack.Pop();
+            Emit(op, rhs, tacValue);
+            tacValueStack.Push(tacValue);
+        }
+
+        private TACIdentifier GetTemporary(ASTNode node)
+        {
+            var curId = tempID++;
+            return new TACIdentifier("__t", node.NodeType(), curId);
+        }
+
+        private TACLabel GetLabel()
+        {
+            return new TACLabel(labelID++);
         }
 
         private void HandleBinaryOperator(ASTNode node, Operator op)
@@ -340,34 +480,34 @@ namespace CodeGenCourseProject.TAC
                 child.Accept(this);
             }
 
-            var curId = id++;
+            var curId = tempID++;
             var tacValue = new TACIdentifier("__t", node.NodeType(), curId);
 
             var rhs = tacValueStack.Pop();
             var lhs = tacValueStack.Pop();
             Emit(op, lhs, rhs, tacValue);
-            
+
             tacValueStack.Push(tacValue);
         }
-
+        
         private void Emit(TACValue operand)
         {
-            functionStack.Peek().Code.Add(new TACStatement(null, null, operand, null));
+            functionStack.Peek().Statements.Add(new TACStatement(null, null, operand, null));
         }
 
         private void Emit(TACValue operand, TACValue destination)
         {
-            functionStack.Peek().Code.Add(new TACStatement(null, null, operand, destination));
+            functionStack.Peek().Statements.Add(new TACStatement(null, null, operand, destination));
         }
 
         private void Emit(Operator op, TACValue operand, TACValue destination)
         {
-            functionStack.Peek().Code.Add(new TACStatement(op, null, operand, destination));
+            functionStack.Peek().Statements.Add(new TACStatement(op, null, operand, destination));
         }
 
         private void Emit(Operator op, TACValue lhs, TACValue rhs, TACValue destination)
         {
-            functionStack.Peek().Code.Add(new TACStatement(op, lhs, rhs, destination));
+            functionStack.Peek().Statements.Add(new TACStatement(op, lhs, rhs, destination));
         }
 
         void AssertEmptyTacValueStack()

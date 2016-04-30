@@ -12,7 +12,14 @@ namespace CodeGenCourseProject.TAC.Values
         void Visit(TACInteger tacInteger);
         void Visit(TACIdentifier tacIdentifier);
         void Visit(TACArrayIndex tacArrayIndex);
-        void Accept(TACArrayDeclaration tacArrayDeclaration);
-        void Accept(TACCallWriteln tacCallWriteln);
+        void Visit(TACArrayDeclaration tacArrayDeclaration);
+        void Visit(TACCallWriteln tacCallWriteln);
+        void Visit(TACReal tacReal);
+        void Visit(TACLabel tacLabel);
+        void Visit(TACJump tacJump);
+        void Visit(TACJumpIfFalse tacJumpIfTrue);
+        void Visit(TACBoolean tacBoolean);
+        void Visit(TACArraySize tacArraySize);
+        void Visit(TACString tacString);
     }
 }

@@ -55,7 +55,7 @@ namespace CodeGenCourseProject.TAC.Values
 
         public void Accept(TACVisitor visitor)
         {
-            visitor.Accept(this);
+            visitor.Visit(this);
         }
 
         public override string ToString()

@@ -1,0 +1,16 @@
+﻿program if_statements;
+begin
+	var a : integer;
+	if true then
+	begin
+		a := 4;
+	end;
+
+	if a < 4 then
+	begin
+		a := 6;
+	end
+	else
+		a := 2;
+	
+end.

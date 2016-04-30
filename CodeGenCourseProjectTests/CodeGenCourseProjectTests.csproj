@@ -137,6 +137,8 @@
     <Content Include="SemanticChecking\valid_variable_declarations.txt" />
     <Content Include="SemanticChecking\valid_while_statements.txt" />
     <Content Include="TAC\expressions.txt" />
+    <Content Include="TAC\if_statements.txt" />
+    <Content Include="TAC\while_statements.txt" />
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

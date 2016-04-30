@@ -17,7 +17,7 @@ namespace CodeGenCourseProject.TAC
             this.code = new List<TACStatement>();
         }
 
-        public IList<TACStatement> Code
+        public IList<TACStatement> Statements
         {
             get
             {
