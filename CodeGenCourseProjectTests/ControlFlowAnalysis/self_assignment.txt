@@ -1,0 +1,6 @@
+﻿program self_assignment;
+begin
+   var a : integer;
+   a := a;
+   
+end.

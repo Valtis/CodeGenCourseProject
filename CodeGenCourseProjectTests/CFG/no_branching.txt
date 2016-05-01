@@ -1,0 +1,8 @@
+﻿program no_branching;
+begin
+
+var a : integer;
+a := 4 * 2;
+a := (a + 34)  - 2;
+writeln("hello", a);
+end.

@@ -4,7 +4,11 @@
     {
         private readonly double value;
 
-        public TACReal(double value)
+        public TACReal(double value) : this(0, 0, value)
+        {
+        }
+
+        public TACReal(int line, int column, double value) : base(line, column)
         {
             this.value = value;
         }
@@ -27,7 +31,7 @@
             return obj is TACReal && ((TACReal)obj).value == value;
         }
 
-        public void Accept(TACVisitor visitor)
+        public override void Accept(TACVisitor visitor)
         {
             visitor.Visit(this);
         }

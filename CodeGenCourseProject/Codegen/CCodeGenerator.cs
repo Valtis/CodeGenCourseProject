@@ -97,7 +97,7 @@ namespace CodeGenCourseProject.Codegen
             Emit("int is_negative = size < 0;");
             Emit("if (is_negative) goto fail;");
             Emit("size = sizeof(" + type + ") * size;");
-            Emit("in->arr = malloc(size);");
+            Emit("in->arr = calloc(size);");
             Emit("in->size = size;");
             Emit("return;");
             Emit("fail:");

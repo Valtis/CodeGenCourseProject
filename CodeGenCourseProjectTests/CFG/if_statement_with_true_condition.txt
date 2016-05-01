@@ -1,0 +1,11 @@
+﻿program if_true;
+begin
+	var a : integer;
+	a := 21 * 4;
+	if true then
+		a := 4 * 213
+	else
+		a := 2*34;
+	
+	a := 39* 12;
+end.

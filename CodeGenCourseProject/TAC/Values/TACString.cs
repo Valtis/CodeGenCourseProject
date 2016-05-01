@@ -4,7 +4,11 @@
     {
         private readonly string value;
 
-        public TACString(string value)
+        public TACString(string value) : this(0, 0, value)
+        {
+        }
+
+        public TACString(int line, int column, string value) : base(line, column)
         {
             this.value = value;
         }
@@ -27,7 +31,7 @@
             return obj is TACString && ((TACString)obj).value == value;
         }
 
-        public void Accept(TACVisitor visitor)
+        public override void Accept(TACVisitor visitor)
         {
             visitor.Visit(this);
         }

@@ -45,7 +45,14 @@ namespace CodeGenCourseProject.TAC.Values
             }
         }
 
-        public TACArrayIndex(string name, TACValue index, string type, int id)
+        public TACArrayIndex(string name, TACValue index, string type, int id) : 
+            this(0, 0, name, index, type, id)
+        {
+
+        }
+
+        public TACArrayIndex(
+            int line, int column, string name, TACValue index, string type, int id) : base(line, column)
         {
             this.name = name + "_" + id;
             this.index = index;
@@ -70,7 +77,7 @@ namespace CodeGenCourseProject.TAC.Values
         }
 
 
-        public void Accept(TACVisitor visitor)
+        public override void Accept(TACVisitor visitor)
         {
             visitor.Visit(this);
         }

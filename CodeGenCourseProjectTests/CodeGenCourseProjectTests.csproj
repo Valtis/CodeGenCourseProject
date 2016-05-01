@@ -63,6 +63,8 @@
     <Compile Include="AST\RealNodeTests.cs" />
     <Compile Include="AST\StringNodeTests.cs" />
     <Compile Include="AST\VariableAssignmentNodeTests.cs" />
+    <Compile Include="CFG\CFGGeneratorTests.cs" />
+    <Compile Include="ControlFlowAnalysis\ControlFlowAnalyzerTests.cs" />
     <Compile Include="Lexing\LexerTests.cs" />
     <Compile Include="Lexing\StringTokenTests.cs" />
     <Compile Include="Parsing\ParserTests.cs" />
@@ -82,6 +84,19 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="CFG\if_else_statement.txt" />
+    <Content Include="CFG\if_statement_with_false_condition.txt" />
+    <Content Include="CFG\if_statement_with_true_condition.txt" />
+    <Content Include="CFG\simple_if_statement.txt" />
+    <Content Include="CFG\no_branching.txt" />
+    <Content Include="ControlFlowAnalysis\invalid_if_branch_only_initialization.txt" />
+    <Content Include="ControlFlowAnalysis\initialized_variable_no_branches.txt" />
+    <Content Include="ControlFlowAnalysis\self_assignment.txt" />
+    <Content Include="ControlFlowAnalysis\uninitialized_variable_no_branches.txt" />
+    <Content Include="ControlFlowAnalysis\usage_before_assignment.txt" />
+    <Content Include="ControlFlowAnalysis\valid_else_branch_only_initialization.txt" />
+    <Content Include="ControlFlowAnalysis\valid_if_branch_only_initialization.txt" />
+    <Content Include="ControlFlowAnalysis\valid_if_else_initialization.txt" />
     <Content Include="Lexing\backtracking.txt" />
     <Content Include="Lexing\indentation.txt" />
     <Content Include="Lexing\invalid_comments.txt" />

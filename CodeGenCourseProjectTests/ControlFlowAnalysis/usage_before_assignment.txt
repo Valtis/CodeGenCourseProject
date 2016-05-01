@@ -1,0 +1,6 @@
+﻿program usage_before_initializing;
+begin
+	var a, b: integer;
+	b := a;
+	a := 23;
+end.

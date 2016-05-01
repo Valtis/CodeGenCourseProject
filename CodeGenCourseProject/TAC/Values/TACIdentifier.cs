@@ -9,6 +9,7 @@ namespace CodeGenCourseProject.TAC.Values
     public class TACIdentifier : TACValue
     {
         private readonly string name;
+        private readonly string unmangledName;
         private readonly int id;
         private readonly string type;
 
@@ -36,9 +37,22 @@ namespace CodeGenCourseProject.TAC.Values
             }
         }
 
-        public TACIdentifier(string name, string type, int id)
+        public string UnmangledName
+        {
+            get
+            {
+                return unmangledName;
+            }
+        }
+
+        public TACIdentifier(string name, string type, int id) : this(0, 0, name, type, id)
+        {
+        }
+
+        public TACIdentifier(int line, int column, string name, string type, int id) : base(line, column)
         {
             this.name = name + "_" + id;
+            this.unmangledName = name;
             this.type = type;
             this.id = id;
         }
@@ -59,8 +73,12 @@ namespace CodeGenCourseProject.TAC.Values
             return name == other.name && type == other.type && id == other.id;
         }
 
+        public override int GetHashCode()
+        {
+            return name.GetHashCode();
+        }
 
-        public void Accept(TACVisitor visitor)
+        public override void Accept(TACVisitor visitor)
         {
             visitor.Visit(this);
         }

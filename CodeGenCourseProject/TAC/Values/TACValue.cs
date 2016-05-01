@@ -1,7 +1,31 @@
 ﻿namespace CodeGenCourseProject.TAC.Values
 {
-    public interface TACValue
+    public abstract class TACValue
     {
-        void Accept(TACVisitor visitor);
+        private readonly int line;
+        private readonly int column;
+
+        public int Line
+        {
+            get
+            {
+                return line;
+            }
+        }
+
+        public int Column
+        {
+            get
+            {
+                return column;
+            }
+        }
+
+        public TACValue(int line, int column)
+        {
+            this.line = line;
+            this.column = column;
+        }
+        public abstract void Accept(TACVisitor visitor);
     }
 }

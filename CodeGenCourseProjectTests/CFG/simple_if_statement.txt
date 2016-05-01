@@ -1,0 +1,11 @@
+﻿program if_statements;
+begin
+	var a : integer;
+	a := 0;
+	if a = 0 then
+	begin
+		var b : integer;
+		b := 23 * 3;
+		writeln(b);
+	end
+end.

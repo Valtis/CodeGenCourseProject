@@ -14,6 +14,67 @@ namespace CodeGenCourseProject.TAC
                 return quad;
             }
         }
+        
+        public int Line
+        {
+            get
+            {
+                if (Destination != null)
+                {
+                    return Destination.Line;
+                }
+
+                return RightOperand.Line;
+            }
+        }
+
+        public int Column
+        {
+            get
+            {
+                if (Destination != null)
+                {
+                    return Destination.Column;
+                }
+
+                return RightOperand.Column;
+            }
+        }
+
+        public Operator? Operator
+        {
+            get
+            {
+                return quad.Item1;
+            }
+        }
+
+
+        public TACValue LeftOperand
+        {
+            get
+            {
+                return quad.Item2;
+            }
+        }
+
+
+        public TACValue RightOperand
+        {
+            get
+            {
+                return quad.Item3;
+            }
+        }
+
+
+        public TACValue Destination
+        {
+            get
+            {
+                return quad.Item4;
+            }
+        }
 
         public TACStatement(Operator? op, TACValue lhs, TACValue rhs, TACValue destination)
         {

@@ -4,7 +4,11 @@
     {
         private readonly bool value;
 
-        public TACBoolean(bool value)
+        public TACBoolean(bool value) : this(0, 0, value)
+        {
+        }
+
+        public TACBoolean(int line, int column, bool value) : base(line, column)
         {
             this.value = value;
         }
@@ -27,7 +31,7 @@
             return obj is TACBoolean && ((TACBoolean)obj).value == value;
         }
 
-        public void Accept(TACVisitor visitor)
+        public override void Accept(TACVisitor visitor)
         {
             visitor.Visit(this);
         }

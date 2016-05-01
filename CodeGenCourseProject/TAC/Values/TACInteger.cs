@@ -10,7 +10,11 @@ namespace CodeGenCourseProject.TAC.Values
     {
         private readonly int value;
 
-        public TACInteger(int value)
+        public TACInteger(int value) : this(0, 0, value)
+        {
+        }
+
+        public TACInteger(int line, int column, int value) : base(0, 0)
         {
             this.value = value;
         }
@@ -33,7 +37,7 @@ namespace CodeGenCourseProject.TAC.Values
             return obj is TACInteger && ((TACInteger)obj).value == value;
         }
 
-        public void Accept(TACVisitor visitor)
+        public override void Accept(TACVisitor visitor)
         {
             visitor.Visit(this);
         }

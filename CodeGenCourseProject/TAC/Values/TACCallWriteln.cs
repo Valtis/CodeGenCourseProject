@@ -10,7 +10,11 @@ namespace CodeGenCourseProject.TAC.Values
     {
         private readonly IList<TACValue> arguments;
 
-        public TACCallWriteln(IList<TACValue> arguments)
+        public TACCallWriteln(IList<TACValue> arguments) : this(0, 0, arguments)
+        {
+        }
+
+        public TACCallWriteln(int line, int column, IList<TACValue> arguments) : base(line, column)
         {
             this.arguments = arguments;
         }
@@ -23,7 +27,7 @@ namespace CodeGenCourseProject.TAC.Values
             }
         }
 
-        public void Accept(TACVisitor visitor)
+        public override void Accept(TACVisitor visitor)
         {
             visitor.Visit(this);
         }

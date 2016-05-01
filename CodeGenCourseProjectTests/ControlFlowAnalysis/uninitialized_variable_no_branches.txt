@@ -1,0 +1,6 @@
+﻿program uninitialized_variable;
+begin
+	var a, b : integer;
+	
+	b := a + 4;
+end.

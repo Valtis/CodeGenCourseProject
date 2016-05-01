@@ -94,7 +94,8 @@ namespace CodeGenCourseProject.TAC
 
             var exprTAC = tacValueStack.Pop();
             tacValueStack.Push(
-                new TACArrayIndex(nameNode.Value, exprTAC, symbol.BaseType, symbol.Id));
+                new TACArrayIndex(node.Line, node.Column,
+                    nameNode.Value, exprTAC, symbol.BaseType, symbol.Id));
         }
 
         public void Visit(ArrayTypeNode arrayTypeNode)
@@ -107,7 +108,7 @@ namespace CodeGenCourseProject.TAC
             }
             else
             {
-                arraySize = new TACInteger(0);
+                arraySize = new TACInteger(arrayTypeNode.Line, arrayTypeNode.Column, 0);
             }
 
             tacValueStack.Push(arraySize);
@@ -144,7 +145,7 @@ namespace CodeGenCourseProject.TAC
                     list.Add(tacValueStack.Pop());
                 }
                 list.Reverse();
-                Emit(new TACCallWriteln(list));
+                Emit(new TACCallWriteln(callNode.Line, callNode.Column, list));
                 AssertEmptyTacValueStack();
                 return;
             }
@@ -191,7 +192,7 @@ namespace CodeGenCourseProject.TAC
         public void Visit(StringNode stringNode)
         {
             tacValueStack.Push(
-                new TACString(stringNode.Value));
+                new TACString(stringNode.Line, stringNode.Column, stringNode.Value));
         }
 
         public void Visit(NegateNode negateNode)
@@ -242,11 +243,11 @@ namespace CodeGenCourseProject.TAC
                     {
                         case "true":
                             tacValueStack.Push(
-                                new TACBoolean(true));
+                                new TACBoolean(identifierNode.Line, identifierNode.Column, true));
                             break;
                         case "false":
                             tacValueStack.Push(
-                                new TACBoolean(false));
+                                new TACBoolean(identifierNode.Line, identifierNode.Column, false));
                             break;
                         default:
                             break;
@@ -256,12 +257,12 @@ namespace CodeGenCourseProject.TAC
 
             }
             tacValueStack.Push(
-                new TACIdentifier(name, symbol.Type, symbol.Id));
+                new TACIdentifier(identifierNode.Line, identifierNode.Column, name, symbol.Type, symbol.Id));
         }
 
         public void Visit(IntegerNode integerNode)
         {
-            tacValueStack.Push(new TACInteger(integerNode.Value));
+            tacValueStack.Push(new TACInteger(integerNode.Line, integerNode.Column, integerNode.Value));
         }
 
         public void Visit(IfNode ifNode)
@@ -281,12 +282,12 @@ namespace CodeGenCourseProject.TAC
 
             expression.Accept(this);
             var condition = tacValueStack.Pop();
-            Emit(new TACJumpIfFalse(condition, endIfBlock));
+            Emit(new TACJumpIfFalse(ifNode.Children[2].Line, ifNode.Children[2].Column, condition, endIfBlock));
             ifBlock.Accept(this);
             
             if (hasElseBlock)
             {
-                Emit(new TACJump(endElseBlock));
+                Emit(new TACJump(ifBlock.Line, ifBlock.Column, endElseBlock));
             }
             
             Emit(endIfBlock);
@@ -319,7 +320,7 @@ namespace CodeGenCourseProject.TAC
 
         public void Visit(RealNode realNode)
         {
-            tacValueStack.Push(new TACReal(realNode.Value));
+            tacValueStack.Push(new TACReal(realNode.Line, realNode.Column, realNode.Value));
         }
 
         public void Visit(GreaterThanOrEqualNode greaterThanOrEqualNode)
@@ -373,7 +374,8 @@ namespace CodeGenCourseProject.TAC
                 {
                     var name = (IdentifierNode)variableDeclarationNode.Children[i];
                     var symbol = (ArraySymbol)symbolTable.GetSymbol(name.Value);
-                    Emit(new TACArrayDeclaration(name.Value, symbol.BaseType, arraySize, symbol.Id));
+                    Emit(new TACArrayDeclaration(
+                        variableDeclarationNode.Line, variableDeclarationNode.Column, name.Value, symbol.BaseType, arraySize, symbol.Id));
                     AssertEmptyTacValueStack();
                 }
             }
@@ -394,11 +396,11 @@ namespace CodeGenCourseProject.TAC
 
             whileNode.Children[0].Accept(this);
             var condition = tacValueStack.Pop();
-            Emit(new TACJumpIfFalse(condition, endLabel));
+            Emit(new TACJumpIfFalse(whileNode.Line, whileNode.Column, condition, endLabel));
             whileNode.Children[1].Accept(this);
 
 
-            Emit(new TACJump(beginLabel));
+            Emit(new TACJump(whileNode.Line, whileNode.Column, beginLabel));
             Emit(endLabel);
           
            AssertEmptyTacValueStack();
@@ -428,7 +430,7 @@ namespace CodeGenCourseProject.TAC
         {
             node.Children[0].Accept(this);
             tacValueStack.Push(
-                new TACArraySize(tacValueStack.Pop()));
+                new TACArraySize(node.Line, node.Column, tacValueStack.Pop()));
         }
 
         public void Visit(AndNode node)
@@ -465,7 +467,7 @@ namespace CodeGenCourseProject.TAC
         private TACIdentifier GetTemporary(ASTNode node)
         {
             var curId = tempID++;
-            return new TACIdentifier("__t", node.NodeType(), curId);
+            return new TACIdentifier(node.Line, node.Column, "__t", node.NodeType(), curId);
         }
 
         private TACLabel GetLabel()
@@ -479,9 +481,8 @@ namespace CodeGenCourseProject.TAC
             {
                 child.Accept(this);
             }
-
-            var curId = tempID++;
-            var tacValue = new TACIdentifier("__t", node.NodeType(), curId);
+            
+            var tacValue = GetTemporary(node);
 
             var rhs = tacValueStack.Pop();
             var lhs = tacValueStack.Pop();

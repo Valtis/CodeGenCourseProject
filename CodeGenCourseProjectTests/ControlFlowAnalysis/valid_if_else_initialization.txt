@@ -1,0 +1,14 @@
+﻿program valid_if_else_initialization;
+begin
+	var a : array [4] of integer;
+	var b : integer;
+	a[0] := 4;
+	if a[0] > 4 then
+		b := 6
+	else
+		b := 2;
+	
+	a[3] := b * a[2];
+end.
+
+

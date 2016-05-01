@@ -82,8 +82,12 @@
     <Compile Include="AST\VariableAssignmentNode.cs" />
     <Compile Include="AST\VariableDeclarationNode.cs" />
     <Compile Include="AST\WhileNode.cs" />
+    <Compile Include="CFG\BasicBlock.cs" />
+    <Compile Include="CFG\CFGGenerator.cs" />
+    <Compile Include="CFG\CFGGraph.cs" />
     <Compile Include="Codegen\CCodeGenerator.cs" />
     <Compile Include="Codegen\CodeGenerator.cs" />
+    <Compile Include="ControlFlowAnalysis\AnalyseControlFlow.cs" />
     <Compile Include="ErrorHandling\ErrorData.cs" />
     <Compile Include="ErrorHandling\ErrorReporter.cs" />
     <Compile Include="InternalCompilerError.cs" />

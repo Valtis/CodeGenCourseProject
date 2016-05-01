@@ -10,11 +10,14 @@ namespace CodeGenCourseProject.TAC.Values
     {
         private readonly TACValue array;
 
-        public TACArraySize(TACValue array)
+        public TACArraySize(TACValue array) : this(0, 0, array)
+        {
+        }
+
+        public TACArraySize(int line, int column, TACValue array) : base(line, column)
         {
             this.array = array;
         }
-
         public TACValue Array
         {
             get
@@ -23,7 +26,7 @@ namespace CodeGenCourseProject.TAC.Values
             }
         }
 
-        public void Accept(TACVisitor visitor)
+        public override void Accept(TACVisitor visitor)
         {
             visitor.Visit(this);
         }

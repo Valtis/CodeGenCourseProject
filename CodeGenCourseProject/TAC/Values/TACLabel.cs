@@ -10,7 +10,11 @@ namespace CodeGenCourseProject.TAC.Values
     {
         private readonly int id;
 
-        public TACLabel(int id)
+        public TACLabel(int id) : this(0, 0, id)
+        {
+        }
+
+        public TACLabel(int line, int column, int id) : base(line, column)
         {
             this.id = id;
         }
@@ -23,7 +27,7 @@ namespace CodeGenCourseProject.TAC.Values
             }
         }
 
-        public void Accept(TACVisitor visitor)
+        public override void Accept(TACVisitor visitor)
         {
             visitor.Visit(this);
         }

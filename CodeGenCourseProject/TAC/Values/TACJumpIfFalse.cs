@@ -11,11 +11,16 @@ namespace CodeGenCourseProject.TAC.Values
         private readonly TACValue condition;
         private readonly TACLabel label;
 
-        public TACJumpIfFalse(TACValue condition, TACValue label)
+        public TACJumpIfFalse(TACValue condition, TACValue label) : this(0, 0, condition, label)
+        {
+        }
+
+        public TACJumpIfFalse(int line, int column, TACValue condition, TACValue label) : base(line, column)
         {
             this.condition = condition;
             this.label = (TACLabel)label;
         }
+
 
         public TACValue Condition
         {
@@ -33,7 +38,7 @@ namespace CodeGenCourseProject.TAC.Values
             }
         }
 
-        public void Accept(TACVisitor visitor)
+        public override void Accept(TACVisitor visitor)
         {
             visitor.Visit(this);
         }

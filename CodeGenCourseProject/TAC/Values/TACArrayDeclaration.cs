@@ -45,7 +45,14 @@ namespace CodeGenCourseProject.TAC.Values
             }
         }
 
-        public TACArrayDeclaration(string name, string type, TACValue sizeExpression, int id)
+        public TACArrayDeclaration(string name, string type, TACValue sizeExpression, int id) : 
+            this(0, 0, name, type, sizeExpression, id)
+        {
+
+        }
+
+        public TACArrayDeclaration(int line, int column,
+            string name, string type, TACValue sizeExpression, int id) : base(line, column)
         {
             this.name = name + "_" + id;
             this.type = type;
@@ -53,7 +60,7 @@ namespace CodeGenCourseProject.TAC.Values
             this.sizeExpression = sizeExpression;
         }
 
-        public void Accept(TACVisitor visitor)
+        public override void Accept(TACVisitor visitor)
         {
             visitor.Visit(this);
         }

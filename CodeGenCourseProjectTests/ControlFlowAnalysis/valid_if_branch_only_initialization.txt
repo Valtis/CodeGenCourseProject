@@ -1,0 +1,11 @@
+﻿program valid_if_branch_only_init;
+begin
+	var a : integer;
+	var b : integer;
+	b := 4;
+
+	if true then
+		a := 4;
+
+	b := b + a;
+end.

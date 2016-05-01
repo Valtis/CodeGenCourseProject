@@ -1,0 +1,15 @@
+﻿program if_else_statement;
+begin
+	var a,b : integer;
+	a := 4;
+	if a < 4 then
+		b := 6
+	else
+	begin
+		b := 23 * a;
+		writeln(b);
+	end;
+
+	writeln(a);
+
+end.
