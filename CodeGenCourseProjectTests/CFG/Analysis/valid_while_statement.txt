@@ -1,0 +1,13 @@
+﻿program valid;
+begin
+	var a, b, c, d : integer;
+	a := 4;
+	d := 4;
+	while a < 4 do
+	begin
+		b := a * 2;
+		c := a * b;
+	end;
+
+	c := a + d;
+end.

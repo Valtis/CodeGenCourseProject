@@ -64,7 +64,7 @@
     <Compile Include="AST\StringNodeTests.cs" />
     <Compile Include="AST\VariableAssignmentNodeTests.cs" />
     <Compile Include="CFG\CFGGeneratorTests.cs" />
-    <Compile Include="ControlFlowAnalysis\ControlFlowAnalyzerTests.cs" />
+    <Compile Include="CFG\Analysis\ControlFlowAnalyzerTests.cs" />
     <Compile Include="Lexing\LexerTests.cs" />
     <Compile Include="Lexing\StringTokenTests.cs" />
     <Compile Include="Parsing\ParserTests.cs" />
@@ -84,19 +84,42 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="CFG\Analysis\invalid_if_branch_only_initialization_with_else_branch.txt" />
+    <Content Include="CFG\Analysis\invalid_variable_if_block.txt" />
+    <Content Include="CFG\Analysis\invalid_nested_if_statements.txt" />
+    <Content Include="CFG\Analysis\invalid_variable_used_in_if_blocks_before_initialization_in_block.txt" />
+    <Content Include="CFG\Analysis\invalid_while_statement5.txt" />
+    <Content Include="CFG\Analysis\valid_arrays.txt" />
+    <Content Include="CFG\Analysis\valid_variables_in_procedures.txt" />
+    <Content Include="CFG\Analysis\valid_while_statement2.txt" />
+    <Content Include="CFG\Analysis\invalid_while_statement1.txt" />
+    <Content Include="CFG\Analysis\invalid_while_statement2.txt" />
+    <Content Include="CFG\Analysis\invalid_while_statement3.txt" />
+    <Content Include="CFG\Analysis\invalid_while_statement4.txt" />
+    <Content Include="CFG\Analysis\uninitialized_variable_in_if_condition.txt" />
+    <Content Include="CFG\Analysis\valid_if_branch_initialization_with_dead_else.txt" />
+    <Content Include="CFG\Analysis\valid_nested_if_statements.txt" />
+    <Content Include="CFG\Analysis\valid_while_statement.txt" />
+    <Content Include="CFG\Analysis\valid_while_statement3.txt" />
+    <Content Include="CFG\nested_if_statements.txt" />
     <Content Include="CFG\if_else_statement.txt" />
     <Content Include="CFG\if_statement_with_false_condition.txt" />
     <Content Include="CFG\if_statement_with_true_condition.txt" />
+    <Content Include="CFG\procedures.txt" />
     <Content Include="CFG\simple_if_statement.txt" />
     <Content Include="CFG\no_branching.txt" />
-    <Content Include="ControlFlowAnalysis\invalid_if_branch_only_initialization.txt" />
-    <Content Include="ControlFlowAnalysis\initialized_variable_no_branches.txt" />
-    <Content Include="ControlFlowAnalysis\self_assignment.txt" />
-    <Content Include="ControlFlowAnalysis\uninitialized_variable_no_branches.txt" />
-    <Content Include="ControlFlowAnalysis\usage_before_assignment.txt" />
-    <Content Include="ControlFlowAnalysis\valid_else_branch_only_initialization.txt" />
-    <Content Include="ControlFlowAnalysis\valid_if_branch_only_initialization.txt" />
-    <Content Include="ControlFlowAnalysis\valid_if_else_initialization.txt" />
+    <Content Include="CFG\Analysis\invalid_if_branch_only_initialization.txt" />
+    <Content Include="CFG\Analysis\initialized_variable_no_branches.txt" />
+    <Content Include="CFG\Analysis\self_assignment.txt" />
+    <Content Include="CFG\Analysis\uninitialized_variable_no_branches.txt" />
+    <Content Include="CFG\Analysis\usage_before_assignment.txt" />
+    <Content Include="CFG\Analysis\valid_else_branch_only_initialization.txt" />
+    <Content Include="CFG\Analysis\valid_if_branch_only_initialization.txt" />
+    <Content Include="CFG\Analysis\valid_if_else_initialization.txt" />
+    <Content Include="CFG\while_and_if_statements.txt" />
+    <Content Include="CFG\while_statement.txt" />
+    <Content Include="CFG\while_statement_with_false_condition.txt" />
+    <Content Include="CFG\while_statement_with_true_condition.txt" />
     <Content Include="Lexing\backtracking.txt" />
     <Content Include="Lexing\indentation.txt" />
     <Content Include="Lexing\invalid_comments.txt" />
@@ -143,6 +166,7 @@
     <Content Include="SemanticChecking\invalid_expressions.txt" />
     <Content Include="SemanticChecking\invalid_if_statements.txt" />
     <Content Include="SemanticChecking\invalid_procedures_and_functions.txt" />
+    <Content Include="SemanticChecking\invalid_ref_args.txt" />
     <Content Include="SemanticChecking\invalid_variable_declarations.txt" />
     <Content Include="SemanticChecking\invalid_while_statements.txt" />
     <Content Include="SemanticChecking\valid_assert_statements.txt" />
@@ -152,6 +176,7 @@
     <Content Include="SemanticChecking\valid_variable_declarations.txt" />
     <Content Include="SemanticChecking\valid_while_statements.txt" />
     <Content Include="TAC\expressions.txt" />
+    <Content Include="TAC\functions_and_procedures.txt" />
     <Content Include="TAC\if_statements.txt" />
     <Content Include="TAC\while_statements.txt" />
   </ItemGroup>

@@ -1,0 +1,9 @@
+﻿program invalid;
+begin
+	var a, b : integer;
+	b := 243;
+	while b <> 23 do
+		a := 23;
+
+	b := a * 4;
+end.

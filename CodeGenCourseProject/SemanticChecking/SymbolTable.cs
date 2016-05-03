@@ -50,9 +50,11 @@ namespace CodeGenCourseProject.SemanticChecking
             stack.Peek().Add(new ArraySymbol(line, column, name, type, id++));
         }
 
-        public void InsertFunction(int line, int column, string name, string type, IList<string> paramTypes)
+        public void InsertFunction(
+            int line, int column, string name, string type, IList<string> paramTypes, IList<bool> refParams)
         {
-            stack.Peek().Add(new FunctionSymbol(line, column, name, type, id++, paramTypes));
+            stack.Peek().Add(
+                new FunctionSymbol(line, column, name, type, id++, paramTypes, refParams));
         }
 
         public bool ContainsOnLevel(string name)

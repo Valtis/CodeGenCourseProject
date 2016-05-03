@@ -1,0 +1,12 @@
+﻿program while_statement;
+begin
+	var a : integer;
+	a := 4;
+	while true do
+	begin
+
+		writeln(a);
+		a := a + 1;
+	end;
+	a := 6;
+end.

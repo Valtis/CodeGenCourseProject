@@ -1,0 +1,29 @@
+﻿program complex;
+begin
+	var a, b, c : integer;
+	a := 3;
+	b := 2;
+	if a < 4 then
+	begin
+		if b <> 2 then
+		begin
+			a := 4;
+			c := a * 4;
+		end
+		else
+			c := 2;
+	end
+	else
+	begin
+		if a = 4 then
+		begin
+			a := 23;
+			c := 2 * a;
+		end
+		else
+			c := 2 * b;
+		b := c * 14;
+	end;
+
+	a := c*2;
+end.

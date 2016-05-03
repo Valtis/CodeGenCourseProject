@@ -94,10 +94,13 @@ namespace CodeGenCourseProject.SemanticChecking
     internal class FunctionSymbol : Symbol
     {
         private readonly IList<string> paramTypes;
+        private readonly IList<bool> isReferenceParameters;
         private readonly string baseType;
-        public FunctionSymbol(int line, int column, string name, string type, int id, IList<string> paramTypes) : base(line, column, name, "Function<"+type+">", id)
+        public FunctionSymbol(int line, int column, string name, string type, int id, 
+            IList<string> paramTypes, IList<bool> refParams) : base(line, column, name, "Function<"+type+">", id)
         {
             this.paramTypes = paramTypes;
+            this.isReferenceParameters = refParams;
             this.baseType = type;
         }
 
@@ -114,6 +117,14 @@ namespace CodeGenCourseProject.SemanticChecking
             get
             {
                 return baseType;
+            }
+        }
+
+        public IList<bool> IsReferenceParameters
+        {
+            get
+            {
+                return isReferenceParameters;
             }
         }
     }

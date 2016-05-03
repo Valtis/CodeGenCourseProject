@@ -425,5 +425,27 @@ namespace CodeGenCourseProject.SemanticChecking.Tests
             helper.AssertErrorMessage(114, Error.SEMANTIC_ERROR, 168, 14, "Cannot get the size of an expression with type 'boolean'");
             helper.AssertErrorMessage(115, Error.SEMANTIC_ERROR, 169, 16, "Cannot get the size of an expression with type 'boolean'");
         }
+
+        [TestMethod()]
+        public void InvalidReferenceArgumentsAreRejected()
+        {
+            var reporter = new ErrorReporter();
+            var lexer = new Lexer(@"..\..\SemanticChecking\invalid_ref_args.txt", reporter);
+            var parser = new Parser(lexer, reporter);
+
+            var node = parser.Parse();
+
+            var semanticChecker = new SemanticChecker(reporter);
+            node.Accept(semanticChecker);
+            Assert.AreEqual(4, reporter.Errors.Count);
+
+            var helper = new TestHelper(reporter);
+            helper.AssertErrorMessage(0, Error.SEMANTIC_ERROR, 22, 16, "Argument 1 for 'refargs' is invalid, as the corresponding parameter is reference type");
+            helper.AssertErrorMessage(1, Error.SEMANTIC_ERROR, 22, 23, "Argument 2 for 'refargs' is invalid, as the corresponding parameter is reference type");
+            helper.AssertErrorMessage(2, Error.SEMANTIC_ERROR, 22, 29, "Argument 3 for 'refargs' is invalid, as the corresponding parameter is reference type");
+            helper.AssertErrorMessage(3, Error.SEMANTIC_ERROR, 22, 38, "Argument 4 for 'refargs' is invalid, as the corresponding parameter is reference type");
+
+        }
+
     }
 }

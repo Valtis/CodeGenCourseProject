@@ -1,0 +1,10 @@
+﻿program invalid;
+begin
+	var a, b : integer;
+	b := 243;
+	while b <> 23 do
+	begin
+		b := 3 * 43 + a;
+		a := 23;
+	end
+end.

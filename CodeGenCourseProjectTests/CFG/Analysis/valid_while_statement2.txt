@@ -1,0 +1,12 @@
+﻿program invalid;
+begin
+	var a, b, c : integer;
+	b := 243;
+	while true do
+	begin
+		b := b * 4;
+		a := 23;
+	end;
+
+	b := 2 * c;
+end.

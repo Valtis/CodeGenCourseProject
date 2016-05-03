@@ -6,24 +6,24 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace CodeGenCourseProject.ControlFlowAnalysis
+namespace CodeGenCourseProject.CFG.Analysis
 {
-    public class ControlFlowAnalyzer
+    public class CFGAnalyzer
     {
         private readonly ErrorReporter reporter;
         private readonly IList<Function> functions;
-        private readonly IDictionary<string, CFGGraph> graphs;
-        public ControlFlowAnalyzer(ErrorReporter reporter, IList<Function> functions, IDictionary<string, CFGGraph> graphs)
+        private readonly IDictionary<string, CFGraph> graphs;
+        private readonly ISet<int> unreachableBlocks;
+        public CFGAnalyzer(ErrorReporter reporter, IList<Function> functions, IDictionary<string, CFGraph> graphs)
         {
             this.reporter = reporter;
             this.functions = functions;
             this.graphs = graphs;
+            this.unreachableBlocks = new HashSet<int>();
         }
 
         public void Analyze()
         {
-            
-
             foreach (var function in functions)
             {
                 AnalyzeFunction(function);
@@ -32,15 +32,20 @@ namespace CodeGenCourseProject.ControlFlowAnalysis
 
         private void AnalyzeFunction(Function function)
         {
-            RemoveDeadBlocksFromGraph(function, graphs[function.Name]);
-            AnalyzeVariableUsage(function, graphs[function.Name]);
+            var graph = graphs[function.Name];
+            if (graph.Blocks.Count == 0)
+            {
+                return;
+            }
+            DetectDeadBlocks(function, graph);
+            AnalyzeVariableUsage(function, graph);
         }
 
         /*
          * Remove any blocks that are not connected to the first block to prevent them
          * from affecting e.g. variable initialization analysis
          */
-        private void RemoveDeadBlocksFromGraph(Function function, CFGGraph graph)
+        private void DetectDeadBlocks(Function function, CFGraph graph)
         {
             var handledBlocks = new HashSet<int>();
             var blockQueue = new Queue<int>();
@@ -52,54 +57,66 @@ namespace CodeGenCourseProject.ControlFlowAnalysis
 
                 foreach (var child in graph.AdjacencyList[block])
                 {
-                    if (!(handledBlocks.Contains(child)) && child != CFGGraph.END_BLOCK_ID)
+                    if (!(handledBlocks.Contains(child)) && child != CFGraph.END_BLOCK_ID)
                     {
                         blockQueue.Enqueue(child);
                     }
                 }
             }
-
-            var unreachableBlocks = new HashSet<int>();
+            
             unreachableBlocks.UnionWith(Enumerable.Range(0, graph.Blocks.Count));
             unreachableBlocks.ExceptWith(handledBlocks);
 
             foreach (var unreachable in unreachableBlocks)
             {
-                var firstStatement = function.Statements[graph.Blocks[unreachable].Start];
+                var statement = function.Statements[graph.Blocks[unreachable].Start];
+                int pos = graph.Blocks[unreachable].Start + 1;
+
+                // labels in general carry no meaningful information.
+                while (statement.RightOperand is TACLabel)
+                {
+                    if (pos > graph.Blocks[unreachable].End)
+                    {
+                        return;
+                    }
+                    statement = function.Statements[pos++];
+                }
                 reporter.ReportError(
                     Error.WARNING,
                     "Unreachable code",
-                    firstStatement.Line,
-                    firstStatement.Column);
-
-                graph.AdjacencyList[unreachable].Clear();
+                    statement.Line,
+                    statement.Column);
             }            
         }
 
-        private void AnalyzeVariableUsage(Function function, CFGGraph graph)
+        private void AnalyzeVariableUsage(Function function, CFGraph graph)
         {
             HandleVariableInitializations(function, graph);
+            
 
             foreach (var block in graph.Blocks)
             {
-          
+                // don't care about unreachable blocks
+                if (unreachableBlocks.Contains(block.ID))
+                {
+                    continue;
+                }
+
                 for (int i = block.Start; i <= block.End; ++i)
                 {
                     CheckInitialization(function.Statements[i], block);
                 }
-
             }
-
         }
 
-        private void HandleVariableInitializations(Function function, CFGGraph graph)
+        private void HandleVariableInitializations(Function function, CFGraph graph)
         {
             foreach (var block in graph.Blocks)
             {
                 FindBlockVariableInitializations(function, block);
             }
 
-            DefiniteVariableAssignment(graph, CFGGraph.END_BLOCK_ID, new HashSet<int>());
+            while (DefiniteVariableAssignment(graph, 0, new HashSet<int>()));
         }
 
         private void FindBlockVariableInitializations(Function function, BasicBlock block)
@@ -112,32 +129,54 @@ namespace CodeGenCourseProject.ControlFlowAnalysis
                     block.VariableInitializations.Add((TACIdentifier)dest);
                 }
             }
-            
+
+            // entry block - add function arguments as visible
+            if (block.ID == 0)
+            {
+                foreach (var param in function.Parameters)
+                {
+
+                    block.VariableInitializations.Add(param.Identifier);
+                }
+            }
         }
 
-        private void DefiniteVariableAssignment(CFGGraph graph, int id, ISet<int> handledBlocks)
+        private bool DefiniteVariableAssignment(CFGraph graph, int id, ISet<int> handledBlocks)
         {
             if (handledBlocks.Contains(id))
             {
-                return;
+                return false;
             }
             
             handledBlocks.Add(id);
+
+            var changes = false;
+            if (id != CFGraph.END_BLOCK_ID)
+            {
+                foreach (var child in graph.AdjacencyList[id])
+                {
+                    // ignore parents that are after this block, as this indicates a cycle; this parent
+                    // may actually depend on this block for definite initializations -> handle later
+                    changes = changes || DefiniteVariableAssignment(graph, child, handledBlocks);
+                }
+            }
+
             var parents = GetParentBlocks(graph, id);
-
-            if (parents.Count == 0)
-            {
-                return;
-            }
-
-            foreach (var parent in parents)
-            {
-                DefiniteVariableAssignment(graph, parent, handledBlocks);
-            }
-
             ISet<TACIdentifier> definiteInitializations = null; 
             foreach (var parent in parents)
             {
+                // ignore parents that are after this block, as this indicates a cycle
+                if (id != CFGraph.END_BLOCK_ID && (graph.Blocks[parent].Start > graph.Blocks[id].End))
+                {
+                    continue;
+                }
+
+                // control flow from the unreachable parents will not affect variable
+                // initialization
+                if (unreachableBlocks.Contains(parent))
+                {
+                    continue;
+                }
 
                 var definiteParentInitializations = new HashSet<TACIdentifier>();
 
@@ -153,10 +192,16 @@ namespace CodeGenCourseProject.ControlFlowAnalysis
                 }
             }
 
-            if (id != CFGGraph.END_BLOCK_ID)
+            if (id != CFGraph.END_BLOCK_ID && definiteInitializations != null)
             {
-                graph.Blocks[id].ParentInitializations = definiteInitializations;
+                var block = graph.Blocks[id];
+                var length = block.ParentInitializations.Count;
+                block.ParentInitializations.UnionWith(definiteInitializations);
+                var newLength = block.ParentInitializations.Count;
+                changes = changes || newLength != length;
             }
+            
+            return changes;
         }
 
         private void CheckInitialization(TACStatement statement, BasicBlock block)
@@ -189,6 +234,13 @@ namespace CodeGenCourseProject.ControlFlowAnalysis
                     }
                 }
 
+                // arrays are zero-initialized and thus can be used without previous
+                // assignments
+                if (identifier.Type.Contains("Array<"))
+                {
+                    return;
+                }
+
                 ReportUninitializedVariable(identifier);
             }
         }
@@ -200,11 +252,17 @@ namespace CodeGenCourseProject.ControlFlowAnalysis
                 "Usage of uninitialized variable '" + identifier.UnmangledName + "'", 
                 identifier.Line,
                 identifier.Column);
+
+            reporter.ReportError(
+                Error.NOTE_GENERIC,
+                "There exists one or more control flow paths where this variable isn't initialized",
+                identifier.Line,
+                identifier.Column);
         }
 
 
 
-        private IList<int> GetParentBlocks(CFGGraph graph, int id)
+        private IList<int> GetParentBlocks(CFGraph graph, int id)
         {
             var parents = new List<int>();
             for (int i = 0; i < graph.Blocks.Count; ++i)

@@ -1,0 +1,30 @@
+﻿program complex;
+begin
+	var a, b, c : integer;
+	a := 0;
+	b := 0;
+	while a < 4 do
+	begin
+		if true then
+			c := 32
+		else
+			while false do
+				c := 23;
+		a := a + 1;
+		b := a * 2;
+		if b < 3 then
+		begin
+			c := 23;
+			writeln("hello");
+		end
+		else
+			while b > 4 do
+				b := b -1;
+		a := 4;
+	end;
+
+	if b >= 4 then
+		c := 2* 3;
+
+	a := c + 2;
+end.

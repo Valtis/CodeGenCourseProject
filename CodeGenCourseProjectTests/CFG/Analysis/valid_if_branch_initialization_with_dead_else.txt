@@ -1,0 +1,12 @@
+﻿program valid;
+begin
+	var a : integer;
+
+	if true then
+		a := 4
+	else
+		var b : integer;
+
+	var b : integer;
+	b := a + 4;
+end.

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace CodeGenCourseProject.TAC.Values
 {
-    public class TACCallWriteln : TACValue
+    public class TACCallWriteln : TACCall
     {
         private readonly IList<TACValue> arguments;
 
@@ -14,32 +14,10 @@ namespace CodeGenCourseProject.TAC.Values
         {
         }
 
-        public TACCallWriteln(int line, int column, IList<TACValue> arguments) : base(line, column)
+        public TACCallWriteln(int line, int column, IList<TACValue> arguments) : base(line, column, "__inbuilt_writeln", arguments)
         {
             this.arguments = arguments;
         }
 
-        public IList<TACValue> Arguments
-        {
-            get
-            {
-                return arguments;
-            }
-        }
-
-        public override void Accept(TACVisitor visitor)
-        {
-            visitor.Visit(this);
-        }
-
-        public override bool Equals(object obj)
-        {
-            return (obj is TACCallWriteln) && ((TACCallWriteln)obj).arguments.SequenceEqual(arguments);
-        }
-
-        public override string ToString()
-        {
-            return "writeln(" + string.Join(", ", arguments) + ")";
-        }
     }
 }

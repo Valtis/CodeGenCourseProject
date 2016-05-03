@@ -343,5 +343,15 @@ namespace CodeGenCourseProject.Codegen
         {
             cValues.Push("goto label_" + tacJump.Label.ID);
         }
+
+        public void Visit(TACCall tacCall)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Visit(TACReturn tacReturn)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

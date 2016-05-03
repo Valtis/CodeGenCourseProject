@@ -1,0 +1,29 @@
+﻿program procedures;
+begin
+	procedure a();
+	begin
+		var a : integer;
+		a := 4;
+		a := a * 2;
+	end;
+
+	procedure b();
+	begin
+		var a : integer;
+		a := 4;
+		a := a * 2;
+		if a > 4 then
+		begin
+			a := 2;
+			return;
+			a := 2 * 2;
+		end
+		else
+		begin
+			a := 1234;
+			return
+		end;
+		a := 24;
+	end;
+
+end.

@@ -1,0 +1,12 @@
+﻿program invalid;
+begin
+	var a : integer;
+	var b : integer;
+	b := 2;
+
+	if b < 2 then
+		b := a + 2
+	else
+		b := 4 % a;
+
+end. 

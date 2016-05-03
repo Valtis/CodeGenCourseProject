@@ -150,6 +150,24 @@ namespace CodeGenCourseProject.TAC
                 return;
             }
 
+            if (name == "read" && symbol == null)
+            {
+                for (int i = 1; i < callNode.Children.Count; ++i)
+                {
+                    callNode.Children[i].Accept(this);
+                }
+
+                var list = new List<TACValue>();
+                while (tacValueStack.Count != 0)
+                {
+                    list.Add(tacValueStack.Pop());
+                }
+                list.Reverse();
+                Emit(new TACCallRead(callNode.Line, callNode.Column, list));
+                AssertEmptyTacValueStack();
+                return;
+            }
+
             AssertEmptyTacValueStack();
             throw new NotImplementedException();
         }
@@ -166,11 +184,25 @@ namespace CodeGenCourseProject.TAC
 
         public void Visit(FunctionParameterVariableNode functionParameterNode)
         {
-            throw new NotImplementedException();
+            // for name mangling. FIXME: Extract name mangling code into separate helper
+            
+            var symbol = symbolTable.GetSymbol(functionParameterNode.Name.Value);
+            var id = new TACIdentifier(symbol.Name, symbol.Type, symbol.Id);
+
+            functionStack.Peek().
+                AddParameter(
+                    id,
+                    functionParameterNode.IsReferenceParameter);
         }
 
         public void Visit(ReturnNode returnNode)
         {
+            if (returnNode.Children.Count == 0)
+            {
+                Emit(new TACReturn(returnNode.Line, returnNode.Column));
+                return;
+            }
+
             throw new NotImplementedException();
         }
 
@@ -272,24 +304,31 @@ namespace CodeGenCourseProject.TAC
             var ifBlock = ifNode.Children[1];
             var hasElseBlock = ifNode.Children.Count == 3;
 
-
-            var endIfBlock = GetLabel();
+            TACLabel endIfBlock = null;
             TACLabel endElseBlock = null;
+
             if (hasElseBlock)
             {
-                endElseBlock = GetLabel();
+                endIfBlock = GetLabel(ifNode.Children[2].Line, ifNode.Children[2].Column);
+                endElseBlock = GetLabel(0, 0);
+            }
+            else
+            {
+                endIfBlock = GetLabel(0, 0);
             }
 
             expression.Accept(this);
             var condition = tacValueStack.Pop();
-            Emit(new TACJumpIfFalse(ifNode.Children[2].Line, ifNode.Children[2].Column, condition, endIfBlock));
+
+
+            Emit(new TACJumpIfFalse(ifBlock.Line, ifBlock.Column, condition, endIfBlock));
             ifBlock.Accept(this);
-            
+
             if (hasElseBlock)
             {
                 Emit(new TACJump(ifBlock.Line, ifBlock.Column, endElseBlock));
             }
-            
+
             Emit(endIfBlock);
 
             if (hasElseBlock)
@@ -330,7 +369,23 @@ namespace CodeGenCourseProject.TAC
 
         public void Visit(ProcedureNode procedureNode)
         {
-            throw new NotImplementedException();
+            var function = new Function("__"+((IdentifierNode)procedureNode.Children[0]).Value);
+            functionStack.Push(function);
+
+            // honestly starting to regret how I decided to handle function\procedure nodes in AST.
+            // Too many dirty workarounds.
+            // this one in particular is because I need the symbol table info here
+            // that is only present in the child block
+
+            procedureNode.Children[1].Accept(this);
+
+            symbolTable.PushLevel(((BlockNode)procedureNode.Children[1]).GetSymbols());
+            for (int i = 2; i < procedureNode.Children.Count; ++i)
+            {
+                procedureNode.Children[i].Accept(this);
+            }
+            symbolTable.PopLevel();
+            Functions.Add(functionStack.Pop());
         }
 
         public void Visit(MultiplyNode multiplyNode)
@@ -340,7 +395,15 @@ namespace CodeGenCourseProject.TAC
 
         public void Visit(FunctionParameterArrayNode functionParameterArrayNode)
         {
-            throw new NotImplementedException();
+            // for name mangling. FIXME: Extract name mangling code into separate helper
+
+            var symbol = symbolTable.GetSymbol(functionParameterArrayNode.Name.Value);
+            var id = new TACIdentifier(symbol.Name, symbol.Type, symbol.Id);
+
+            functionStack.Peek().
+                AddParameter(
+                    id,
+                    functionParameterArrayNode.IsReferenceParameter);
         }
 
         public void Visit(VariableAssignmentNode variableAssignmentNode)
@@ -390,8 +453,10 @@ namespace CodeGenCourseProject.TAC
         public void Visit(WhileNode whileNode)
         {
             AssertEmptyTacValueStack();
-            var beginLabel = GetLabel();
-            var endLabel = GetLabel();
+            var beginLabel = GetLabel(whileNode.Children[1].Line, whileNode.Children[1].Column);
+
+
+            var endLabel = GetLabel(0, 0);
             Emit(beginLabel);
 
             whileNode.Children[0].Accept(this);
@@ -402,8 +467,8 @@ namespace CodeGenCourseProject.TAC
 
             Emit(new TACJump(whileNode.Line, whileNode.Column, beginLabel));
             Emit(endLabel);
-          
-           AssertEmptyTacValueStack();
+
+            AssertEmptyTacValueStack();
         }
 
         public void Visit(ErrorNode errorNode)
@@ -470,9 +535,9 @@ namespace CodeGenCourseProject.TAC
             return new TACIdentifier(node.Line, node.Column, "__t", node.NodeType(), curId);
         }
 
-        private TACLabel GetLabel()
+        private TACLabel GetLabel(int line, int column)
         {
-            return new TACLabel(labelID++);
+            return new TACLabel(line, column, labelID++);
         }
 
         private void HandleBinaryOperator(ASTNode node, Operator op)
@@ -481,7 +546,7 @@ namespace CodeGenCourseProject.TAC
             {
                 child.Accept(this);
             }
-            
+
             var tacValue = GetTemporary(node);
 
             var rhs = tacValueStack.Pop();
@@ -490,7 +555,7 @@ namespace CodeGenCourseProject.TAC
 
             tacValueStack.Push(tacValue);
         }
-        
+
         private void Emit(TACValue operand)
         {
             functionStack.Peek().Statements.Add(new TACStatement(null, null, operand, null));

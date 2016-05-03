@@ -1,0 +1,11 @@
+﻿program valid;
+begin
+	var a, b : integer;
+	
+	a := 4;
+	while false do
+	begin
+		a := b * 2;
+	end;
+	b := a * 2;
+end.

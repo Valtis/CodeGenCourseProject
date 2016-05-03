@@ -1,0 +1,15 @@
+﻿program invalid;
+begin
+	
+	var a : integer;
+	var b : integer;
+
+	a := 4;
+	if a < 4 then
+		b := 4
+	else
+		a := 4;
+
+	a := b * 2;
+	
+end.

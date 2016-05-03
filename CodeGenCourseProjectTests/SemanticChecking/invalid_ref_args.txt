@@ -1,0 +1,24 @@
+﻿program invalid_ref_args;
+begin
+
+	function refargs(var a : integer, var b : real, var c : string, var d : boolean,
+		var e : array [] of integer, var f : array [] of real, var g : array [] of string,
+		var h : array [] of boolean) : integer;
+	begin
+
+		return 0;
+	end;
+
+	function int() : integer;
+	begin
+
+		return 4;
+	end;
+	
+	var a : array[] of integer;
+	var b : array[] of real;
+	var c : array[] of string;
+	var d : array[] of boolean;
+
+	refargs(int(), 2.34, "hello", False, a, b, c, d);
+end.

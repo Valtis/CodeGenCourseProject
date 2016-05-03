@@ -1,0 +1,6 @@
+﻿program valid;
+begin
+	var a, b, c : array [] of integer;
+	a := b;
+	b := c;
+end.

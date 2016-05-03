@@ -1,0 +1,8 @@
+﻿program invalid;
+begin
+	var a, b : integer;
+
+	if a % 2 = b then
+		a := 2;
+
+end.

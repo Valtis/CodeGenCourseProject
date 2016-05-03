@@ -1,0 +1,25 @@
+﻿program valid;
+begin
+	procedure foo(a : integer, b : real, c : array [] of real);
+	begin
+		var d : integer;
+		var e : real;
+		d := a * 2;
+		
+		if a > 2 then
+			e := b
+		else
+			e := c[2];
+
+		var f : real;
+		f := e;
+	end;
+
+	procedure refs(var a : integer, var b : real, var c : array [] of real);
+	begin
+		a := 4;
+		b := 4232.212;
+		var d : array [4] of real;
+		c := d;
+	end;
+end.

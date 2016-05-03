@@ -87,7 +87,7 @@
     <Compile Include="CFG\CFGGraph.cs" />
     <Compile Include="Codegen\CCodeGenerator.cs" />
     <Compile Include="Codegen\CodeGenerator.cs" />
-    <Compile Include="ControlFlowAnalysis\AnalyseControlFlow.cs" />
+    <Compile Include="CFG\Analysis\CFGAnalyzer.cs" />
     <Compile Include="ErrorHandling\ErrorData.cs" />
     <Compile Include="ErrorHandling\ErrorReporter.cs" />
     <Compile Include="InternalCompilerError.cs" />
@@ -105,6 +105,8 @@
     <Compile Include="SemanticChecking\SymbolTableLevel.cs" />
     <Compile Include="TAC\Function.cs" />
     <Compile Include="TAC\TACGenerator.cs" />
+    <Compile Include="TAC\Values\TACCall.cs" />
+    <Compile Include="TAC\Values\TACCallRead.cs" />
     <Compile Include="TAC\Values\TACJump.cs" />
     <Compile Include="TAC\Values\TACArrayDeclaration.cs" />
     <Compile Include="TAC\Values\TACArrayIndex.cs" />
@@ -117,6 +119,7 @@
     <Compile Include="TAC\Values\TACJumpIfFalse.cs" />
     <Compile Include="TAC\Values\TACLabel.cs" />
     <Compile Include="TAC\Values\TACReal.cs" />
+    <Compile Include="TAC\Values\TACReturn.cs" />
     <Compile Include="TAC\Values\TACString.cs" />
     <Compile Include="TAC\Values\TACValue.cs" />
     <Compile Include="TAC\Values\TACVisitor.cs" />

@@ -121,7 +121,7 @@ begin
 		read();
 	end;
 
-	writeln(4);
+	writeln(i);
 
 	procedure arr_arg(a : array [] of integer);
 	begin
@@ -147,5 +147,26 @@ begin
 	function foo() : boolean;
 	begin
 		var foo : real;
+	end;
+
+	function refargs(var a : integer, var b : real, var c : string, var d : boolean,
+		var e : array [] of integer, var f : array [] of real, var g : array [] of string,
+		var h : array [] of boolean) : integer;
+	begin
+
+		return 0;
+	end;
+
+	begin
+		var i : integer;
+		var j : real;
+		var k : string;
+		var l : boolean;
+		var m : array [] of integer;
+		var n : array [] of real;
+		var o : array [] of string;
+		var p : array [] of boolean;
+		refargs(i, j, k, l, m, n, o, p);
+		refargs(m[12], n[212], o[21], p[1], m, n, o, p);
 	end;
 end.

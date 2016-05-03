@@ -7,10 +7,16 @@ namespace CodeGenCourseProject.CFG
 {
     public class CFGGenerator
     {
-                
-        public IDictionary<string, CFGGraph> GenerateCFG(IList<Function> functions)
+        private IList<Function> functions;
+
+        public CFGGenerator(IList<Function> functions)
         {
-            var cfgGraphs = new Dictionary<string, CFGGraph>();
+            this.functions = functions;
+        }
+                
+        public IDictionary<string, CFGraph> GenerateCFG()
+        {
+            var cfgGraphs = new Dictionary<string, CFGraph>();
             foreach (var function in functions)
             {
                 var graph = GenerateCFG(function);
@@ -21,7 +27,7 @@ namespace CodeGenCourseProject.CFG
         }
 
 
-        private CFGGraph GenerateCFG(Function function)
+        private CFGraph GenerateCFG(Function function)
         {
             var blocks = CreateBlocks(function);
 
@@ -52,7 +58,7 @@ namespace CodeGenCourseProject.CFG
                 Console.WriteLine();
             }
 
-            return new CFGGraph(blocks, adjacencyList);
+            return new CFGraph(blocks, adjacencyList);
         }
 
         private List<BasicBlock> CreateBlocks(Function function)
@@ -66,7 +72,7 @@ namespace CodeGenCourseProject.CFG
 
             foreach (var statement in function.Statements)
             {
-                if (IsJump(statement) && pos != 0)
+                if (IsJumpOrReturn(statement)&& pos != 0)
                 {
                     var startPos = pos + 1;
                     var endPos = pos;
@@ -92,9 +98,7 @@ namespace CodeGenCourseProject.CFG
             }
             return blocks;
         }
-
-
-        // Build edges for blocks.
+                
         private IList<IList<int>> CreateEdges(Function function, IList<BasicBlock> blocks)
         {
             var adjacencyList = new List<IList<int>>();
@@ -115,7 +119,7 @@ namespace CodeGenCourseProject.CFG
                     var destBlock = GetJumpTarget(function, jumpTarget);
                     adjacencyList[pos].Add(GetDestinationBlockID(blocks, destBlock));
                 }
-                // conditional jump
+                // conditional jump, may have edges to the jump target and next block
                 else if (rightOperand is TACJumpIfFalse)
                 {
                     // if condition is true/false, only one edge will be present
@@ -137,6 +141,11 @@ namespace CodeGenCourseProject.CFG
                         adjacencyList[pos].Add(GetDestinationBlockID(blocks, destBlock));
                     }
 
+                }
+                // edge to end block
+                else if (rightOperand is TACReturn)
+                {
+                    adjacencyList[pos].Add(GetDestinationBlockID(blocks, CFGraph.END_BLOCK_ID));
                 }
                 // fall through
                 else
@@ -174,12 +183,14 @@ namespace CodeGenCourseProject.CFG
                     return dest.ID;
                 }
             }
-            return CFGGraph.END_BLOCK_ID;
+            return CFGraph.END_BLOCK_ID;
         }
 
-        private bool IsJump(TACStatement statement)
+        private bool IsJumpOrReturn(TACStatement statement)
         {
-            return statement.RightOperand is TACJump || statement.RightOperand is TACJumpIfFalse;
+            return statement.RightOperand is TACJump 
+                || statement.RightOperand is TACJumpIfFalse
+                || statement.RightOperand is TACReturn;
         }
     }
 }

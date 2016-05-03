@@ -426,8 +426,8 @@ namespace CodeGenCourseProject.TAC.Tests
 
             TACEquals(
                  new TACIdentifier("o", SemanticChecker.STRING_TYPE, 11),
-                 new TACArrayIndex("is", 
-                    new TACIdentifier("j", SemanticChecker.INTEGER_TYPE, 1), 
+                 new TACArrayIndex("is",
+                    new TACIdentifier("j", SemanticChecker.INTEGER_TYPE, 1),
                     SemanticChecker.STRING_TYPE, 13),
                  statements[67]);
 
@@ -440,7 +440,7 @@ namespace CodeGenCourseProject.TAC.Tests
                 statements[68]);
 
             TACEquals(
-                 new TACIdentifier("ia2", "Array<" + SemanticChecker.INTEGER_TYPE +">", 14),
+                 new TACIdentifier("ia2", "Array<" + SemanticChecker.INTEGER_TYPE + ">", 14),
                  new TACIdentifier("ia", "Array<" + SemanticChecker.INTEGER_TYPE + ">", 2),
                  statements[69]);
 
@@ -491,7 +491,7 @@ namespace CodeGenCourseProject.TAC.Tests
                 new TACIdentifier("a", SemanticChecker.INTEGER_TYPE, 0),
                 statements[2]);
             TACEquals(
-                new TACJump(new TACLabel(0)), 
+                new TACJump(new TACLabel(0)),
                 statements[3]);
             TACEquals(
                 new TACLabel(1),
@@ -511,7 +511,7 @@ namespace CodeGenCourseProject.TAC.Tests
             TACEquals(
                 new TACLabel(3),
                 statements[8]);
-            
+
             TACEquals(
                 new TACInteger(0),
                 new TACIdentifier("a", SemanticChecker.INTEGER_TYPE, 2),
@@ -524,7 +524,7 @@ namespace CodeGenCourseProject.TAC.Tests
                 new TACIdentifier("a", SemanticChecker.INTEGER_TYPE, 2),
                 new TACInteger(5),
                 new TACIdentifier("__t", SemanticChecker.BOOLEAN_TYPE, 0),
-                statements[11]); 
+                statements[11]);
             TACEquals(
                 new TACJumpIfFalse(
                     new TACIdentifier("__t", SemanticChecker.BOOLEAN_TYPE, 0),
@@ -550,7 +550,7 @@ namespace CodeGenCourseProject.TAC.Tests
             TACEquals(
                 new TACLabel(5),
                 statements[17]);
-            
+
             TACEquals(
                 new TACInteger(0),
                 new TACIdentifier("b", SemanticChecker.INTEGER_TYPE, 3),
@@ -639,9 +639,9 @@ namespace CodeGenCourseProject.TAC.Tests
             TACEquals(
                 new TACInteger(0),
                 new TACArrayIndex(
-                    "ia", 
+                    "ia",
                     new TACInteger(0),
-                    SemanticChecker.INTEGER_TYPE, 
+                    SemanticChecker.INTEGER_TYPE,
                     5),
                 statements[37]);
             TACEquals(
@@ -659,7 +659,7 @@ namespace CodeGenCourseProject.TAC.Tests
                 statements[39]);
             TACEquals(
                 new TACJumpIfFalse(
-                    new TACIdentifier("__t", SemanticChecker.BOOLEAN_TYPE, 6), 
+                    new TACIdentifier("__t", SemanticChecker.BOOLEAN_TYPE, 6),
                     new TACLabel(11)),
                 statements[40]);
             TACEquals(
@@ -684,7 +684,7 @@ namespace CodeGenCourseProject.TAC.Tests
                 new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 7),
                 statements[42]);
             TACEquals(
-                new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 7), 
+                new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 7),
                 new TACArrayIndex(
                     "ia",
                     new TACInteger(0),
@@ -748,6 +748,82 @@ namespace CodeGenCourseProject.TAC.Tests
                 statements[9]);
         }
 
+        [TestMethod()]
+        public void ProceduresFunctionsAndFunctionCallsGenerateValidTAC()
+        {
+            var functions = GetFunctions("functions_and_procedures.txt", 2);
+            /*       __t_1 = 3 * 2
+               __t_2 = __t_1 - 1
+               a_5 = __t_2
+               __t_3 = True || False
+               c_7 = __t_3
+               return
+                       */
+
+            Assert.AreEqual("__proc_1", functions[0].Name);
+            var statements = functions[0].Statements;
+            Assert.AreEqual(6, statements.Count);
+
+            TACEquals(
+               Operator.MULTIPLY,
+               new TACInteger(3),
+               new TACInteger(2),
+               new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 1),
+               statements[0]);
+            TACEquals(
+               Operator.MINUS,
+               new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 1),
+               new TACInteger(1),
+               new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 2),
+               statements[1]);
+            TACEquals(
+                new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 2),
+                new TACIdentifier("a", SemanticChecker.INTEGER_TYPE, 5),
+                statements[2]);
+            TACEquals(
+               Operator.OR,
+               new TACBoolean(true),
+               new TACBoolean(false),
+               new TACIdentifier("__t", SemanticChecker.BOOLEAN_TYPE, 3),
+               statements[3]);
+            TACEquals(
+                new TACIdentifier("__t", SemanticChecker.BOOLEAN_TYPE, 3),
+                new TACIdentifier("c", SemanticChecker.BOOLEAN_TYPE, 7),
+                statements[4]);
+            TACEquals(
+                new TACReturn(),
+                statements[5]);
+
+
+            Assert.AreEqual("<ENTRY POINT>", functions[1].Name);
+            statements = functions[1].Statements;
+            Assert.AreEqual(3, statements.Count);
+            TACEquals(
+                Operator.MULTIPLY,
+                new TACInteger(1),
+                new TACInteger(3),
+                new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 0),
+                statements[0]);
+            TACEquals(new TACCallWriteln(
+                new List<TACValue>
+                {
+                    new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 0),
+                    new TACBoolean(true),
+                    new TACString("hello"),
+                    new TACReal(123.45)
+                }),
+                statements[1]);
+
+            TACEquals(new TACCallRead(
+                new List<TACValue>
+                {
+                    new TACIdentifier("a", SemanticChecker.INTEGER_TYPE, 0),
+                    new TACIdentifier("b", SemanticChecker.BOOLEAN_TYPE, 1),
+                    new TACIdentifier("c", SemanticChecker.STRING_TYPE, 2),
+                    new TACIdentifier("d", SemanticChecker.REAL_TYPE, 3),
+                }),
+                statements[2]);
+        }
 
         private void TACEquals(TACValue value, TACStatement actual)
         {

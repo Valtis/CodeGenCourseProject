@@ -508,7 +508,8 @@ namespace CodeGenCourseProject.SemanticChecking
 
             var returnType = VOID_TYPE;
             var paramStartPoint = 2;
-            HandleFunctionOrProcedure(procedureNode, name, block, returnType, paramStartPoint);
+            var level = HandleFunctionOrProcedure(procedureNode, name, block, returnType, paramStartPoint);
+            ((BlockNode)block).SetSymbols(level);
         }
 
 
@@ -603,16 +604,7 @@ namespace CodeGenCourseProject.SemanticChecking
                             //    
                             var child = callNode.Children[i];
                             // I'm about 110% sure I will have no idea what this condition does 5 minutes after I'm done with it
-                            if (!(child is IdentifierNode || child is ArrayIndexNode) ||
-                                // following condition (hopefully) rejects declared identifiers, which have invalid type
-                                // which eliminates things like functions  and predeclared identifiers as arguments
-                                (child is IdentifierNode &&
-                                    ((predeclaredIdentifiers.Contains(((IdentifierNode)child).Value) && !symbolTable.Contains(((IdentifierNode)child).Value)) ||
-                                        (symbolTable.Contains(((IdentifierNode)child).Value) &&
-                                            !acceptableTypes.Contains(symbolTable.GetSymbol(((IdentifierNode)child).Value).Type))
-                                    )
-                                )
-                            )
+                            if (!IsWritable(child, acceptableTypes))
                             {
                                 reporter.ReportError(
                                     Error.SEMANTIC_ERROR,
@@ -680,13 +672,13 @@ namespace CodeGenCourseProject.SemanticChecking
                 ReportPreviousDeclaration(symbol);
                 return;
             }
-
-
+            
             int argErrors = 0;
             for (int i = 0; i < argumentCount; ++i)
             {
                 var argType = callNode.Children[i + 1].NodeType();
                 var paramType = functionSymbol.ParamTypes[i];
+                var isReference = functionSymbol.IsReferenceParameters[i];
                 if (argType != ERROR_TYPE && paramType != ERROR_TYPE && argType != paramType)
                 {
                     reporter.ReportError(
@@ -695,6 +687,28 @@ namespace CodeGenCourseProject.SemanticChecking
                         argType + "' but corresponding parameter has type '" + paramType + "'",
                         callNode.Children[i + 1].Line,
                         callNode.Children[i + 1].Column);
+                    ++argErrors;
+                }
+                var acceptableTypes = new List<string> {
+                    ERROR_TYPE, INTEGER_TYPE, BOOLEAN_TYPE, STRING_TYPE, REAL_TYPE,
+                    "Array<" + INTEGER_TYPE + ">",
+                    "Array<" + REAL_TYPE + ">",
+                    "Array<" + STRING_TYPE+ ">",
+                    "Array<" + BOOLEAN_TYPE + ">"};
+
+                if (!IsWritable(callNode.Children[i + 1], acceptableTypes) && isReference)
+                {
+                    reporter.ReportError(
+                       Error.SEMANTIC_ERROR,
+                       "Argument " + (i + 1) + " for '" + symbol.Name + "' is invalid, " +
+                       "as the corresponding parameter is reference type",
+                       callNode.Children[i + 1].Line,
+                       callNode.Children[i + 1].Column);
+
+                    reporter.ReportError(
+                       Error.NOTE_GENERIC,
+                       "Argument must be writable",
+                       0,0);
                     ++argErrors;
                 }
             }
@@ -936,23 +950,38 @@ namespace CodeGenCourseProject.SemanticChecking
             node.SetNodeType(lhs.NodeType());
         }
 
-        private void HandleFunctionOrProcedure(ASTNode mainNode, IdentifierNode name, ASTNode block, string returnType, int paramStartPoint)
+        private SymbolTableLevel HandleFunctionOrProcedure(ASTNode mainNode, IdentifierNode name, ASTNode block, string returnType, int paramStartPoint)
         {
 
             var paramTypes = new List<string>();
+            var isReference = new List<bool>();
             symbolTable.InsertFunction(
                 name.Line,
                 name.Column,
                 name.Value,
                 returnType,
-                paramTypes);
+                paramTypes,
+                isReference);
 
             symbolTable.PushLevel();
             functionReturnTypeStack.Push(returnType);
             for (int i = paramStartPoint; i < mainNode.Children.Count; ++i)
             {
                 mainNode.Children[i].Accept(this);
-                paramTypes.Add(mainNode.Children[i].NodeType());
+                var child = mainNode.Children[i];
+                paramTypes.Add(child.NodeType());
+                if (child is FunctionParameterArrayNode)
+                {
+                    isReference.Add(((FunctionParameterArrayNode)child).IsReferenceParameter);
+                }
+                else if (child is FunctionParameterVariableNode)
+                {
+                    isReference.Add(((FunctionParameterVariableNode)child).IsReferenceParameter);
+                }
+                else
+                {
+                    throw new InternalCompilerError("Invalid child type for function param: " + child.GetType());
+                }
             }
             
             foreach (var child in block.Children)
@@ -960,8 +989,9 @@ namespace CodeGenCourseProject.SemanticChecking
                 child.Accept(this);
             }
 
-            symbolTable.PopLevel();
+            var level = symbolTable.PopLevel();
             functionReturnTypeStack.Pop();
+            return level;
         }
 
         private void ReportUnavailableType(IdentifierNode name)
@@ -1009,6 +1039,27 @@ namespace CodeGenCourseProject.SemanticChecking
                 "Identifier '" + symbol.Name + "' was declared here",
                 symbol.Line,
                 symbol.Column);
+        }
+
+        private bool IsWritable(ASTNode node, IList<string> acceptableTypes)
+        {
+            if (!(node is IdentifierNode || node is ArrayIndexNode))
+            {
+                return false;
+            }
+
+            if (node is IdentifierNode)
+            {
+                var ident = (IdentifierNode)node;
+                var symbol = symbolTable.GetSymbol(ident.Value); 
+                if ((predeclaredIdentifiers.Contains(ident.Value) && symbol == null) ||
+                    (symbol != null && !acceptableTypes.Contains(symbol.Type)))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
 
