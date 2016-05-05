@@ -51,7 +51,7 @@ namespace CodeGenCourseProject.TAC.Values
 
         public TACIdentifier(int line, int column, string name, string type, int id) : base(line, column)
         {
-            this.name = name + "_" + id;
+            this.name = Helper.MangleVariableName(name, id);
             this.unmangledName = name;
             this.type = type;
             this.id = id;

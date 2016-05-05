@@ -1,0 +1,46 @@
+﻿program valid;
+begin
+	procedure proc();
+	begin
+		procedure inner(a : integer);
+		begin
+			return;
+		end;
+
+		inner(4);
+	end;
+
+	proc();
+
+	var a : integer;
+	var b : real;
+	var c : boolean; 
+	var d : string;
+
+	procedure proc2(a : integer, b : real, var c : boolean, var d : string);
+	begin
+		return;
+	end;
+
+	a := 1;
+	b := 2.2;
+	c := true;
+	d := "hello";
+	proc2(a, b, c, d);
+
+	var ar : array [] of integer;
+
+	function real_func() : real;
+	begin
+		return 12.34;
+	end;
+
+	proc2(ar[2], real_func(), c, d);
+
+	function string_func(a : string) : string;
+	begin
+		return "abcdegf";
+	end;
+
+	string_func(string_func(string_func("foo")));
+end.

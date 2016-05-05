@@ -1,5 +1,6 @@
 ﻿using CodeGenCourseProject.CFG;
 using CodeGenCourseProject.ErrorHandling;
+using CodeGenCourseProject.SemanticChecking;
 using CodeGenCourseProject.TAC;
 using CodeGenCourseProject.TAC.Values;
 using System;
@@ -29,9 +30,10 @@ namespace CodeGenCourseProject.CFG.Analysis
                 AnalyzeFunction(function);
             }
         }
-
+        
         private void AnalyzeFunction(Function function)
         {
+            unreachableBlocks.Clear();
             var graph = graphs[function.Name];
             if (graph.Blocks.Count == 0)
             {
@@ -39,6 +41,7 @@ namespace CodeGenCourseProject.CFG.Analysis
             }
             DetectDeadBlocks(function, graph);
             AnalyzeVariableUsage(function, graph);
+            AnalyzeCapturedVariableInitialization(function, graph);
         }
 
         /*
@@ -92,8 +95,8 @@ namespace CodeGenCourseProject.CFG.Analysis
         private void AnalyzeVariableUsage(Function function, CFGraph graph)
         {
             HandleVariableInitializations(function, graph);
-            
-
+            var reportedRefParams = new HashSet<string>();
+            var missingReturnReported = false;
             foreach (var block in graph.Blocks)
             {
                 // don't care about unreachable blocks
@@ -104,11 +107,26 @@ namespace CodeGenCourseProject.CFG.Analysis
 
                 for (int i = block.Start; i <= block.End; ++i)
                 {
-                    CheckInitialization(function.Statements[i], block);
+                    CheckInitialization(function, function.Statements[i], block);
+                }
+                
+
+                // check that reference parameters are assigned into by the time we
+                // are exiting the function\procedure
+                if (function.Name != TACGenerator.ENTRY_POINT && 
+                    graph.AdjacencyList[block.ID].Contains(CFGraph.END_BLOCK_ID))
+                {
+                    // Below line violates language semantics (reference parameters must
+                    // be both readable and writable), so let's just remove it for now.
+                    // Code is left for posterity however.             
+
+                    //CheckReferenceAssignments(function, reportedRefParams, block);
+
+                    missingReturnReported = CheckFunctionReturnStatements(function, missingReturnReported, block);
                 }
             }
         }
-
+        
         private void HandleVariableInitializations(Function function, CFGraph graph)
         {
             foreach (var block in graph.Blocks)
@@ -128,15 +146,16 @@ namespace CodeGenCourseProject.CFG.Analysis
                 {
                     block.VariableInitializations.Add((TACIdentifier)dest);
                 }
-            }
-
-            // entry block - add function arguments as visible
-            if (block.ID == 0)
-            {
-                foreach (var param in function.Parameters)
+                else if (function.Statements[i].RightOperand is TACCallRead)
                 {
-
-                    block.VariableInitializations.Add(param.Identifier);
+                    var readCall = (TACCallRead)function.Statements[i].RightOperand;
+                    foreach (var arg in readCall.Arguments)
+                    {
+                        if (arg is TACIdentifier)
+                        {
+                            block.VariableInitializations.Add((TACIdentifier)arg);
+                        }
+                    }
                 }
             }
         }
@@ -204,45 +223,248 @@ namespace CodeGenCourseProject.CFG.Analysis
             return changes;
         }
 
-        private void CheckInitialization(TACStatement statement, BasicBlock block)
+        private void CheckInitialization(Function function, TACStatement statement, BasicBlock block)
         {
-            CheckInitialization(statement.LeftOperand, block);
-            CheckInitialization(statement.RightOperand, block);
+            if (statement.Destination is TACArrayIndex)
+            {
+                CheckInitialization(function, statement.Destination, block);
+            }
+            CheckInitialization(function, statement.LeftOperand, block);
+            CheckInitialization(function, statement.RightOperand, block);
         }
 
-        private void CheckInitialization(TACValue value, BasicBlock block)
+        private void CheckInitialization(Function function, TACValue value, BasicBlock block)
         {
+            HandleNonIdentifiers(function, value, block);
+
             if (value is TACIdentifier)
             {
                 var identifier = (TACIdentifier)value;
-                if (block.ParentInitializations.Contains(identifier))
+                var isAssigned = VariableIsAssignedInto(identifier, block);
+                if (isAssigned)
                 {
                     return;
                 }
-                else if (block.VariableInitializations.Contains(identifier))
-                {
-                    foreach (var init in block.VariableInitializations)
+
+                // check if value is function parameter or captured variable
+                //, as these are always considered to be valid
+                if (!isAssigned) { 
+                    foreach (var param in function.Parameters)
                     {
-                        if (init.Equals(identifier))
+                        if (param.Identifier.Equals(identifier))
                         {
-                            if (init.Line < identifier.Line || identifier.UnmangledName == "__t")
-                            {
-                                return;
-                            }
-                            break;
+                            return;
+                        }
+                    }
+
+                    foreach (var param in function.CapturedVariables)
+                    {
+                        if (param.Identifier.Equals(identifier))
+                        {
+                            return;
                         }
                     }
                 }
 
                 // arrays are zero-initialized and thus can be used without previous
                 // assignments
-                if (identifier.Type.Contains("Array<"))
-                {
-                    return;
-                }
 
                 ReportUninitializedVariable(identifier);
             }
+        }
+
+        private void HandleNonIdentifiers(Function function, TACValue value, BasicBlock block)
+        {
+            if (value is TACCallRead)
+            {
+                // read call initializes variables - skip
+                return;
+            }
+
+            if (value is TACArrayIndex)
+            {
+                var index = (TACArrayIndex)value;
+                CheckInitialization(function, index.Index, block);
+                return;
+            }
+
+            if (value is TACArrayDeclaration)
+            {
+                var decl = (TACArrayDeclaration)value;
+                CheckInitialization(function, decl.Expression, block);
+                return;
+            }
+
+            if (value is TACReturn)
+            {
+                var decl = (TACReturn)value;
+                CheckInitialization(function, decl.Expression, block);
+                return;
+            }
+
+            if (value is TACAssert)
+            {
+                var assert = (TACAssert)value;
+                CheckInitialization(function, assert.Expression, block);
+                return;
+            }
+
+            if (value is TACJumpIfFalse)
+            {
+                var jump = (TACJumpIfFalse)value;
+                CheckInitialization(function, jump.Condition, block);
+                return;
+            }
+
+
+
+            if (value is TACCall)
+            {
+                var call = (TACCall)value;
+                // check that the function arguments are initialized
+                foreach (var arg in call.Arguments)
+                {
+                    CheckInitialization(function, arg, block);
+                }
+
+                // check that captured parameters are initialized at this point
+                foreach (var f in functions)
+                {
+                    if (f.Name == call.Function)
+                    {
+                        foreach (var captured in f.CapturedVariables)
+                        {
+                            // Assume that any variables this function has captured are 
+                            // initialized (will be checked in different call site)
+                            if (function.CapturedVariables.Contains(captured))
+                            {
+                                continue;
+                            }
+                            // we need to use the line number of the call, not the 
+                            // point where it is used
+                            var id = new TACIdentifier(
+                                call.Line,
+                                call.Column,
+                                captured.Identifier.UnmangledName,
+                                captured.Identifier.Type,
+                                captured.Identifier.Id);
+
+                            if (!VariableIsAssignedInto(id, block))
+                            {
+                                reporter.ReportError(
+                                    Error.SEMANTIC_ERROR,
+                                    "Captured variable '" + captured.Identifier.UnmangledName + "' might be uninitialized at this point",
+                                    call.Line,
+                                    call.Column);
+
+                                reporter.ReportError(
+                                    Error.NOTE,
+                                    "Variable is used here",
+                                    captured.Identifier.Line,
+                                    captured.Identifier.Column);
+                            }
+                        }
+                    }
+                }
+                return;
+            }
+        }
+
+
+        private void CheckReferenceAssignments(Function function, HashSet<string> reportedRefParams, BasicBlock block)
+        {
+            foreach (var param in function.Parameters)
+            {
+                if (!param.IsReference)
+                {
+                    continue;
+                }
+
+                // create new TACIdentifier with fake line number, as the assignment 
+                // takes line account (assignment must happen before usage; the usage
+                // is decided by the line number, function arguments are always above
+                // usage -> would always report false
+                var ident = new TACIdentifier(
+                    int.MaxValue,
+                    0,
+                    param.Identifier.UnmangledName,
+                    param.Identifier.Type,
+                    param.Identifier.Id);
+
+                var isAssigned = VariableIsAssignedInto(ident, block);
+                if (!isAssigned && !reportedRefParams.Contains(param.Identifier.Name))
+                {
+                    reportedRefParams.Add(param.Identifier.Name);
+                    reporter.ReportError(
+                        Error.SEMANTIC_ERROR,
+                        "Parameter '" + param.Identifier.UnmangledName + "' may remain uninitialized at function exit",
+                        param.Identifier.Line,
+                        param.Identifier.Column);
+
+                    reporter.ReportError(
+                        Error.NOTE_GENERIC,
+                        "Reference parameters are considered out-parameters, and a value must be assigned into one",
+                        param.Identifier.Line,
+                        param.Identifier.Column);
+                }
+            }
+        }
+
+        private bool CheckFunctionReturnStatements(Function function, bool missingReturnReported, BasicBlock block)
+        {
+            if (function.ReturnType != SemanticChecker.VOID_TYPE)
+            {
+                if (!(function.Statements[block.End].RightOperand is TACReturn) &&
+                    !missingReturnReported)
+                {
+                    missingReturnReported = true;
+                    reporter.ReportError(
+                        Error.SEMANTIC_ERROR,
+                        "Not all control pathts return a value in funtion '" +
+                        function.UnmangledName + "'",
+                        function.Line,
+                        function.Column
+                        );
+                }
+            }
+
+            return missingReturnReported;
+        }
+
+
+        private void AnalyzeCapturedVariableInitialization(Function function, CFGraph graph)
+        {
+         
+        }
+
+        private bool VariableIsAssignedInto(TACIdentifier identifier, BasicBlock block)
+        {
+            if (identifier.Type.Contains("Array<"))
+            {
+                return true;
+            }
+
+            if (block.ParentInitializations.Contains(identifier))
+            {
+                return true;
+            }
+            else if (block.VariableInitializations.Contains(identifier))
+            {
+                foreach (var init in block.VariableInitializations)
+                {
+                    if (init.Equals(identifier))
+                    {
+                        // check that assignment actually happens before usage
+                        if (init.Line < identifier.Line || identifier.UnmangledName == "__t")
+                        {
+                            return true;
+                        }
+                        break;
+                    }
+                }
+            }
+
+            return false;
         }
 
         private void ReportUninitializedVariable(TACIdentifier identifier)
@@ -255,12 +477,10 @@ namespace CodeGenCourseProject.CFG.Analysis
 
             reporter.ReportError(
                 Error.NOTE_GENERIC,
-                "There exists one or more control flow paths where this variable isn't initialized",
+                "At least one control flow path exists where this variable remains uninitialized",
                 identifier.Line,
                 identifier.Column);
         }
-
-
 
         private IList<int> GetParentBlocks(CFGraph graph, int id)
         {

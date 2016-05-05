@@ -29,6 +29,14 @@ namespace CodeGenCourseProject.TAC.Values
             }
         }
 
+        public string Function
+        {
+            get
+            {
+                return function;
+            }
+        }
+
         public override void Accept(TACVisitor visitor)
         {
             visitor.Visit(this);
@@ -36,12 +44,13 @@ namespace CodeGenCourseProject.TAC.Values
 
         public override bool Equals(object obj)
         {
-            return (obj is TACCall) && ((TACCall)obj).arguments.SequenceEqual(arguments);
+            return (obj is TACCall) && ((TACCall)obj).arguments.SequenceEqual(arguments) &&
+                Function.Equals(((TACCall)obj).Function);
         }
 
         public override string ToString()
         {
-            return function + "(" + string.Join(", ", arguments) + ")";
+            return Function + "(" + string.Join(", ", arguments) + ")";
         }
     }
 }

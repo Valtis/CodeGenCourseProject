@@ -1,0 +1,16 @@
+﻿program valid;
+begin
+	
+	function a(a : integer) : real;
+	begin
+		var b : boolean;
+		b := a <> 423;
+		if not b then
+			return 0.0;
+		
+		a := 23;
+		
+		return 2.34;
+	end;
+
+end.

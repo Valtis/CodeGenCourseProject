@@ -3,6 +3,7 @@ using CodeGenCourseProject.SemanticChecking;
 using CodeGenCourseProject.TAC.Values;
 using System;
 using System.Collections.Generic;
+using static CodeGenCourseProject.TAC.Function;
 
 namespace CodeGenCourseProject.TAC
 {
@@ -39,7 +40,7 @@ namespace CodeGenCourseProject.TAC
                 case Operator.GREATER_THAN_OR_EQUAL:
                     return ">=";
                 case Operator.GREATER_THAN:
-                    return ">=";
+                    return ">";
                 case Operator.NOT_EQUAL:
                     return "!=";
                 case Operator.AND:
@@ -65,12 +66,23 @@ namespace CodeGenCourseProject.TAC
         private SymbolTable symbolTable;
         private Stack<TACValue> tacValueStack; // used to store temporaries when evaluating sub-expressions
 
+
+        // track identifiers that have been captured from the outer scope
+        // (not function local variables or parameters)
+        private Stack<ISet<Parameter>> capturedIdentifiers;
+        // contains outer symbol tables (symbol table without current function locals etc.)
+        // used to identify captured variables
+        private Stack<SymbolTable> outerSymbolTables;
+
         public TACGenerator()
         {
             functions = new List<Function>();
             functionStack = new Stack<Function>();
             tacValueStack = new Stack<TACValue>();
             symbolTable = new SymbolTable(null);
+
+            outerSymbolTables = new Stack<SymbolTable>();
+            capturedIdentifiers = new Stack<ISet<Parameter>>();
             tempID = 0;
             labelID = 0;
         }
@@ -120,6 +132,11 @@ namespace CodeGenCourseProject.TAC
             foreach (var child in blockNode.Children)
             {
                 child.Accept(this);
+                // pop unused return value from stack, if present
+                if (child is CallNode && tacValueStack.Count != 0)
+                {
+                    tacValueStack.Pop();
+                }
             }
 
             symbolTable.PopLevel();
@@ -127,49 +144,74 @@ namespace CodeGenCourseProject.TAC
 
         public void Visit(CallNode callNode)
         {
-            AssertEmptyTacValueStack();
             var name = ((IdentifierNode)callNode.Children[0]).Value;
+            var arguments = new List<TACValue>();
 
-            var symbol = symbolTable.GetSymbol(name);
+            for (int i = 1; i < callNode.Children.Count; ++i)
+            {
+                callNode.Children[i].Accept(this);
+                arguments.Add(tacValueStack.Pop());
+            }
+            
+            var functionSymbol = (FunctionSymbol)symbolTable.GetSymbol(name, callNode.Line);
+
             // inbuilt writeln function
-            if (name == "writeln" && symbol == null)
+            if (name == "writeln" && functionSymbol == null)
             {
-                for (int i = 1; i < callNode.Children.Count; ++i)
-                {
-                    callNode.Children[i].Accept(this);
-                }
-
-                var list = new List<TACValue>();
-                while (tacValueStack.Count != 0)
-                {
-                    list.Add(tacValueStack.Pop());
-                }
-                list.Reverse();
-                Emit(new TACCallWriteln(callNode.Line, callNode.Column, list));
-                AssertEmptyTacValueStack();
+                Emit(new TACCallWriteln(callNode.Line, callNode.Column, arguments));
+                return;
+            }
+            // inbuilt read function
+            if (name == "read" && functionSymbol == null)
+            {
+                Emit(new TACCallRead(callNode.Line, callNode.Column, arguments));
                 return;
             }
 
-            if (name == "read" && symbol == null)
-            {
-                for (int i = 1; i < callNode.Children.Count; ++i)
-                {
-                    callNode.Children[i].Accept(this);
-                }
+            // check if function has captured parmeters, as these must be passed
+            // as reference parameters when calling the function
 
-                var list = new List<TACValue>();
-                while (tacValueStack.Count != 0)
+            // could still be in function stack (recursive call)
+
+            /*Function function = null;
+
+            foreach (var f in functionStack)
+            {
+                if (f.Name == Helper.MangleFunctionName(functionSymbol.Name, functionSymbol.Id))
                 {
-                    list.Add(tacValueStack.Pop());
+                    function = f;
                 }
-                list.Reverse();
-                Emit(new TACCallRead(callNode.Line, callNode.Column, list));
-                AssertEmptyTacValueStack();
-                return;
             }
 
-            AssertEmptyTacValueStack();
-            throw new NotImplementedException();
+            foreach (var f in functions)
+            {
+                if (f.Name == Helper.MangleFunctionName(functionSymbol.Name, functionSymbol.Id))
+                {
+                    function = f;
+                }
+            }
+            foreach (var capturedParam in function.CapturedVariables)
+            {
+                arguments.Add(capturedParam.Identifier);
+            }
+            */
+
+            var call = new TACCall(
+                    callNode.Line,
+                    callNode.Column,
+                    Helper.MangleFunctionName(name, functionSymbol.Id),
+                    arguments);
+
+            if (callNode.NodeType() == SemanticChecker.VOID_TYPE)
+            {
+                Emit(call);
+            }
+            else
+            {
+                var temp = GetTemporary(callNode);
+                Emit(call, temp);
+                tacValueStack.Push(temp);
+            }
         }
 
         public void Visit(EqualsNode equalsNode)
@@ -177,33 +219,18 @@ namespace CodeGenCourseProject.TAC
             HandleBinaryOperator(equalsNode, Operator.EQUAL);
         }
 
-        public void Visit(FunctionNode functionNode)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Visit(FunctionParameterVariableNode functionParameterNode)
-        {
-            // for name mangling. FIXME: Extract name mangling code into separate helper
-            
-            var symbol = symbolTable.GetSymbol(functionParameterNode.Name.Value);
-            var id = new TACIdentifier(symbol.Name, symbol.Type, symbol.Id);
-
-            functionStack.Peek().
-                AddParameter(
-                    id,
-                    functionParameterNode.IsReferenceParameter);
-        }
-
+        
         public void Visit(ReturnNode returnNode)
         {
+            AssertEmptyTacValueStack();
             if (returnNode.Children.Count == 0)
             {
                 Emit(new TACReturn(returnNode.Line, returnNode.Column));
                 return;
             }
-
-            throw new NotImplementedException();
+            returnNode.Children[0].Accept(this);
+            Emit(new TACReturn(returnNode.Line, returnNode.Column, tacValueStack.Pop()));
+            AssertEmptyTacValueStack();
         }
 
         public void Visit(SubtractNode subtractNode)
@@ -250,8 +277,8 @@ namespace CodeGenCourseProject.TAC
         public void Visit(IdentifierNode identifierNode)
         {
             var name = identifierNode.Value;
-            var symbol = symbolTable.GetSymbol(name);
-
+            var symbol = symbolTable.GetSymbol(name, identifierNode.Line);
+      
             // if symbol is null, it's predeclared identifier and we need to check for true/false
             // if the symbol is "true" or "false", it might still be a predefined identifier, as 
             // the symbol table works at block scope. This means that for declarations like
@@ -288,8 +315,27 @@ namespace CodeGenCourseProject.TAC
                 }
 
             }
-            tacValueStack.Push(
-                new TACIdentifier(identifierNode.Line, identifierNode.Column, name, symbol.Type, symbol.Id));
+            var outerSymbol = 
+                outerSymbolTables.Count > 0 ? 
+                    outerSymbolTables.Peek().GetSymbol(name, identifierNode.Line)
+                    : null;
+           
+            var identifier = new TACIdentifier(identifierNode.Line, identifierNode.Column, name, symbol.Type, symbol.Id);
+        
+            // if symbol is the same symbol than one in the outer symbol table 
+            // (table without current function declarations), the variable is captured
+            // from outer context
+            if (symbol == outerSymbol)
+            {
+                capturedIdentifiers.Peek().Add(
+                    new Parameter(
+                        identifier,
+                        symbol.Type,
+                        true)); // always pass as reference
+            }
+
+           
+            tacValueStack.Push(identifier);
         }
 
         public void Visit(IntegerNode integerNode)
@@ -347,7 +393,12 @@ namespace CodeGenCourseProject.TAC
 
         public void Visit(ProgramNode programNode)
         {
-            var function = new Function(ENTRY_POINT);
+            var function = new Function(
+                programNode.Line, 
+                programNode.Column,
+                ENTRY_POINT, 
+                1,
+                SemanticChecker.VOID_TYPE);
             functionStack.Push(function);
             foreach (var child in programNode.Children)
             {
@@ -369,28 +420,49 @@ namespace CodeGenCourseProject.TAC
 
         public void Visit(ProcedureNode procedureNode)
         {
-            var function = new Function("__"+((IdentifierNode)procedureNode.Children[0]).Value);
-            functionStack.Push(function);
+            var block = 1;
+            var paramStart = 2;
+            ProcedureFunctionHelper(procedureNode, SemanticChecker.VOID_TYPE, block, paramStart);
+        }
 
-            // honestly starting to regret how I decided to handle function\procedure nodes in AST.
-            // Too many dirty workarounds.
-            // this one in particular is because I need the symbol table info here
-            // that is only present in the child block
-
-            procedureNode.Children[1].Accept(this);
-
-            symbolTable.PushLevel(((BlockNode)procedureNode.Children[1]).GetSymbols());
-            for (int i = 2; i < procedureNode.Children.Count; ++i)
+        public void Visit(FunctionNode functionNode)
+        {
+            var block = 2;
+            var paramStart = 3;
+            var type = "";
+            if (functionNode.Children[1] is IdentifierNode)
             {
-                procedureNode.Children[i].Accept(this);
+                type = ((IdentifierNode)functionNode.Children[1]).Value;
             }
-            symbolTable.PopLevel();
-            Functions.Add(functionStack.Pop());
+            else
+            {
+                type = ((IdentifierNode)((ArrayTypeNode)functionNode.Children[1]).Children[0]).Value;
+            }
+
+            ProcedureFunctionHelper(
+                functionNode, 
+                type, 
+                block, 
+                paramStart);
         }
 
         public void Visit(MultiplyNode multiplyNode)
         {
             HandleBinaryOperator(multiplyNode, Operator.MULTIPLY);
+        }
+        
+        public void Visit(FunctionParameterVariableNode functionParameterNode)
+        {
+            // for name mangling. FIXME: Extract name mangling code into separate helper
+
+            var symbol = symbolTable.GetSymbol(functionParameterNode.Name.Value);
+            var id = new TACIdentifier(symbol.Line, symbol.Column, symbol.Name, symbol.Type, symbol.Id);
+
+            functionStack.Peek().
+                AddParameter(
+                    id,
+                    functionParameterNode.NodeType(),
+                    functionParameterNode.IsReferenceParameter);
         }
 
         public void Visit(FunctionParameterArrayNode functionParameterArrayNode)
@@ -398,11 +470,13 @@ namespace CodeGenCourseProject.TAC
             // for name mangling. FIXME: Extract name mangling code into separate helper
 
             var symbol = symbolTable.GetSymbol(functionParameterArrayNode.Name.Value);
-            var id = new TACIdentifier(symbol.Name, symbol.Type, symbol.Id);
+            var id = new TACIdentifier(symbol.Line, symbol.Column,
+                symbol.Name, symbol.Type, symbol.Id);
 
             functionStack.Peek().
                 AddParameter(
                     id,
+                    functionParameterArrayNode.NodeType(),
                     functionParameterArrayNode.IsReferenceParameter);
         }
 
@@ -483,12 +557,18 @@ namespace CodeGenCourseProject.TAC
 
         public void Visit(UnaryPlusNode unaryPlusNode)
         {
-            throw new NotImplementedException();
+            unaryPlusNode.Children[0].Accept(this);
         }
 
         public void Visit(AssertNode assertNode)
         {
-            throw new NotImplementedException();
+            AssertEmptyTacValueStack();
+
+            assertNode.Children[0].Accept(this);
+
+            Emit(new TACAssert(assertNode.Line, assertNode.Column, tacValueStack.Pop()));
+            
+            AssertEmptyTacValueStack();
         }
 
         public void Visit(ArraySizeNode node)
@@ -554,6 +634,70 @@ namespace CodeGenCourseProject.TAC
             Emit(op, lhs, rhs, tacValue);
 
             tacValueStack.Push(tacValue);
+        }
+
+        private void ProcedureFunctionHelper(ASTNode node, string returnType, int block, int paramStart)
+        {
+            var identifier = (IdentifierNode)node.Children[0];
+            var symbol = symbolTable.GetSymbol(identifier.Value);
+            var function = new Function(
+                node.Line, node.Column, identifier.Value, symbol.Id, returnType);
+
+            outerSymbolTables.Push(symbolTable.Clone());
+            capturedIdentifiers.Push(new HashSet<Parameter>());
+            functionStack.Push(function);
+
+            // honestly starting to regret how I decided to handle function\procedure nodes in AST.
+            // Too many dirty workarounds.
+            // this one in particular is because I need the symbol table info here
+            // that is only present in the child block
+
+            node.Children[block].Accept(this);
+            symbolTable.PushLevel(((BlockNode)node.Children[block]).GetSymbols());
+            for (int i = paramStart; i < node.Children.Count; ++i)
+            {
+                node.Children[i].Accept(this);
+            }
+
+            symbolTable.PopLevel();
+            var captured = capturedIdentifiers.Pop();
+
+            // if inner function captures a value, this value needs to be captured
+            // by outer function as well, if this is declared in even outer scope
+            //
+            // var a : integer;
+            // 
+            // proc p1(); // captures a, doesn't capture b as that is inner variable
+            // begin
+            //    var b : integer;
+            //    proc p2(); // captures a and b
+            //       *use a and b*
+            //    end
+            // end
+            //
+            var fTables =
+                new Stack<SymbolTable>(new Stack<SymbolTable>(outerSymbolTables));
+            foreach (var f in functionStack)
+            {
+                if (f.Name == ENTRY_POINT)
+                {
+                    break;
+                }
+
+                foreach (var captureParam in captured)
+                {
+                    var s = fTables.Peek().GetSymbol(
+                        captureParam.Identifier.UnmangledName);
+                    if (s != null && s.Id == captureParam.Identifier.Id)
+                    {
+                        f.CapturedVariables.Add(captureParam);
+                    }
+                }
+                fTables.Pop();
+            }
+            
+            outerSymbolTables.Pop();
+            Functions.Add(functionStack.Pop());
         }
 
         private void Emit(TACValue operand)

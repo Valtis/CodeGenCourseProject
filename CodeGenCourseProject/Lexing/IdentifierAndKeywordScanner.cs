@@ -41,7 +41,7 @@ namespace CodeGenCourseProject.Lexing
 
         internal override bool Recognizes(char character)
         {
-            return char.IsLetter(character);
+            return IsLetter(character);
         }
 
         protected override Token DoScan()
@@ -49,7 +49,7 @@ namespace CodeGenCourseProject.Lexing
              var builder = new StringBuilder();
 
              while (Reader.PeekCharacter().HasValue && 
-                 (char.IsLetterOrDigit(Reader.PeekCharacter().Value) || 
+                 (IsLetterOrDigit(Reader.PeekCharacter().Value) || 
                  Reader.PeekCharacter().Value == '_'))
              {
                  builder.Append(Reader.PeekCharacter().Value);
@@ -63,6 +63,16 @@ namespace CodeGenCourseProject.Lexing
              }
 
              return new IdentifierToken(text.ToLower());
+        }
+
+        private bool IsLetterOrDigit(char chr)
+        {
+            return char.IsDigit(chr) || IsLetter(chr);
+        }
+
+        private bool IsLetter(char chr)
+        {
+            return (chr >= 'a' && chr <= 'z') || (chr >= 'A' && chr <= 'Z');
         }
 
 

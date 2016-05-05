@@ -1,0 +1,37 @@
+﻿program invalid;
+begin
+	{* uninitialized *}
+	var a, q : integer;
+
+	procedure captures();
+	begin
+		var b, c : integer;
+		{* 'a' should be uninitialized *}
+		b := a * 2;
+		a := 4;
+		b := a * 4;
+
+		procedure inner();
+		begin
+			var d : integer;
+			d := a * b;
+			{* 'c' should be uninitialized *}
+			d := a - c;
+			a := 2323;
+			c := 2 + q;
+		end;
+		inner();
+		{* 'c' should still be uninitialized *}
+		a := c * 2;
+	end;
+
+	captures();
+	
+	{* 'a' should still be uninitalized*}
+	q := a + 2;
+
+	a := 4;
+	q := 8;
+	{* Should be ok now *}
+	captures();
+end.

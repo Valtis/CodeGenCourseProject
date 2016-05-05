@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using CodeGenCourseProject.TAC.Values;
+using System.Linq;
 
 namespace CodeGenCourseProject.Codegen
 {
@@ -96,8 +97,8 @@ namespace CodeGenCourseProject.Codegen
             EmitBlockStart();
             Emit("int is_negative = size < 0;");
             Emit("if (is_negative) goto fail;");
-            Emit("size = sizeof(" + type + ") * size;");
-            Emit("in->arr = calloc(size);");
+            Emit("size_t elem_size = sizeof(" + type + ");");
+            Emit("in->arr = calloc(size, elem_size);");
             Emit("in->size = size;");
             Emit("return;");
             Emit("fail:");
@@ -126,12 +127,22 @@ namespace CodeGenCourseProject.Codegen
 
         private void GenerateCode(Function function)
         {
+            declared.Clear();
+            DeclareParameters(function);
             EmitFunctionPrologue(function);
             foreach (var code in function.Statements)
             {
                 EmitStatement(code);
             }
             EmitFunctionEpilogue(function);
+        }
+
+        private void DeclareParameters(Function function)
+        {
+            foreach (var param in function.Parameters)
+            {
+                declared.Add(param.Identifier.Name);
+            }
         }
 
         private void EmitInclude(string file)
@@ -144,6 +155,13 @@ namespace CodeGenCourseProject.Codegen
             if (function.Name == TACGenerator.ENTRY_POINT)
             {
                 Emit("int main()");
+            }
+            else
+            {
+                var param_list = function.Parameters.Select(x => 
+                GetCType(x.Type) + " " +( x.IsReference ? "*" : "") + x.Identifier.Name);
+                var param = string.Join(", ", param_list);
+                Emit(GetCType(function.ReturnType) + " " + function.Name + "(" + param + ")");
             }
 
             EmitBlockStart();
@@ -241,7 +259,7 @@ namespace CodeGenCourseProject.Codegen
         {
             var type = GetCType(tacArrayDeclaration.Type);
             var name = tacArrayDeclaration.Name;
-            var size = tacArrayDeclaration.SizeExpression;
+            var size = tacArrayDeclaration.Expression;
             Emit("struct " + type + "_array " + name + ";");
             cValues.Push("__create_" + type + "_array(&" + tacArrayDeclaration.Name + ", " + size + ", __LINE__)");
         }
@@ -279,8 +297,12 @@ namespace CodeGenCourseProject.Codegen
             {
                 case SemanticChecker.INTEGER_TYPE:
                     return "int";
+                case SemanticChecker.REAL_TYPE:
+                    return "double";
                 case SemanticChecker.BOOLEAN_TYPE:
-                    return "char";                    
+                    return "char";
+                case SemanticChecker.VOID_TYPE:
+                    return "void";
                 default:
                     throw new InternalCompilerError("Should not be reached");
             }
@@ -329,27 +351,53 @@ namespace CodeGenCourseProject.Codegen
 
         public void Visit(TACLabel tacLabel)
         {
-            cValues.Push("label_" + tacLabel.ID + ":");
+            cValues.Push("____label_" + tacLabel.ID + ":");
         }
 
         public void Visit(TACJumpIfFalse tacJumpIfTrue)
         {
             tacJumpIfTrue.Condition.Accept(this);
             Emit("if (!" + cValues.Pop()  + ")");
-            cValues.Push("goto label_" + tacJumpIfTrue.Label.ID);
+            cValues.Push("goto ____label_" + tacJumpIfTrue.Label.ID);
         }
 
         public void Visit(TACJump tacJump)
         {
-            cValues.Push("goto label_" + tacJump.Label.ID);
+            cValues.Push("goto ____label_" + tacJump.Label.ID);
         }
 
         public void Visit(TACCall tacCall)
         {
-            throw new NotImplementedException();
+            if (tacCall is TACCallRead)
+            {
+                Visit((TACCallRead)tacCall);
+                return;
+            }
+
+            if (tacCall is TACCallWriteln)
+            {
+                Visit((TACCallWriteln)tacCall);
+                return;
+            }
+
+            var args_string = tacCall.Arguments.Select(i => i.ToString());
+            var args = string.Join(", ", args_string);
+
+            cValues.Push(tacCall.Function + "(" + args + ")");
         }
 
         public void Visit(TACReturn tacReturn)
+        {
+            var expr = "";
+            if (tacReturn.Expression != null)
+            {
+                tacReturn.Expression.Accept(this);
+                expr = cValues.Pop();
+            }
+            cValues.Push("return " + expr);
+        }
+
+        public void Visit(TACAssert tacAssert)
         {
             throw new NotImplementedException();
         }

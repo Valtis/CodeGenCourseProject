@@ -1,0 +1,12 @@
+﻿program invalid;
+begin
+	var a : integer;
+	
+	var b : array [a*2] of real;
+	var c : array [a] of real;
+
+	var d : real;
+	d := 0.1;
+	b[a] := d;
+	b[a + 2] := c[a] * 2.31;
+end.

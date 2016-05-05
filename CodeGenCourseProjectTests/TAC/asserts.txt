@@ -1,0 +1,7 @@
+﻿program asserts;
+begin
+	var a : integer;
+	assert(a < 2);
+	assert(true);
+	assert(false);
+end.

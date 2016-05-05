@@ -546,7 +546,8 @@ namespace CodeGenCourseProject.SemanticChecking
             }
 
             var parameterStartPoint = 3;
-            HandleFunctionOrProcedure(functionNode, name, block, returnType, parameterStartPoint);
+            var level = HandleFunctionOrProcedure(functionNode, name, block, returnType, parameterStartPoint);
+            ((BlockNode)block).SetSymbols(level);
         }
 
         public void Visit(EqualsNode equalsNode)

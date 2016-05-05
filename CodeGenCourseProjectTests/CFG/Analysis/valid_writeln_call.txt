@@ -1,0 +1,15 @@
+﻿program valid;
+begin
+	var a : integer;
+	var b : string;
+	var c : array [24] of string;
+
+	a := 23;
+	b := "hello";
+	writeln(a, b, c[23]);
+
+	procedure foo(d : integer);
+	begin
+		writeln(a, b, d);
+	end;
+end.

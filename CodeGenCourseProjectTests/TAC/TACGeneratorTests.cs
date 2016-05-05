@@ -35,7 +35,7 @@ namespace CodeGenCourseProject.TAC.Tests
         {
 
             var functions = GetFunctions("expressions.txt", 1);
-            Assert.AreEqual(74, functions[0].Statements.Count);
+            Assert.AreEqual(77, functions[0].Statements.Count);
             var statements = functions[0].Statements;
 
             TACEquals(
@@ -468,6 +468,21 @@ namespace CodeGenCourseProject.TAC.Tests
                  new TACIdentifier("__t", SemanticChecker.BOOLEAN_TYPE, 31),
                  new TACIdentifier("m", SemanticChecker.BOOLEAN_TYPE, 6),
                  statements[73]);
+
+            TACEquals(
+                new TACInteger(4),
+                new TACIdentifier("i", SemanticChecker.INTEGER_TYPE, 0),
+                statements[74]);
+            TACEquals(
+                new TACString("hello"),
+                new TACIdentifier("i", SemanticChecker.STRING_TYPE, 15),
+                statements[75]);
+
+            TACEquals(
+                new TACIdentifier("i", SemanticChecker.INTEGER_TYPE, 0),
+                new TACIdentifier("i", SemanticChecker.INTEGER_TYPE, 0),
+                statements[76]);
+
         }
 
         [TestMethod()]
@@ -751,16 +766,9 @@ namespace CodeGenCourseProject.TAC.Tests
         [TestMethod()]
         public void ProceduresFunctionsAndFunctionCallsGenerateValidTAC()
         {
-            var functions = GetFunctions("functions_and_procedures.txt", 2);
-            /*       __t_1 = 3 * 2
-               __t_2 = __t_1 - 1
-               a_5 = __t_2
-               __t_3 = True || False
-               c_7 = __t_3
-               return
-                       */
+            var functions = GetFunctions("functions_and_procedures.txt", 6);
 
-            Assert.AreEqual("__proc_1", functions[0].Name);
+            Assert.AreEqual("__proc_14__", functions[0].Name);
             var statements = functions[0].Statements;
             Assert.AreEqual(6, statements.Count);
 
@@ -794,10 +802,67 @@ namespace CodeGenCourseProject.TAC.Tests
                 new TACReturn(),
                 statements[5]);
 
-
-            Assert.AreEqual("<ENTRY POINT>", functions[1].Name);
+            Assert.AreEqual("__func_18__", functions[1].Name);
             statements = functions[1].Statements;
-            Assert.AreEqual(3, statements.Count);
+            Assert.AreEqual(7, statements.Count);
+            TACEquals(
+                Operator.MULTIPLY,
+                new TACInteger(2),
+                new TACIdentifier("a", SemanticChecker.INTEGER_TYPE, 9),
+                new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 4),
+                statements[0]);
+            TACEquals(
+                new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 4),
+                new TACIdentifier("a", SemanticChecker.INTEGER_TYPE, 9),
+                statements[1]);
+            TACEquals(
+                 Operator.GREATER_THAN,
+                 new TACIdentifier("a", SemanticChecker.INTEGER_TYPE, 9),
+                 new TACInteger(4),
+                 new TACIdentifier("__t", SemanticChecker.BOOLEAN_TYPE, 5),
+                 statements[2]);
+            TACEquals(
+                new TACJumpIfFalse(
+                    new TACIdentifier("__t", SemanticChecker.BOOLEAN_TYPE, 5),
+                    new TACLabel(0)),
+                statements[3]);
+            TACEquals(
+                new TACReturn(
+                    new TACReal(23.12)),
+                statements[4]);
+            TACEquals(
+                new TACLabel(0),
+                statements[5]);
+            TACEquals(
+                new TACReturn(
+                    new TACReal(0.0)),
+                statements[6]);
+
+            Assert.AreEqual("__writeln11__", functions[2].Name);
+            statements = functions[2].Statements;
+            Assert.AreEqual(1, statements.Count);
+            TACEquals(
+                new TACReturn(),
+                statements[0]);
+
+            Assert.AreEqual("__read12__", functions[3].Name);
+            statements = functions[3].Statements;
+            Assert.AreEqual(1, statements.Count);
+            TACEquals(
+                new TACReturn(),
+                statements[0]);
+
+            Assert.AreEqual("__func_214__", functions[4].Name);
+            statements = functions[4].Statements;
+            Assert.AreEqual(1, statements.Count);
+            TACEquals(
+                new TACReturn(new TACInteger(4)),
+                statements[0]);
+
+
+            Assert.AreEqual("<ENTRY POINT>", functions[5].Name);
+            statements = functions[5].Statements;
+            Assert.AreEqual(13, statements.Count);
             TACEquals(
                 Operator.MULTIPLY,
                 new TACInteger(1),
@@ -823,6 +888,76 @@ namespace CodeGenCourseProject.TAC.Tests
                     new TACIdentifier("d", SemanticChecker.REAL_TYPE, 3),
                 }),
                 statements[2]);
+
+            TACEquals(new TACCall("__writeln11__",
+                new List<TACValue> { }),
+                statements[3]);
+
+            TACEquals(new TACCall("__read12__",
+                new List<TACValue> { new TACString("hello") }),
+                statements[4]);
+
+            TACEquals(new TACCall("__func_214__",
+                new List<TACValue> { new TACInteger(23) }),
+                new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 6),
+                statements[5]);
+            TACEquals(new TACCall("__func_214__",
+                new List<TACValue> { new TACInteger(32) }),
+                new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 7),
+                statements[6]);
+            TACEquals(new TACCall("__func_214__",
+                new List<TACValue> { new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 7) }),
+                new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 8),
+                statements[7]);
+            TACEquals(new TACCall("__func_214__",
+                new List<TACValue> { new TACInteger(23) }),
+                new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 9),
+                statements[8]);
+            TACEquals(
+                new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 9),
+                new TACIdentifier("a", SemanticChecker.INTEGER_TYPE, 0),
+                statements[9]);
+            TACEquals(new TACCall("__func_214__",
+                new List<TACValue> { new TACInteger(32) }),
+                new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 10),
+                statements[10]);
+            TACEquals(new TACCall("__func_214__",
+                new List<TACValue> { new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 10) }),
+                new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 11),
+                statements[11]);
+            TACEquals(
+                new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 11),
+                new TACIdentifier("a", SemanticChecker.INTEGER_TYPE, 0),
+                statements[12]);
+        }
+
+        [TestMethod()]
+        public void AssertsGenerateCorrectTAC()
+        {
+
+            var functions = GetFunctions("asserts.txt", 1);
+            var statements = functions[0].Statements;
+
+            Assert.AreEqual(4, statements.Count);
+
+            TACEquals(
+                Operator.LESS_THAN,
+                new TACIdentifier("a", SemanticChecker.INTEGER_TYPE, 0),
+                new TACInteger(2),
+                new TACIdentifier("__t", SemanticChecker.BOOLEAN_TYPE, 0),
+                statements[0]);
+            TACEquals(
+                new TACAssert(
+                    new TACIdentifier("__t", SemanticChecker.BOOLEAN_TYPE, 0)),
+                statements[1]);
+            TACEquals(
+                new TACAssert(
+                    new TACBoolean(true)),
+                statements[2]);
+            TACEquals(
+                new TACAssert(
+                    new TACBoolean(false)),
+                statements[3]);
         }
 
         private void TACEquals(TACValue value, TACStatement actual)

@@ -1,0 +1,9 @@
+﻿program invalid;
+begin
+	var a : integer;
+	var b : boolean;
+	var c : string;
+	var d : real;
+
+	writeln(a, b, c, d);
+end.

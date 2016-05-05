@@ -29,7 +29,7 @@ namespace CodeGenCourseProject.TAC.Values
             }
         }
 
-        public TACValue SizeExpression
+        public TACValue Expression
         {
             get
             {

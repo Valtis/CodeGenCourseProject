@@ -1,0 +1,24 @@
+﻿program invalid;
+begin
+
+	function invalid1() : integer;
+	begin
+		var a : integer; 
+		return a * 4;
+	end;
+
+	var b : integer;
+	
+	function invalid2() : integer;
+	begin
+		return b * 4;
+	end;
+	
+	invalid2();
+
+	function invalid3() : integer;
+	begin
+		var c : integer;
+		return c;
+	end;
+end.

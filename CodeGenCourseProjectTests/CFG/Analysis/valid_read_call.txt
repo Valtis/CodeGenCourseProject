@@ -1,0 +1,14 @@
+﻿program valid;
+begin
+	var a, e : integer;
+	var b, f : boolean;
+	var c, g : real;
+	var d, h : string;
+	var ar : array [4] of integer;
+	read(a, b, c, d, ar[0], ar[1]);
+
+	e := a;
+	f := b;
+	g := c;
+	h := d;
+end.

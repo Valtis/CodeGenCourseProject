@@ -1,0 +1,31 @@
+﻿program valid;
+begin
+	function v1(a : integer, b : real, c : array [] of string) : string;
+	begin
+		a := 4;
+		var e, f : real;
+		f := b * 2.0;
+		if c[0] = "hello" then
+			return "world";
+
+		return "bar";
+	end;
+
+	var foo : integer;
+	foo := 24;
+
+	function v2(var a : integer, var b : array [] of boolean) : array [] of string;
+	begin
+		a := 24;
+		if a > 4 then
+		begin
+			var a : array [4] of boolean;
+			b := a;
+		end;
+		var x : array [23] of boolean;
+		b := x;
+
+		var c : array [24] of string;
+		return c;
+	end;
+end.

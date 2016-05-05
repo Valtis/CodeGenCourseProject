@@ -1,0 +1,23 @@
+﻿program integer_factorial;
+begin
+	
+	function factorial(fact : integer) : integer;
+	begin
+		if fact < 1 then
+			return 1;
+		var out : integer;
+		out := 1;
+
+		while fact > 0 do
+		begin
+			out := out * fact;
+			fact := fact - 1;
+		end;
+
+		return out;
+	end;
+	
+
+
+	writeln(factorial(6));
+end.

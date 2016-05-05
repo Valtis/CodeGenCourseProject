@@ -31,36 +31,13 @@ namespace CodeGenCourseProject.CFG
         {
             var blocks = CreateBlocks(function);
 
-            Console.WriteLine("\n****BASIC BLOCKS****\n");
-            foreach (var block in blocks)
-            {
-                Console.WriteLine("Block " + block.ID);
-                for (int i = block.Start; i <= block.End; ++i)
-                {
-                    Console.WriteLine("" + i + ": " + function.Statements[i]);
-                }
+            PrintBlocks(function, blocks);
 
-                Console.WriteLine("");
-            }
-
-            var adjacencyList= CreateEdges(function, blocks);
-            Console.WriteLine("");
-            for (int i = 0; i < adjacencyList.Count; ++i)
-            {
-                Console.WriteLine("Neighbours for block " + i);
-                
-                foreach (var j in adjacencyList[i])
-                {
-                    Console.Write("" + j + " ");
-                }
-
-
-                Console.WriteLine();
-            }
+            var adjacencyList = CreateEdges(function, blocks);
+            PrintEdges(adjacencyList);
 
             return new CFGraph(blocks, adjacencyList);
         }
-
         private List<BasicBlock> CreateBlocks(Function function)
         {
             int id = 0;
@@ -192,5 +169,40 @@ namespace CodeGenCourseProject.CFG
                 || statement.RightOperand is TACJumpIfFalse
                 || statement.RightOperand is TACReturn;
         }
+
+
+
+        private static void PrintBlocks(Function function, List<BasicBlock> blocks)
+        {
+            Console.WriteLine("\n****BASIC BLOCKS****\n");
+            foreach (var block in blocks)
+            {
+                Console.WriteLine("Block " + block.ID);
+                for (int i = block.Start; i <= block.End; ++i)
+                {
+                    Console.WriteLine("" + i + ": " + function.Statements[i]);
+                }
+
+                Console.WriteLine("");
+            }
+        }
+
+        private static void PrintEdges(IList<IList<int>> adjacencyList)
+        {
+            Console.WriteLine("");
+            for (int i = 0; i < adjacencyList.Count; ++i)
+            {
+                Console.WriteLine("Neighbours for block " + i);
+
+                foreach (var j in adjacencyList[i])
+                {
+                    Console.Write("" + j + " ");
+                }
+
+
+                Console.WriteLine();
+            }
+        }
+
     }
 }

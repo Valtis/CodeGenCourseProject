@@ -1,6 +1,7 @@
 ﻿
 using CodeGenCourseProject.ErrorHandling;
 using System.Collections.Generic;
+using System;
 
 namespace CodeGenCourseProject.SemanticChecking
 {
@@ -76,21 +77,31 @@ namespace CodeGenCourseProject.SemanticChecking
 
             return false;
         }
-
+        
+        // return first symbol with the name
         public Symbol GetSymbol(string name)
         {
+            return GetSymbol(name, int.MaxValue);
+        }
+
+        // return first symbol with the name, that is declared before line
+        // prevents returning symbols that have been declared in the same scope
+        // after usage of the value (we want the symbol on previous level)
+        public Symbol GetSymbol(string name, int line)
+        {
+
             AssertNotEmpty();
-            Symbol s = null;
-            
+
             foreach (var level in stack)
             {
-                s = level.GetSymbol(name);
-                if (s != null)
+                Symbol s = level.GetSymbol(name);
+                if (s != null && s.Line < line)
                 {
                     return s;
                 }
-            }            
-            return s;
+            }
+
+            return null;
         }
 
         private void AssertNotEmpty()
@@ -99,6 +110,19 @@ namespace CodeGenCourseProject.SemanticChecking
             {
                 throw new InternalCompilerError("Attempting to operate on empty symbol table");
             }
+        }
+
+        public SymbolTable Clone()
+        {
+            var table = new SymbolTable(reporter);
+
+            table.id = id;
+            // clone the stack. We need to do this twice, as after first copy, the stack
+            // is upside down
+            table.stack = new Stack<SymbolTableLevel>(new Stack<SymbolTableLevel>(stack));
+
+            return table;
+
         }
     }
 }

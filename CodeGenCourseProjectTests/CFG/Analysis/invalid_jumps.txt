@@ -1,0 +1,8 @@
+﻿program invalid;
+begin
+	var a : boolean;
+	if a then
+		while a do
+			a := false;
+
+end.

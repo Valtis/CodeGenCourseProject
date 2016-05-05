@@ -1,0 +1,49 @@
+﻿program regression;
+begin
+
+	var a : integer;
+	a := 4;
+	procedure f();
+	begin
+		var b : integer;
+		b := a + 4;
+		a := a + b;
+		writeln(b);
+
+		procedure g(c : integer);
+		begin
+			var d : integer;
+			d := a * b + c;
+			writeln(d);
+			a := a + d;
+			{* recursive call *}
+			if c < 2 then
+				g(c + 1);
+		end;
+		
+		g(12);
+	end;
+
+	f();
+	writeln(a);
+
+	var i, j : integer;
+	procedure q();
+	begin
+		var k : integer;
+		procedure inner();
+		begin
+			var r : integer;
+			r := i;
+			r := j;		
+			r := k;	
+		end;
+		i := 23;
+		k := 4;
+		inner();
+	end;
+	i := 0;
+	j := 23;
+	q();
+
+end.

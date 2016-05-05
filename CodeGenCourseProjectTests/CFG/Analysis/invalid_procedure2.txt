@@ -1,0 +1,33 @@
+﻿program invalid;
+begin
+
+	{* Should complain that c, d, e are not assigned into *}
+	procedure p(
+		var a : integer, 
+		b : integer, 
+		var c : real, 
+		var d : array [] of integer, 
+		var e : array [] of string);
+	begin
+		var q : integer;
+		if b > 2 then
+		begin
+			q := 23;
+			a := 2;
+			var q : array [43] of integer;
+			d := q;
+			var r : array [2] of string;
+			e := r;
+		end
+		else
+		begin
+			a := 2;
+			return;
+		end;
+		c := 123.132;
+
+		q := q + 1;
+	end;
+
+
+end.

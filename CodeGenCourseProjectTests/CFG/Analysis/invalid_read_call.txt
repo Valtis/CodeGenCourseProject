@@ -1,0 +1,11 @@
+﻿program invalid;
+begin
+	var a, b : integer;
+	var c, d : real;
+
+	{* Make sure that assignment from read statement doesn't take effect too early *}
+	a := a + 3;
+	read(a, b, c, d);
+	a := b + 3;
+	d := c + d;
+end.

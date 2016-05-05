@@ -2,6 +2,7 @@
 using CodeGenCourseProject.Tokens;
 using CodeGenCourseProject.ErrorHandling;
 using CodeGenCourseProject.Lexing;
+using CodeGenCourseProjectTests;
 
 namespace CodeGenCourseWork.Lexing.Tests
 {
@@ -375,6 +376,27 @@ namespace CodeGenCourseWork.Lexing.Tests
             Assert.AreEqual(new EOFToken(), lexer.NextToken());
 
             Assert.AreEqual(0, reporter.Errors.Count);
+        }
+
+        [TestMethod()]
+        public void IdentifiersDoNotAcceptIncorrectLetter()
+        {
+            var reporter = new ErrorReporter();
+            var lexer = new Lexer(@"..\..\Lexing\invalid_letters.txt", reporter);
+
+            Assert.AreEqual(new IdentifierToken("ab"), lexer.NextToken());
+            Assert.AreEqual(new IdentifierToken("lo"), lexer.NextToken());
+            Assert.AreEqual(new IdentifierToken("la"), lexer.NextToken());
+            Assert.AreEqual(new IdentifierToken("l"), lexer.NextToken());
+            Assert.AreEqual(new EOFToken(), lexer.NextToken());
+
+            Assert.AreEqual(4, reporter.Errors.Count);
+            // a-z, A-Z, numbers, _ should only be accepted
+            var helper = new TestHelper(reporter);
+            helper.AssertErrorMessage(0, Error.LEXICAL_ERROR, 0, 2, "Invalid start for token");
+            helper.AssertErrorMessage(1, Error.LEXICAL_ERROR, 0, 6, "Invalid start for token");
+            helper.AssertErrorMessage(2, Error.LEXICAL_ERROR, 0, 10, "Invalid start for token");
+            helper.AssertErrorMessage(3, Error.LEXICAL_ERROR, 0, 13, "Invalid start for token");
         }
 
         [TestMethod()]

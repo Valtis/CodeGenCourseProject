@@ -104,7 +104,9 @@
     <Compile Include="SemanticChecking\SymbolTable.cs" />
     <Compile Include="SemanticChecking\SymbolTableLevel.cs" />
     <Compile Include="TAC\Function.cs" />
+    <Compile Include="TAC\Helper.cs" />
     <Compile Include="TAC\TACGenerator.cs" />
+    <Compile Include="TAC\Values\TACAssert.cs" />
     <Compile Include="TAC\Values\TACCall.cs" />
     <Compile Include="TAC\Values\TACCallRead.cs" />
     <Compile Include="TAC\Values\TACJump.cs" />

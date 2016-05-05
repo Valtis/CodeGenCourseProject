@@ -1,0 +1,13 @@
+﻿program invalid;
+begin
+	procedure p();
+	begin
+		var a, b : integer;
+		if a < 2 then
+		begin
+			b := 2;
+		end;
+		
+		b := b + 2;
+	end;
+end.

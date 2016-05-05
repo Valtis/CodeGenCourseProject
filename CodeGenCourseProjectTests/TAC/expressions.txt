@@ -65,4 +65,13 @@ begin
 	i := 2 + ia.size;
 
 	m := i <> j;
+	
+
+	begin
+		i := 4;
+		var i : string;
+		i := "hello";
+	end;
+
+	i := +i;
 end.

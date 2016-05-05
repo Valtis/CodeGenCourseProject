@@ -15,24 +15,36 @@ begin
 		return
 	end;
 
-		{*
-	function proc_2(a : integer, c : string) : real;
+	function func_1(a : integer, c : string) : real;
 	begin
 		a := 2 * a;
 		if a > 4 then
 			return 23.12;
+		return 0.0;
 	end;
-
+	
 	procedure writeln();
 	begin
 		return
 	end;
 
-	procedure hello(var a : string);
+	procedure read(a : string);
 	begin
 		return
 	end;
-
+	
 	writeln();
-	read("hello"); *}
+	read("hello"); 
+
+	function func_2(a : integer) : integer;
+	begin
+		return 4;
+	end;
+
+	func_2(23);
+	func_2(func_2(32));
+
+	
+	a := func_2(23);
+	a := func_2(func_2(32));
 end.

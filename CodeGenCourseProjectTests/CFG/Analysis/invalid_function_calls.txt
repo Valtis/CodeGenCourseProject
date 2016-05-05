@@ -1,0 +1,24 @@
+﻿program invalid;
+begin
+	var a : integer;
+	var b : real;
+	var c : string;
+	var d : boolean;
+
+	procedure outer(a : integer, b : real);
+	begin
+		procedure inner(a : integer);
+		begin
+			return;
+		end;
+		var c : integer;
+		inner(c);
+	end;
+
+	function int_function(a : integer, b : real) : integer;
+	begin
+		return 4;
+	end;
+
+	outer(int_function(a, b), b);
+end.

@@ -1,0 +1,40 @@
+﻿program invalid;
+begin
+	function a() : real;
+	begin
+		{* not all control flow paths return a value *}
+		var b : integer;
+		b := 23;
+		if b <> 2 then
+		begin
+			return 12.32;
+		end;
+		
+		if b > 23 then
+			return 12.42;
+
+		{* no return *}
+
+	end;
+
+	function b(var a : string) : boolean;
+	begin
+		var b, c : integer;
+		b := 23;
+		if b <> 2 then
+		begin
+			a := "hello";
+			c := 23;
+			return false;
+		end;
+		
+		if b > 23 then
+		begin
+			b := c + 2;
+			return true;
+		end;
+		a := "this is a test";
+		{* no return *}
+
+	end;
+end.

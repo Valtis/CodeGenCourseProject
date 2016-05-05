@@ -1,0 +1,16 @@
+﻿program invalid;
+begin
+    var a : integer;
+	assert(a < 2);
+
+	procedure f();
+	begin
+	    assert(a > 4);
+
+	end;
+
+	f();
+
+	var b : boolean;
+	assert(b);
+end.
