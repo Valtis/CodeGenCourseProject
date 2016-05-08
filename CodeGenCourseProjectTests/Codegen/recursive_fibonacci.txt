@@ -1,0 +1,16 @@
+﻿program recursive_fibonacci;
+begin
+
+	function recursive_fibonacci(n : integer) : integer;
+	begin
+		if n = 0 then
+			return 0;
+		if n = 1 then
+			return 1;
+
+		return recursive_fibonacci(n - 1) + recursive_fibonacci(n - 2);
+	end;
+
+
+	writeln(recursive_fibonacci(20));
+end.

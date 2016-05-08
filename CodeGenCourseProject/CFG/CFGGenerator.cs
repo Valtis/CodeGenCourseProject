@@ -49,7 +49,7 @@ namespace CodeGenCourseProject.CFG
 
             foreach (var statement in function.Statements)
             {
-                if (IsJumpOrReturn(statement)&& pos != 0)
+                if (IsJumpOrReturn(statement))
                 {
                     var startPos = pos + 1;
                     var endPos = pos;
@@ -127,7 +127,6 @@ namespace CodeGenCourseProject.CFG
                 // fall through
                 else
                 {
-
                     adjacencyList[pos].Add(GetDestinationBlockID(blocks, block.End + 1));
                 }
                 pos++;

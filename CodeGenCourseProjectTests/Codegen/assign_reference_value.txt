@@ -1,0 +1,49 @@
+﻿program assign_ref;
+begin
+	{* Tests that reference arguments are correctly dereferenced when used as operands *}
+	procedure non_arrays(
+		var a : integer,
+		var b : real,
+		var c : string,
+		var d : boolean);
+	begin
+		var a2 : integer;
+		var b2 : real;
+		var c2 : string;
+		var d2 : boolean;
+
+		a2 := a;
+		writeln(a);
+		a := 23*a;
+		writeln(a);
+			
+		b2 := b;
+		writeln(b);
+		b2 := b*2.0;
+		writeln(b);
+				
+		c2 := c;
+		writeln(c);
+		c2 := "prefix_" + c;
+		writeln(c);
+
+		
+		d2 := d;
+		writeln(d);
+		d2 := d or true;
+		writeln(d);
+	end;
+
+	var a : integer;
+	var b : real;
+	var c : string;
+	var d : boolean;
+
+	a := 1;
+	b := 1.0;
+	c := "a";
+	d := true;
+
+	non_arrays(a, b, c, d);
+
+end.

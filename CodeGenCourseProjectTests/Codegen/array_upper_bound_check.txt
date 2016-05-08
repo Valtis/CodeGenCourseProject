@@ -1,0 +1,5 @@
+﻿program upper_bound_check;
+begin
+	var a : array [3] of boolean;
+	a[3] := true;
+end.

@@ -1,0 +1,12 @@
+﻿program bug_1;
+begin
+	procedure foo(
+	var a : boolean);
+	begin
+		var b : integer;
+		if a then
+			return;
+		b := 2;
+
+	end;
+end.

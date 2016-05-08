@@ -1,0 +1,64 @@
+﻿program integer_expressions;
+begin
+	var a : integer;
+	
+	a := 4;
+	writeln(a);
+
+	a := 4 + 2;
+	writeln(a);
+	
+	a := 2 - 10;
+	writeln(a);
+
+	a := 3 * 12;
+	writeln(a);
+
+	a := 9 / 4;
+
+	writeln(a);
+	a := 20 % 7;
+	writeln(a);
+
+	var b : integer;
+
+	b := a;
+	writeln(b);
+
+	b := b + 23;	
+	writeln(b);
+
+	b := 1 - b;
+	writeln(b);
+
+	b := b * 3;
+	writeln(b);
+	
+	b := b / 6;
+	writeln(b);
+
+	b := -b;
+	writeln(b);
+	
+	b := b % 2;
+	writeln(b);
+	
+	var c : array [2] of integer;
+
+	c[0] := 5;
+	writeln(c[0]);
+	c[1] := 23;
+	writeln(c[1]);
+	
+	a := 0;
+	
+	c[a] := 6*3 - 2;
+	writeln(c[0]);
+	c[a + 1] := (23-1) / 2;
+	writeln(c[1]);
+
+	b := c[a] * c[a + 1] - 12;
+	writeln(b);
+	
+	writeln(123);
+end.

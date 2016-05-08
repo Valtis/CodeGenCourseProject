@@ -1,0 +1,74 @@
+﻿program boolean_expressions;
+begin
+	var a : boolean;
+	
+	a := 1 < 2;
+	writeln(a);
+	a := 2 < 2;
+	writeln(a);
+	a := 3 < 2;
+	writeln(a);
+
+	a := 1 <= 2;
+	writeln(a);
+	a := 2 <= 2;
+	writeln(a);
+	a := 3 <= 2;
+	writeln(a);
+
+	a := 1 = 2;
+	writeln(a);
+	a := 2 = 2;
+	writeln(a);
+	a := 3 = 2;
+	writeln(a);
+
+	a := 1 >= 2;
+	writeln(a);
+	a := 2 >= 2;
+	writeln(a);
+	a := 3 >= 2;
+	writeln(a);
+
+	a := 1 > 2;
+	writeln(a);
+	a := 2 > 2;
+	writeln(a);
+	a := 3 > 2;
+	writeln(a);
+
+	a := 1 <> 2;
+	writeln(a);
+	a := 2 <> 2;
+	writeln(a);
+	a := 3 <> 2;
+	writeln(a);
+
+	writeln(true);
+	writeln(false);
+
+	writeln(true and true);
+	writeln(true and false);
+	writeln(false and true);
+	writeln(false and false);
+
+	writeln(true or true);
+	writeln(true or false);
+	writeln(false or true);
+	writeln(false or false);
+
+	writeln(not true);
+	writeln(not false);
+
+
+	var c : integer;
+	c := 2;
+	var b : array [c] of boolean;
+
+	b[0] := false;
+	b[1] := b[0] or true;
+	
+	writeln(b[0]);
+	writeln(b[1]);
+
+end.

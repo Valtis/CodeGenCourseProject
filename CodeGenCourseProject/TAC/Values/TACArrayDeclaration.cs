@@ -54,7 +54,7 @@ namespace CodeGenCourseProject.TAC.Values
         public TACArrayDeclaration(int line, int column,
             string name, string type, TACValue sizeExpression, int id) : base(line, column)
         {
-            this.name = name + "_" + id;
+            this.name = Helper.MangleVariableName(name, id);
             this.type = type;
             this.id = id;
             this.sizeExpression = sizeExpression;

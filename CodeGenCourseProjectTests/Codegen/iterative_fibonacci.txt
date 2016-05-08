@@ -1,0 +1,32 @@
+﻿program iterative_factorial;
+begin
+	function iterative_factorial(n : integer) : integer;
+	begin
+		
+		if n = 0 then
+			return 0;
+
+		if n < 2 then
+			return 1;
+
+		var out, old, older, i : integer;
+		out := 0;
+		old := 1;
+		older := 1;
+		i := 2;
+
+		while i < n do
+		begin
+			out := old + older;
+			older := old;
+			old := out;
+			i := i + 1;
+		end;
+
+		return out;
+
+	end;
+
+	writeln(iterative_factorial(12));
+
+end.

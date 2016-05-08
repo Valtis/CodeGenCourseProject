@@ -2362,6 +2362,43 @@ namespace CodeGenCourseProject.Parsing.Tests
             Assert.IsTrue(reporter.Errors[0].Message.Contains("Unexpected token <identifier - 'call'> after the end"));
         }
 
+        [TestMethod()]
+        public void Bug1()
+        {
+            var reporter = new ErrorReporter();
+            var lexer = new Lexer(@"..\..\Parsing\bug_1.txt", reporter);
+            var parser = new Parser(lexer, reporter);
+
+            var node = parser.Parse();
+
+            Assert.AreEqual(0, reporter.Errors.Count);
+            ASTMatches(
+                new ProgramNode(0, 0, new IdentifierToken("bug_1"),
+                    new BlockNode(0, 0,
+                        new ProcedureNode(0, 0, new IdentifierNode(0, 0, "foo"),
+                            new BlockNode(0, 0, 
+                                new VariableDeclarationNode(0, 0, 
+                                    new IdentifierNode(0, 0, "integer"),
+                                    new IdentifierNode(0, 0, "a")),
+                                new IfNode(0, 0, new IdentifierNode(0, 0, "true"), 
+                                    new BlockNode(0, 0, 
+                                        new ReturnNode(0, 0)
+                                    ),
+                                    new BlockNode(0, 0, 
+                                        new VariableAssignmentNode(0, 0, 
+                                            new IdentifierNode(0, 0, "a"),
+                                            new IntegerNode(0, 0, 4)
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                    )
+                ),
+                node);
+
+        }
+
         void ASTMatches(ASTNode expected, ASTNode actual)
         {
             var expectedStack = new Stack<ASTNode>();

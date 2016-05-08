@@ -1,0 +1,53 @@
+﻿program string_expressions;
+begin
+	writeln("test");
+
+	var a : string;
+	a := "test2";
+	writeln(a);
+	
+	a := "this is a " + a;
+	writeln(a);
+	writeln("write " + " directly");
+
+	{* Comparison operators require special handling for strings, as we need to do lexical comparison *}
+	
+	{* prevent invalid results from direct pointer comparison by initializing these in non-alphabetical order *}
+	{* otherwise tests could pass when using regular aritmetic comparisons with string pointers *}
+	a := "def";
+	a := "efg";
+	a := "abc";
+
+	writeln("abc" < "def");
+	writeln("def" < "def");
+	writeln("efg" < "def");
+
+	writeln("abc" <= "def");
+	writeln("def" <= "def");
+	writeln("efg" <= "def");
+
+	writeln("abc" = "def");
+	writeln("def" = "def");
+	writeln("efg" = "def");
+
+	writeln("abc" >= "def");
+	writeln("def" >= "def");
+	writeln("efg" >= "def");
+
+	writeln("abc" > "def");
+	writeln("def" > "def");
+	writeln("efg" > "def");
+
+	writeln("abc" <> "def");
+	writeln("def" <> "def");
+	writeln("efg" <> "def");
+
+	var ar : array [5] of string;
+	ar[0] := "abc";
+	ar[1] := "def";
+	ar[2] := "ghi";
+	ar[3] := "jkl" + ar[4]; {* Uninitialized string should work (no segfaults!) *}
+
+	writeln(ar[0], ar[1], ar[2], ar[3], ar[4]);
+
+end.

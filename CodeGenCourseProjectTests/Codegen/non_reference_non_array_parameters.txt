@@ -1,0 +1,46 @@
+﻿program non_ref_non_array_parameters;
+begin
+
+    procedure outer(a : integer, b: real, c : string, d : boolean);
+    begin
+        a := 12;
+        
+        {* Ensures that nonref -> ref passing doesn't break anything *}
+        procedure inner(var a : string, var b : boolean);
+        begin
+            a := "inner";
+            b := true;
+        end;        
+        
+        inner(c, d);
+        b := 12.35;
+
+        writeln(a);
+        writeln(b);
+        writeln(c);
+        writeln(d);
+    end;
+
+ 
+
+
+    var a : integer;
+    var b : real;
+    var c : string;
+    var d : boolean;
+
+    a := 0;
+    b := 0.0;
+    c := "non_assign";
+    d := false;
+
+    outer(a, b, c, d);
+
+    writeln(a);
+    writeln(b);
+    writeln(c);
+    writeln(d);
+
+    {* Testing with constant parameters *}
+    outer(1, 2.3, "foo", true);
+end.

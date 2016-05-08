@@ -12,6 +12,7 @@ namespace CodeGenCourseProject.TAC.Values
         private readonly string unmangledName;
         private readonly int id;
         private readonly string type;
+        private readonly bool isReference;
 
         public string Type
         {
@@ -45,22 +46,33 @@ namespace CodeGenCourseProject.TAC.Values
             }
         }
 
-        public TACIdentifier(string name, string type, int id) : this(0, 0, name, type, id)
+        public bool IsReference
+        {
+            get
+            {
+                return isReference;
+            }
+        }
+
+        public TACIdentifier(string name, string type, int id, bool isReference = false) : this(0, 0, name, type, id, isReference)
         {
         }
 
-        public TACIdentifier(int line, int column, string name, string type, int id) : base(line, column)
+        public TACIdentifier(int line, int column, string name, string type, int id, bool isReference = false) : base(line, column)
         {
             this.name = Helper.MangleVariableName(name, id);
             this.unmangledName = name;
             this.type = type;
             this.id = id;
+            this.isReference = isReference;
         }
 
         public override string ToString()
         {
             return Name;
         }
+
+        
 
         public override bool Equals(object obj)
         {

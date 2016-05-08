@@ -336,7 +336,10 @@ namespace CodeGenCourseProject.Parsing
             var ret = Expect<ReturnToken>();
             try
             {
-                if (lexer.PeekToken() is SemicolonToken || lexer.PeekToken() is EndToken)
+                if (
+                    lexer.PeekToken() is SemicolonToken || 
+                    lexer.PeekToken() is EndToken || 
+                    lexer.PeekToken() is ElseToken)
                 {
                     return new ReturnNode(ret.Line, ret.Column);
                 }

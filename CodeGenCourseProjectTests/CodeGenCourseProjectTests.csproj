@@ -66,6 +66,15 @@
     <Compile Include="CFG\CFGGeneratorTests.cs" />
     <Compile Include="CFG\Analysis\ControlFlowAnalyzerTests.cs" />
     <Compile Include="Codegen\CCodeGeneratorTests.cs" />
+    <Content Include="CFG\bug_1.txt" />
+    <Content Include="Codegen\array_lower_bound_check.txt" />
+    <Content Include="Codegen\boolean_expressions.txt" />
+    <Content Include="Codegen\hello_world.txt" />
+    <Content Include="Codegen\integer_expressions.txt" />
+    <Content Include="Codegen\non_reference_array_parameters.txt" />
+    <Content Include="Codegen\real_expressions.txt" />
+    <Content Include="Codegen\recursive_factorial.txt" />
+    <Content Include="Codegen\non_reference_non_array_parameters.txt" />
     <Compile Include="Lexing\LexerTests.cs" />
     <Compile Include="Lexing\StringTokenTests.cs" />
     <Compile Include="Parsing\ParserTests.cs" />
@@ -137,7 +146,14 @@
     <Content Include="CFG\while_statement.txt" />
     <Content Include="CFG\while_statement_with_false_condition.txt" />
     <Content Include="CFG\while_statement_with_true_condition.txt" />
-    <Content Include="Codegen\integer_factorial.txt" />
+    <Content Include="Codegen\iterative_factorial.txt" />
+    <Content Include="Codegen\iterative_fibonacci.txt" />
+    <Content Include="Codegen\recursive_fibonacci.txt" />
+    <Content Include="Codegen\reference_array_parameters.txt" />
+    <Content Include="Codegen\reference_non_array_parameters.txt" />
+    <Content Include="Codegen\string_expressions.txt" />
+    <Content Include="Codegen\array_upper_bound_check.txt" />
+    <Content Include="Codegen\writeln.txt" />
     <Content Include="Lexing\backtracking.txt" />
     <Content Include="Lexing\indentation.txt" />
     <Content Include="Lexing\invalid_comments.txt" />
@@ -150,6 +166,7 @@
     <Content Include="Lexing\valid_numbers.txt" />
     <Content Include="Lexing\valid_operators.txt" />
     <Content Include="Lexing\valid_strings.txt" />
+    <Content Include="Parsing\bug_1.txt" />
     <Content Include="Parsing\invalid_assert_statements.txt" />
     <Content Include="Parsing\invalid_function_declarations.txt" />
     <Content Include="Parsing\invalid_if_statements.txt" />
@@ -181,6 +198,7 @@
     <Content Include="Parsing\valid_variable_declarations.txt" />
     <Content Include="Parsing\valid_while_statements.txt" />
     <Content Include="Parsing\valid_write_statements.txt" />
+    <Content Include="Codegen\assign_reference_value.txt" />
     <Content Include="SemanticChecking\invalid_assert_statements.txt" />
     <Content Include="SemanticChecking\invalid_expressions.txt" />
     <Content Include="SemanticChecking\invalid_if_statements.txt" />

@@ -12,6 +12,7 @@ namespace CodeGenCourseProject.TAC.Values
         private readonly TACValue index;
         private readonly int id;
         private readonly string type;
+        private readonly bool isReference;
 
         public string Type
         {
@@ -45,19 +46,29 @@ namespace CodeGenCourseProject.TAC.Values
             }
         }
 
-        public TACArrayIndex(string name, TACValue index, string type, int id) : 
-            this(0, 0, name, index, type, id)
+        public bool IsReference
+        {
+            get
+            {
+                return isReference;
+            }
+        }
+
+        public TACArrayIndex(string name, TACValue index, string type, int id, bool isReference = false) : 
+            this(0, 0, name, index, type, id, isReference)
         {
 
         }
 
         public TACArrayIndex(
-            int line, int column, string name, TACValue index, string type, int id) : base(line, column)
+            int line, int column, string name, TACValue index, string type, int id, bool isReference = false) 
+            : base(line, column)
         {
-            this.name = name + "_" + id;
+            this.name = Helper.MangleVariableName(name, id);
             this.index = index;
             this.type = type;
             this.id = id;
+            this.isReference = isReference;
         }
 
         public override string ToString()

@@ -1,0 +1,9 @@
+﻿program writeln;
+begin
+	writeln(2);
+	writeln(4.2);
+	writeln(true);
+	writeln(false);
+	writeln("hello");
+	writeln("A: ", 4, "\tB: ", 9);
+end.

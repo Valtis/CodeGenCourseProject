@@ -14,6 +14,16 @@ namespace CodeGenCourseProject.SemanticChecking
         public const string REAL_TYPE = "real";
         public const string STRING_TYPE = "string";
         public const string BOOLEAN_TYPE = "boolean";
+
+        public const string ARRAY_PREFIX = "Array<";
+        public const string ARRAY_SUFFIX = ">";
+
+        public const string INTEGER_ARRAY = ARRAY_PREFIX + INTEGER_TYPE + ARRAY_SUFFIX;
+        public const string REAL_ARRAY = ARRAY_PREFIX + REAL_TYPE + ARRAY_SUFFIX;
+        public const string STRING_ARRAY = ARRAY_PREFIX + STRING_TYPE + ARRAY_SUFFIX;
+        public const string BOOLEAN_ARRAY = ARRAY_PREFIX + BOOLEAN_TYPE + ARRAY_SUFFIX;
+
+
         public const string VOID_TYPE = "void";
 
         private List<string> predeclaredIdentifiers;
@@ -467,11 +477,11 @@ namespace CodeGenCourseProject.SemanticChecking
                 {
                     if (typeChild is ArrayTypeNode)
                     {
-                        symbolTable.InsertArray(nameNode.Line, nameNode.Column, nameNode.Value, varType.Value);
+                        symbolTable.InsertArray(nameNode.Line, nameNode.Column, nameNode.Value, varType.Value, false);
                     }
                     else if (typeChild is IdentifierNode)
                     {
-                        symbolTable.InsertVariable(nameNode.Line, nameNode.Column, nameNode.Value, varType.Value);
+                        symbolTable.InsertVariable(nameNode.Line, nameNode.Column, nameNode.Value, varType.Value, false);
                     }
                     else
                     {
@@ -536,7 +546,7 @@ namespace CodeGenCourseProject.SemanticChecking
             else
             {
                 returnTypeNode = (IdentifierNode)type.Children[0];
-                returnType = "Array<" + returnTypeNode.Value + ">";
+                returnType = ARRAY_PREFIX + returnTypeNode.Value + ARRAY_SUFFIX;
             }
 
             if (symbolTable.Contains(returnTypeNode.Value))
@@ -692,10 +702,10 @@ namespace CodeGenCourseProject.SemanticChecking
                 }
                 var acceptableTypes = new List<string> {
                     ERROR_TYPE, INTEGER_TYPE, BOOLEAN_TYPE, STRING_TYPE, REAL_TYPE,
-                    "Array<" + INTEGER_TYPE + ">",
-                    "Array<" + REAL_TYPE + ">",
-                    "Array<" + STRING_TYPE+ ">",
-                    "Array<" + BOOLEAN_TYPE + ">"};
+                    INTEGER_ARRAY,
+                    REAL_ARRAY,
+                    STRING_ARRAY,
+                    BOOLEAN_ARRAY};
 
                 if (!IsWritable(callNode.Children[i + 1], acceptableTypes) && isReference)
                 {
@@ -755,7 +765,7 @@ namespace CodeGenCourseProject.SemanticChecking
             node.Children[0].Accept(this);
             var type = node.Children[0].NodeType();
 
-            if (!type.Contains("Array") && type != ERROR_TYPE)
+            if (!type.Contains(ARRAY_PREFIX) && type != ERROR_TYPE)
             {
                 reporter.ReportError(
                     Error.SEMANTIC_ERROR,
@@ -800,7 +810,8 @@ namespace CodeGenCourseProject.SemanticChecking
                 functionParameterNode.Line,
                 functionParameterNode.Column,
                 functionParameterNode.Name.Value,
-                functionParameterNode.Type.Value);
+                functionParameterNode.Type.Value,
+                functionParameterNode.IsReferenceParameter);
 
             functionParameterNode.SetNodeType(symbolTable.GetSymbol(functionParameterNode.Name.Value).Type);
         }
@@ -838,7 +849,8 @@ namespace CodeGenCourseProject.SemanticChecking
                 functionParameterArrayNode.Line,
                 functionParameterArrayNode.Column,
                 functionParameterArrayNode.Name.Value,
-                functionParameterArrayNode.Type.Value);
+                functionParameterArrayNode.Type.Value,
+                functionParameterArrayNode.IsReferenceParameter);
 
             functionParameterArrayNode.SetNodeType(symbolTable.GetSymbol(functionParameterArrayNode.Name.Value).Type);
         }

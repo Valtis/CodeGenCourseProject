@@ -1,0 +1,114 @@
+﻿program reference_array_parameters;
+begin
+	procedure outer(
+		var a : array [] of integer, 
+		var b : array [] of real, 
+		var c : array [] of string, 
+		var d : array [] of boolean);
+	begin
+		a[0] := 123;
+		a[1] := 456;
+		a[2] := 789;
+		a[3] := 101112;
+		
+		b[0] := 123.0;
+		b[1] := 456.0;
+		b[2] := -789.0;
+		b[3] := -101112.0;
+		
+		c[0] := "aa";
+		c[1] := "bb";
+		c[2] := "cc";
+		c[3] := "dd";
+		
+		d[0] := true;
+		d[1] := false;
+		d[2] := false;
+		d[3] := true;
+	end;
+	
+	var a : array [4] of integer;
+	var b : array [4] of real;
+	var c : array [4] of string;
+	var d : array [4] of boolean;
+
+	outer(a, b, c, d);
+
+	var i : integer;
+	
+	i := 0;
+	while i < 4 do
+	begin
+		writeln(a[i]);
+		i := i + 1;
+	end;
+	
+	i := 0;
+	while i < 4 do
+	begin
+		writeln(b[i]);
+		i := i + 1;
+	end;
+	
+	i := 0;
+	while i < 4 do
+	begin
+		writeln(c[i]);
+		i := i + 1;
+	end;
+	
+	i := 0;
+	while i < 4 do
+	begin
+		writeln(d[i]);
+		i := i + 1;
+	end;
+
+	procedure assign_arrays(
+		var a : array [] of integer, 
+		var b : array [] of real, 
+		var c : array [] of string, 
+		var d : array [] of boolean);
+	begin
+
+		var a2 : array [4] of integer;
+		var b2 : array [4] of real;
+		var c2 : array [4] of string;
+		var d2 : array [4] of boolean;
+
+		a := a2;
+		b := b2;
+		c := c2;
+		d := d2;		
+	end;
+
+	assign_arrays(a, b, c, d);
+		
+	i := 0;
+	while i < 4 do
+	begin
+		writeln(a[i]);
+		i := i + 1;
+	end;
+	
+	i := 0;
+	while i < 4 do
+	begin
+		writeln(b[i]);
+		i := i + 1;
+	end;
+	
+	i := 0;
+	while i < 4 do
+	begin
+		writeln(c[i]);
+		i := i + 1;
+	end;
+	
+	i := 0;
+	while i < 4 do
+	begin
+		writeln(d[i]);
+		i := i + 1;
+	end;
+end.

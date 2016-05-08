@@ -1,0 +1,13 @@
+﻿program bug_1;
+begin
+	procedure foo();
+	begin
+		var a : integer;
+		if true then
+			return {* Return parsing was broken, expected expression in this case *}
+		else
+			a := 4;
+	end;
+
+
+end.

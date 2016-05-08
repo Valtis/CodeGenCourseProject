@@ -1,0 +1,5 @@
+﻿program lower_bound_check;
+begin
+	var a : array [3] of real;
+	a[-1] := 4.2;
+end.

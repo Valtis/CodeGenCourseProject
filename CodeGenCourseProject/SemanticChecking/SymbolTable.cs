@@ -37,18 +37,18 @@ namespace CodeGenCourseProject.SemanticChecking
         }
 
         
-        public void InsertVariable(int line, int column, string name, string type)
+        public void InsertVariable(int line, int column, string name, string type, bool isReference)
         {
             AssertNotEmpty();
 
-            stack.Peek().Add(new VariableSymbol(line, column, name, type, id++));
+            stack.Peek().Add(new VariableSymbol(line, column, name, type, id++, isReference));
         }
 
-        public void InsertArray(int line, int column, string name, string type)
+        public void InsertArray(int line, int column, string name, string type, bool isReference)
         {
             AssertNotEmpty();
 
-            stack.Peek().Add(new ArraySymbol(line, column, name, type, id++));
+            stack.Peek().Add(new ArraySymbol(line, column, name, type, id++, isReference));
         }
 
         public void InsertFunction(

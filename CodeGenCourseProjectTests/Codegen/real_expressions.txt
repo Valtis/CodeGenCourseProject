@@ -1,0 +1,25 @@
+﻿program real_expressions;
+begin
+	var a, b : real;
+	var c : array [2*3] of real;
+	a := 0.0;
+	writeln(a);
+	b := a + 2.1;
+	writeln(b); 
+	a := b - 2.134;
+	writeln(a); 
+	
+	b :=  b * 9.87654;
+	writeln(b); 
+
+	c[5] := 1.1e2/2.2; 
+	writeln(c[5]); 
+
+	c[4] := -2.34e-5*(-1.0 + 2.0); 	 
+	writeln(c[4]); 
+	c[3] := +c[4];
+	writeln(c[3]);
+
+	writeln(123.456);
+
+end.

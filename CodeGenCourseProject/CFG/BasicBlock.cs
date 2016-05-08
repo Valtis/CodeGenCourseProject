@@ -10,8 +10,8 @@ namespace CodeGenCourseProject.CFG
     public class BasicBlock
     {
         private readonly int id;
-        private readonly int start;
-        private readonly int end;
+        private int start;
+        private int end;
         private ISet<TACIdentifier> variableInitializations;
         private ISet<TACIdentifier> parentInitializations;
 
@@ -74,6 +74,11 @@ namespace CodeGenCourseProject.CFG
             VariableInitializations = new HashSet<TACIdentifier>();
             ParentInitializations = new HashSet<TACIdentifier>();
         }
-       
+
+        internal void MoveUpwards(int length)
+        {
+            start -= length;
+            end -= length;
+        }
     }
 }

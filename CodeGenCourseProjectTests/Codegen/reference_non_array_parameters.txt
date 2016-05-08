@@ -1,0 +1,31 @@
+﻿program ref_non_array;
+begin
+	procedure outer(var a : integer, var b : real, var c : string, var d : boolean);
+	begin
+		a := 24;
+		procedure inner(var a : real, var b : string);
+		begin
+			a := 987.654;
+			b := "inner";
+		end;
+
+		inner(b, c);
+		d := true;
+	end;
+	var a : integer;
+	var b : real;
+	var c : string;
+	var d : boolean;
+
+	a := 0;
+	b := 0.0;
+	c := "";
+	d := false;
+
+	outer(a, b, c, d);
+
+	writeln(a);
+	writeln(b);
+	writeln(c);
+	writeln(d);
+end.

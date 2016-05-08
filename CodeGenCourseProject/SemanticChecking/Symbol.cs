@@ -67,19 +67,32 @@ namespace CodeGenCourseProject.SemanticChecking
 
     internal class VariableSymbol : Symbol
     {
-        public VariableSymbol(int line, int column, string name, string type, int id) : base(line, column, name, type, id)
+        private readonly bool isReference;
+
+        public VariableSymbol(int line, int column, string name, string type, int id, bool isReference) : base(line, column, name, type, id)
         {
+            this.isReference = isReference;
+        }
+
+        public bool IsReference
+        {
+            get
+            {
+                return isReference;
+            }
         }
     }
 
     internal class ArraySymbol : Symbol
     {
         private readonly string baseType;
+        private readonly bool isReference;
 
-        public ArraySymbol(int line, int column, string name, string type, int id) : 
+        public ArraySymbol(int line, int column, string name, string type, int id, bool isReference) : 
             base(line, column, name, "Array<" + type + ">", id)
         {
             baseType = type;
+            this.isReference = isReference;
         }
 
         public string BaseType
@@ -87,6 +100,14 @@ namespace CodeGenCourseProject.SemanticChecking
             get
             {
                 return baseType;
+            }
+        }
+
+        public bool IsReference
+        {
+            get
+            {
+                return isReference;
             }
         }
     }

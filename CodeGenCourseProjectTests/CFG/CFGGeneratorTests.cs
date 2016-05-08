@@ -234,6 +234,25 @@ namespace CodeGenCourseProject.CFG.Tests
             AssertBlock(cfg, 1, 4, 4, new List<int> { CFGraph.END_BLOCK_ID });
             AssertBlock(cfg, 2, 5, 7, new List<int> { CFGraph.END_BLOCK_ID });
         }
+
+        [TestMethod()]
+        public void Bug1()
+        {
+            var graphs = GetCFGGraph("bug_1.txt");
+            Assert.AreEqual(2, graphs.Count);
+            var cfg = graphs["<ENTRY POINT>"];
+            Assert.AreEqual(0, cfg.Blocks.Count);
+            Assert.AreEqual(0, cfg.AdjacencyList.Count);
+
+            cfg = graphs["__foo0__"];
+            Assert.AreEqual(3, cfg.Blocks.Count);
+            Assert.AreEqual(3, cfg.AdjacencyList.Count);
+
+            AssertBlock(cfg, 0, 0, 0, new List<int> { 1, 2 });
+            AssertBlock(cfg, 1, 1, 1, new List<int> { CFGraph.END_BLOCK_ID });
+            AssertBlock(cfg, 2, 2, 3, new List<int> { CFGraph.END_BLOCK_ID });
+        }
+
         private static void AssertBlock(CFGraph cfg, int block, int start, int end, IList<int> children)
         {
             Assert.AreEqual(children.Count, cfg.AdjacencyList[block].Count);

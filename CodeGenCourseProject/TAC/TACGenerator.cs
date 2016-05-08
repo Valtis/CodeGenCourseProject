@@ -107,7 +107,7 @@ namespace CodeGenCourseProject.TAC
             var exprTAC = tacValueStack.Pop();
             tacValueStack.Push(
                 new TACArrayIndex(node.Line, node.Column,
-                    nameNode.Value, exprTAC, symbol.BaseType, symbol.Id));
+                    nameNode.Value, exprTAC, symbol.BaseType, symbol.Id, symbol.IsReference));
         }
 
         public void Visit(ArrayTypeNode arrayTypeNode)
@@ -152,7 +152,7 @@ namespace CodeGenCourseProject.TAC
                 callNode.Children[i].Accept(this);
                 arguments.Add(tacValueStack.Pop());
             }
-            
+
             var functionSymbol = (FunctionSymbol)symbolTable.GetSymbol(name, callNode.Line);
 
             // inbuilt writeln function
@@ -167,34 +167,6 @@ namespace CodeGenCourseProject.TAC
                 Emit(new TACCallRead(callNode.Line, callNode.Column, arguments));
                 return;
             }
-
-            // check if function has captured parmeters, as these must be passed
-            // as reference parameters when calling the function
-
-            // could still be in function stack (recursive call)
-
-            /*Function function = null;
-
-            foreach (var f in functionStack)
-            {
-                if (f.Name == Helper.MangleFunctionName(functionSymbol.Name, functionSymbol.Id))
-                {
-                    function = f;
-                }
-            }
-
-            foreach (var f in functions)
-            {
-                if (f.Name == Helper.MangleFunctionName(functionSymbol.Name, functionSymbol.Id))
-                {
-                    function = f;
-                }
-            }
-            foreach (var capturedParam in function.CapturedVariables)
-            {
-                arguments.Add(capturedParam.Identifier);
-            }
-            */
 
             var call = new TACCall(
                     callNode.Line,
@@ -219,7 +191,7 @@ namespace CodeGenCourseProject.TAC
             HandleBinaryOperator(equalsNode, Operator.EQUAL);
         }
 
-        
+
         public void Visit(ReturnNode returnNode)
         {
             AssertEmptyTacValueStack();
@@ -278,7 +250,7 @@ namespace CodeGenCourseProject.TAC
         {
             var name = identifierNode.Value;
             var symbol = symbolTable.GetSymbol(name, identifierNode.Line);
-      
+
             // if symbol is null, it's predeclared identifier and we need to check for true/false
             // if the symbol is "true" or "false", it might still be a predefined identifier, as 
             // the symbol table works at block scope. This means that for declarations like
@@ -315,26 +287,54 @@ namespace CodeGenCourseProject.TAC
                 }
 
             }
-            var outerSymbol = 
-                outerSymbolTables.Count > 0 ? 
+            var outerSymbol =
+                outerSymbolTables.Count > 0 ?
                     outerSymbolTables.Peek().GetSymbol(name, identifierNode.Line)
                     : null;
-           
-            var identifier = new TACIdentifier(identifierNode.Line, identifierNode.Column, name, symbol.Type, symbol.Id);
-        
+
+
             // if symbol is the same symbol than one in the outer symbol table 
             // (table without current function declarations), the variable is captured
             // from outer context
+            TACIdentifier identifier;
             if (symbol == outerSymbol)
             {
+                var isReference = false;
+                if (outerSymbol is VariableSymbol)
+                {
+                    isReference = ((VariableSymbol)outerSymbol).IsReference;
+                }
+                else if (outerSymbol is ArraySymbol)
+                {
+                    isReference = ((ArraySymbol)outerSymbol).IsReference;
+                }
+
+
+                identifier = new TACIdentifier(
+                    identifierNode.Line, identifierNode.Column, name, symbol.Type, symbol.Id, isReference);
                 capturedIdentifiers.Peek().Add(
                     new Parameter(
                         identifier,
                         symbol.Type,
                         true)); // always pass as reference
             }
+            else
+            {
+                var isReference = false;
+                if (symbol is VariableSymbol)
+                {
+                    isReference = ((VariableSymbol)symbol).IsReference;
+                }
+                else if (outerSymbol is ArraySymbol)
+                {
+                    isReference = ((ArraySymbol)symbol).IsReference;
+                }
 
-           
+                identifier = new TACIdentifier(
+                    identifierNode.Line, identifierNode.Column, name, symbol.Type, symbol.Id, isReference);
+            }
+
+
             tacValueStack.Push(identifier);
         }
 
@@ -394,9 +394,9 @@ namespace CodeGenCourseProject.TAC
         public void Visit(ProgramNode programNode)
         {
             var function = new Function(
-                programNode.Line, 
+                programNode.Line,
                 programNode.Column,
-                ENTRY_POINT, 
+                ENTRY_POINT,
                 1,
                 SemanticChecker.VOID_TYPE);
             functionStack.Push(function);
@@ -440,9 +440,9 @@ namespace CodeGenCourseProject.TAC
             }
 
             ProcedureFunctionHelper(
-                functionNode, 
-                type, 
-                block, 
+                functionNode,
+                type,
+                block,
                 paramStart);
         }
 
@@ -450,7 +450,7 @@ namespace CodeGenCourseProject.TAC
         {
             HandleBinaryOperator(multiplyNode, Operator.MULTIPLY);
         }
-        
+
         public void Visit(FunctionParameterVariableNode functionParameterNode)
         {
             // for name mangling. FIXME: Extract name mangling code into separate helper
@@ -567,7 +567,7 @@ namespace CodeGenCourseProject.TAC
             assertNode.Children[0].Accept(this);
 
             Emit(new TACAssert(assertNode.Line, assertNode.Column, tacValueStack.Pop()));
-            
+
             AssertEmptyTacValueStack();
         }
 
@@ -695,7 +695,7 @@ namespace CodeGenCourseProject.TAC
                 }
                 fTables.Pop();
             }
-            
+
             outerSymbolTables.Pop();
             Functions.Add(functionStack.Pop());
         }

@@ -65,7 +65,7 @@ namespace CodeGenCourseProject.TAC
         private readonly IList<Parameter> parameters;
         // values that function captures from outer context
         private ISet<Parameter> capturedVariables;
-        private readonly IList<TACStatement> code;
+        private IList<TACStatement> statements;
         private readonly string returnType;
 
         public Function(int line, int column, string name, int id, string returnType)
@@ -73,7 +73,7 @@ namespace CodeGenCourseProject.TAC
             this.line = line;
             this.column = column;
             this.parameters = new List<Parameter>();
-            this.code = new List<TACStatement>();
+            this.statements = new List<TACStatement>();
             this.CapturedVariables = new HashSet<Parameter>();
             this.returnType = returnType;
             if (name != TACGenerator.ENTRY_POINT)
@@ -93,7 +93,7 @@ namespace CodeGenCourseProject.TAC
         {
             get
             {
-                return code;
+                return statements;
             }
         }
 
@@ -166,6 +166,11 @@ namespace CodeGenCourseProject.TAC
         internal void AddParameter(TACIdentifier id, string type, bool isReferenceParameter)
         {
             Parameters.Add(new Parameter(id, type, isReferenceParameter));
+        }
+
+        internal void UpdateStatements(List<TACStatement> liveStatements)
+        {
+            statements = liveStatements;
         }
     }
 }

@@ -323,9 +323,9 @@ namespace CodeGenCourseProject.CFG.Analysis.Tests
             Analyze("invalid_functions.txt", reporter);
             Assert.AreEqual(3, reporter.Errors.Count);
             var testHelper = new TestHelper(reporter);
-            testHelper.AssertErrorMessage(0, Error.SEMANTIC_ERROR, 2, 8, "Not all control pathts return a value in funtion 'a'");
+            testHelper.AssertErrorMessage(0, Error.SEMANTIC_ERROR, 2, 8, "Not all control paths return a value in function 'a'");
             testHelper.AssertErrorMessage(1, Error.SEMANTIC_ERROR, 32, 29, "Usage of uninitialized variable 'c'");
-            testHelper.AssertErrorMessage(2, Error.SEMANTIC_ERROR, 19, 8, "Not all control pathts return a value in funtion 'b'");
+            testHelper.AssertErrorMessage(2, Error.SEMANTIC_ERROR, 19, 8, "Not all control paths return a value in function 'b'");
         }
 
         [TestMethod()]
