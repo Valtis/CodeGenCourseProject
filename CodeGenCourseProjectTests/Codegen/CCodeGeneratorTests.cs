@@ -9,6 +9,7 @@ using CodeGenCourseProject.CFG.Analysis;
 using System.IO;
 using System.Diagnostics;
 using System.Collections.Generic;
+using CodeGenCourseProject.Codegen.C;
 
 namespace CodeGenCourseProject.Codegen.Tests
 {
