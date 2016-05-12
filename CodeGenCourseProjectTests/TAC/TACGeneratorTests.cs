@@ -766,7 +766,7 @@ namespace CodeGenCourseProject.TAC.Tests
         [TestMethod()]
         public void ProceduresFunctionsAndFunctionCallsGenerateValidTAC()
         {
-            var functions = GetFunctions("functions_and_procedures.txt", 6);
+            var functions = GetFunctions("functions_and_procedures.txt", 8);
 
             Assert.AreEqual("__proc_14__", functions[0].Name);
             var statements = functions[0].Statements;
@@ -859,10 +859,23 @@ namespace CodeGenCourseProject.TAC.Tests
                 new TACReturn(new TACInteger(4)),
                 statements[0]);
 
-
-            Assert.AreEqual("<ENTRY POINT>", functions[5].Name);
+            Assert.AreEqual("__func_316__", functions[5].Name);
             statements = functions[5].Statements;
-            Assert.AreEqual(13, statements.Count);
+            Assert.AreEqual(1, statements.Count);
+            TACEquals(
+                new TACReturn(),
+                statements[0]);
+
+            Assert.AreEqual("__func_418__", functions[6].Name);
+            statements = functions[6].Statements;
+            Assert.AreEqual(1, statements.Count);
+            TACEquals(
+                new TACReturn(),
+                statements[0]);
+
+            Assert.AreEqual("<ENTRY POINT>", functions[7].Name);
+            statements = functions[7].Statements;
+            Assert.AreEqual(17, statements.Count);
             TACEquals(
                 Operator.MULTIPLY,
                 new TACInteger(1),
@@ -929,6 +942,20 @@ namespace CodeGenCourseProject.TAC.Tests
                 new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 11),
                 new TACIdentifier("a", SemanticChecker.INTEGER_TYPE, 0),
                 statements[12]);
+            TACEquals(
+                new TACArrayDeclaration("x", SemanticChecker.INTEGER_TYPE, new TACInteger(4), 20),
+                statements[13]);
+            TACEquals(
+                new TACCloneArray(
+                    new TACIdentifier("x", SemanticChecker.INTEGER_ARRAY, 20),
+                    new TACIdentifier("__t", SemanticChecker.INTEGER_ARRAY, 12)),
+                statements[14]);
+            TACEquals(new TACCall("__func_316__",
+                new List<TACValue> { new TACIdentifier("__t", SemanticChecker.INTEGER_ARRAY, 12) }),
+                statements[15]);
+            TACEquals(new TACCall("__func_418__",
+                 new List<TACValue> { new TACIdentifier("x", SemanticChecker.INTEGER_ARRAY, 20) }),
+                 statements[16]);
         }
 
         [TestMethod()]

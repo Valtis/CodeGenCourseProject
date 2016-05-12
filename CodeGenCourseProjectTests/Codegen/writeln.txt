@@ -6,4 +6,43 @@ begin
 	writeln(false);
 	writeln("hello");
 	writeln("A: ", 4, "\tB: ", 9);
+
+	{* Ensure reference arguments are dereferenced correctly *}
+	procedure references1(var a : integer, var b : real, var c : string, var d : boolean);
+	begin
+		writeln(a, " ", b, " ", c, " ", d);
+	end;
+
+	procedure references2(
+	var a : array [] of integer, 
+	var b : array [] of real, 
+	var c : array [] of string, 
+	var d : array [] of boolean);
+	begin
+		writeln(a[0], " ", b[0], " ", c[0], " ", d[0]);
+	end;
+
+	var a : integer;
+	var b : real;
+	var c : string;
+	var d : boolean;
+
+	a := 8;
+	b := 4.1;
+	c := "foo";
+	d := true;
+
+	references1(a, b, c, d);
+	
+	var a2 : array [1] of integer;
+	var b2 : array [1] of real;
+	var c2 : array [1] of string;
+	var d2 : array [1] of boolean;
+
+	a2[0] := 160;
+	b2[0] := 312.1;
+	c2[0] := "rarar";
+	d2[0] := false;
+
+	references2(a2, b2, c2, d2);
 end.

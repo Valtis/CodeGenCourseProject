@@ -1,0 +1,7 @@
+﻿program false_assert;
+begin
+	var i : integer;
+	i := 0;
+	assert(i < 0);
+	writeln("Should not be printed");
+end.

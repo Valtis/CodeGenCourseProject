@@ -1,0 +1,7 @@
+﻿program negative_array_size;
+begin
+	var a : integer;
+	a := 2;
+	var b : array [a - 4] of real;
+	writeln("Should not be written");
+end.

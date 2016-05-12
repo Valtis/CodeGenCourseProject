@@ -238,14 +238,16 @@ namespace CodeGenCourseProject.Codegen.Tests
         public void Writeln()
         {
             var output = CompileAndRun("writeln.txt");
-            Assert.AreEqual(7, output.Count);
+            Assert.AreEqual(9, output.Count);
             Assert.AreEqual("2", output[0]);
             Assert.AreEqual("4.200000", output[1]);
             Assert.AreEqual("1", output[2]);
             Assert.AreEqual("0", output[3]);
             Assert.AreEqual("hello", output[4]);
             Assert.AreEqual("A: 4\tB: 9", output[5]);
-            Assert.AreEqual(null, output[6]);
+            Assert.AreEqual("8 4.100000 foo 1", output[6]);
+            Assert.AreEqual("160 312.100000 rarar 0", output[7]);
+            Assert.AreEqual(null, output[8]);
         }
 
         [TestMethod()]
@@ -284,40 +286,41 @@ namespace CodeGenCourseProject.Codegen.Tests
         public void NonReferenceArrayParameters()
         {
             var output = CompileAndRun("non_reference_array_parameters.txt");
-            Assert.AreEqual(33, output.Count);
-            Assert.AreEqual("123", output[0]);
-            Assert.AreEqual("456", output[1]);
-            Assert.AreEqual("789", output[2]);
-            Assert.AreEqual("101112", output[3]);
-            Assert.AreEqual("123.000000", output[4]);
-            Assert.AreEqual("456.000000", output[5]);
-            Assert.AreEqual("-789.000000", output[6]);
-            Assert.AreEqual("-101112.000000", output[7]);
-            Assert.AreEqual("aa", output[8]);
-            Assert.AreEqual("bb", output[9]);
-            Assert.AreEqual("cc", output[10]);
-            Assert.AreEqual("dd", output[11]);
-            Assert.AreEqual("1", output[12]);
-            Assert.AreEqual("0", output[13]);
+            Assert.AreEqual(34, output.Count);
+            Assert.AreEqual("123 123.000000 aa 1", output[0]);
+            Assert.AreEqual("123", output[1]);
+            Assert.AreEqual("456", output[2]);
+            Assert.AreEqual("789", output[3]);
+            Assert.AreEqual("101112", output[4]);
+            Assert.AreEqual("123.000000", output[5]);
+            Assert.AreEqual("456.000000", output[6]);
+            Assert.AreEqual("-789.000000", output[7]);
+            Assert.AreEqual("-101112.000000", output[8]);
+            Assert.AreEqual("aa", output[9]);
+            Assert.AreEqual("bb", output[10]);
+            Assert.AreEqual("cc", output[11]);
+            Assert.AreEqual("dd", output[12]);
+            Assert.AreEqual("1", output[13]);
             Assert.AreEqual("0", output[14]);
-            Assert.AreEqual("1", output[15]);
-            Assert.AreEqual("123", output[16]);
-            Assert.AreEqual("456", output[17]);
-            Assert.AreEqual("789", output[18]);
-            Assert.AreEqual("101112", output[19]);
-            Assert.AreEqual("123.000000", output[20]);
-            Assert.AreEqual("456.000000", output[21]);
-            Assert.AreEqual("-789.000000", output[22]);
-            Assert.AreEqual("-101112.000000", output[23]);
-            Assert.AreEqual("aa", output[24]);
-            Assert.AreEqual("bb", output[25]);
-            Assert.AreEqual("cc", output[26]);
-            Assert.AreEqual("dd", output[27]);
-            Assert.AreEqual("1", output[28]);
-            Assert.AreEqual("0", output[29]);
+            Assert.AreEqual("0", output[15]);
+            Assert.AreEqual("1", output[16]);
+            Assert.AreEqual("123", output[17]);
+            Assert.AreEqual("456", output[18]);
+            Assert.AreEqual("789", output[19]);
+            Assert.AreEqual("101112", output[20]);
+            Assert.AreEqual("123.000000", output[21]);
+            Assert.AreEqual("456.000000", output[22]);
+            Assert.AreEqual("-789.000000", output[23]);
+            Assert.AreEqual("-101112.000000", output[24]);
+            Assert.AreEqual("aa", output[25]);
+            Assert.AreEqual("bb", output[26]);
+            Assert.AreEqual("cc", output[27]);
+            Assert.AreEqual("dd", output[28]);
+            Assert.AreEqual("1", output[29]);
             Assert.AreEqual("0", output[30]);
-            Assert.AreEqual("1", output[31]);
-            Assert.AreEqual(null, output[32]);
+            Assert.AreEqual("0", output[31]);
+            Assert.AreEqual("1", output[32]);
+            Assert.AreEqual(null, output[33]);
         }
         [TestMethod]
         public void ReferenceArrayParameters()
@@ -359,36 +362,124 @@ namespace CodeGenCourseProject.Codegen.Tests
             Assert.AreEqual(null, output[32]);
         }
 
+        [TestMethod()]
+        public void IndexedArrayValuesAsArgs()
+        {
+            var output = CompileAndRun("array_indexes_as_args.txt");
+            Assert.AreEqual(5, output.Count);
+            Assert.AreEqual("0", output[0]);
+            Assert.AreEqual("2", output[1]);
+            Assert.AreEqual("2", output[2]);
+            Assert.AreEqual("26", output[3]);
+            Assert.AreEqual(null, output[4]);
+        }
 
         [TestMethod()]
         public void ArrayAssignment()
         {
-            Assert.Fail();
+            var output = CompileAndRun("array_assign.txt");
+            Assert.AreEqual(13, output.Count);
+            Assert.AreEqual("0 0.000000  0", output[0]);
+            Assert.AreEqual("0 1.100000 foo 1", output[1]);
+            Assert.AreEqual("0 0.000000  0", output[2]);
+            Assert.AreEqual("0 0.000000  0", output[3]);
+            Assert.AreEqual("1 1.100000 foo 1", output[4]);
+            Assert.AreEqual("0 0.000000  0", output[5]);
+            Assert.AreEqual("0 0.000000  0", output[6]);
+            Assert.AreEqual("2 1.100000 foo 1", output[7]);
+            Assert.AreEqual("0 0.000000  0", output[8]);
+            Assert.AreEqual("0 0.000000  0", output[9]);
+            Assert.AreEqual("3 1.100000 foo 1", output[10]);
+            Assert.AreEqual("0 0.000000  0", output[11]);
+            Assert.AreEqual(null, output[12]);
         }
 
 
         [TestMethod()]
         public void ArrayInitializationWithNegativeNumber()
         {
-            Assert.Fail();
+            var output = CompileAndRun("negative_array_size.txt");
+            Assert.AreEqual(2, output.Count);
+            Assert.AreEqual("Invalid array size at line 5: -2", output[0]);
+            Assert.AreEqual(null, output[1]);
         }
 
         [TestMethod()]
         public void AssignValueFromReference()
         {
-            Assert.Fail();
+            var output = CompileAndRun("assign_reference_value.txt");
+            Assert.AreEqual(17, output.Count);
+            Assert.AreEqual("1", output[0]);
+            Assert.AreEqual("23", output[1]);
+            Assert.AreEqual("1.000000", output[2]);
+            Assert.AreEqual("2.000000", output[3]);
+            Assert.AreEqual("a", output[4]);
+            Assert.AreEqual("prefix_a", output[5]);
+            Assert.AreEqual("1", output[6]);
+            Assert.AreEqual("1", output[7]);
+
+            Assert.AreEqual("12", output[8]);
+            Assert.AreEqual("276", output[9]);
+            Assert.AreEqual("1.400000", output[10]);
+            Assert.AreEqual("2.800000", output[11]);
+            Assert.AreEqual("foo", output[12]);
+            Assert.AreEqual("prefix_foo", output[13]);
+            Assert.AreEqual("0", output[14]);
+            Assert.AreEqual("1", output[15]);
+            Assert.AreEqual(null, output[16]);
         }
 
         [TestMethod()]
-        public void ArraySizeOperatorWithReference()
+        public void ArraySize()
         {
-            Assert.Fail();
+            var output = CompileAndRun("array_size.txt");
+            Assert.AreEqual(11, output.Count);
+            Assert.AreEqual("10", output[0]);
+            Assert.AreEqual("20", output[1]);
+            Assert.AreEqual("10", output[2]);
+            Assert.AreEqual("0", output[3]);
+            Assert.AreEqual("0", output[4]);
+            Assert.AreEqual("10", output[5]);
+            Assert.AreEqual("10", output[6]);
+            Assert.AreEqual("20", output[7]);
+            Assert.AreEqual("20", output[8]);
+            Assert.AreEqual("20", output[9]);
+            Assert.AreEqual(null, output[10]);
         }
 
         [TestMethod()]
-        public void IndexedArrayAsArgumentToReferenceOrNonreferenceAndReferenceArrayAsArgumentEtc()
+        public void VariableCapture()
         {
-            Assert.Fail();
+            var output = CompileAndRun("variable_capture.txt");
+            Assert.AreEqual(10, output.Count);
+            Assert.AreEqual("hello 12 2421 4", output[0]);
+            Assert.AreEqual("12 2.300000 19 1234567", output[1]);
+            Assert.AreEqual("12", output[2]);
+            Assert.AreEqual("12", output[3]);
+            Assert.AreEqual("22", output[4]);
+            Assert.AreEqual("76", output[5]);
+            Assert.AreEqual("76", output[6]);
+            Assert.AreEqual("1", output[7]);
+            Assert.AreEqual("14", output[8]);
+            Assert.AreEqual(null, output[9]);
+        }
+
+        [TestMethod()]
+        public void FalseAssert()
+        {
+            var output = CompileAndRun("false_assert.txt");
+            Assert.AreEqual(2, output.Count);
+            Assert.AreEqual("Assert failed at line 5", output[0]);
+            Assert.AreEqual(null, output[1]);
+        }
+
+        [TestMethod()]
+        public void TrueAssert()
+        {
+            var output = CompileAndRun("true_assert.txt");
+            Assert.AreEqual(2, output.Count);
+            Assert.AreEqual("This should be printed", output[0]);
+            Assert.AreEqual(null, output[1]);
         }
 
         [TestMethod()]

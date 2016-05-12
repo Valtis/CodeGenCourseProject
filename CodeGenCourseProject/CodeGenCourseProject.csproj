@@ -109,6 +109,7 @@
     <Compile Include="TAC\Values\TACAssert.cs" />
     <Compile Include="TAC\Values\TACCall.cs" />
     <Compile Include="TAC\Values\TACCallRead.cs" />
+    <Compile Include="TAC\Values\TACCloneArray.cs" />
     <Compile Include="TAC\Values\TACJump.cs" />
     <Compile Include="TAC\Values\TACArrayDeclaration.cs" />
     <Compile Include="TAC\Values\TACArrayIndex.cs" />

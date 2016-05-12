@@ -1,0 +1,31 @@
+﻿program array_size;
+begin
+	var a : array [2*5] of integer;
+
+	writeln(a.size);
+	writeln(a.size * 2);
+
+	procedure p1(a : array [] of integer);
+	begin
+		writeln(a.size);
+		var b : array [] of integer;
+		writeln(b.size);
+		a := b;
+		writeln(a.size)
+	end;
+
+	p1(a);
+	writeln(a.size);
+
+	procedure p2(var a : array [] of integer);
+	begin
+		writeln(a.size);
+		var b : array[20] of integer;
+		writeln(b.size);
+		a := b;
+		writeln(a.size);
+	end;
+	
+	p2(a);
+	writeln(a.size);
+end.

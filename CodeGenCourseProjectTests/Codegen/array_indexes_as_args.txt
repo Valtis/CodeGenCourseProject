@@ -1,0 +1,41 @@
+﻿program prg;
+begin
+	var a : array [1] of integer;
+
+	procedure non_ref(a : integer);
+	begin
+		a  := 2;
+	end;
+
+
+	non_ref(a[0]);
+	writeln(a[0]);
+
+	procedure ref(var a : integer);
+	begin
+		a  := 2;
+	end;
+
+	
+	ref(a[0]);
+	writeln(a[0]);
+
+	procedure ref_2(var a : array [] of integer);
+	begin
+		procedure inner_1(a : integer);
+		begin
+			writeln(a);
+		end;
+		
+		procedure inner_2(var a : integer);
+		begin
+			a := 26;
+		end;
+
+		inner_1(a[0]);
+		inner_2(a[0]);
+		writeln(a[0]);
+	end;
+
+	ref_2(a);
+end.

@@ -6,31 +6,54 @@ begin
 		c : array [] of string, 
 		d : array [] of boolean);
 	begin
-		a[0] := 123;
-		a[1] := 456;
-		a[2] := 789;
-		a[3] := 101112;
+		writeln(a[0], " ", b[0], " ", c[0], " ", d[0]);
 		
-		b[0] := 123.0;
-		b[1] := 456.0;
-		b[2] := -789.0;
-		b[3] := -101112.0;
+		a[0] := 0;
+		a[1] := 0;
+		a[2] := 0;
+		a[3] := 0;
 		
-		c[0] := "aa";
-		c[1] := "bb";
-		c[2] := "cc";
-		c[3] := "dd";
+		b[0] := 0.0;
+		b[1] := 0.0;
+		b[2] := 0.0;
+		b[3] := 0.0;
 		
-		d[0] := true;
+		c[0] := "";
+		c[1] := "";
+		c[2] := "";
+		c[3] := "";
+		
+		d[0] := false;
 		d[1] := false;
 		d[2] := false;
-		d[3] := true;
+		d[3] := false;
 	end;
 	
 	var a : array [4] of integer;
 	var b : array [4] of real;
 	var c : array [4] of string;
 	var d : array [4] of boolean;
+
+	
+	a[0] := 123;
+	a[1] := 456;
+	a[2] := 789;
+	a[3] := 101112;
+		
+	b[0] := 123.0;
+	b[1] := 456.0;
+	b[2] := -789.0;
+	b[3] := -101112.0;
+		
+	c[0] := "aa";
+	c[1] := "bb";
+	c[2] := "cc";
+	c[3] := "dd";
+		
+	d[0] := true;
+	d[1] := false;
+	d[2] := false;
+	d[3] := true;
 
 	outer(a, b, c, d);
 
@@ -75,6 +98,26 @@ begin
 		var b2 : array [4] of real;
 		var c2 : array [4] of string;
 		var d2 : array [4] of boolean;
+
+		a2[0] := 123;
+		a2[1] := 456;
+		a2[2] := 789;
+		a2[3] := 101112;
+		
+		b2[0] := 123.0;
+		b2[1] := 456.0;
+		b2[2] := -789.0;
+		b2[3] := -101112.0;
+		
+		c2[0] := "aa";
+		c2[1] := "bb";
+		c2[2] := "cc";
+		c2[3] := "dd";
+		
+		d2[0] := true;
+		d2[1] := false;
+		d2[2] := false;
+		d2[3] := true;
 
 		a := a2;
 		b := b2;

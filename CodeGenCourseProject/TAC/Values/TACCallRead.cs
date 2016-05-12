@@ -15,5 +15,10 @@ namespace CodeGenCourseProject.TAC.Values
         {
 
         }
+
+        public override void Accept(TACVisitor visitor)
+        {
+            visitor.Visit(this);
+        }
     }
 }

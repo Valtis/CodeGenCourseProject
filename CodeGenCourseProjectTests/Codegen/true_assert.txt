@@ -1,0 +1,7 @@
+﻿program true;
+begin
+	var i : integer;
+	i := 23;
+	assert(i >= 23);
+	writeln("This should be printed");
+end.

@@ -47,4 +47,19 @@ begin
 	
 	a := func_2(23);
 	a := func_2(func_2(32));
+
+	procedure func_3(a : array [] of integer);
+	begin
+		return ;
+	end;
+
+	procedure func_4(var a : array [] of integer);
+	begin
+		return ;
+	end;
+
+	var x : array [4] of integer;
+
+	func_3(x);
+	func_4(x);
 end.

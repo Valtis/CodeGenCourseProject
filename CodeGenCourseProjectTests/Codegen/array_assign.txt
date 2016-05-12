@@ -1,0 +1,39 @@
+﻿program array_assignment;
+begin
+	var a, a2, a3 : array [4] of integer;
+	var b, b2, b3 : array [4] of real;
+	var c, c2, c3 : array [4] of string;
+	var d, d2, d3 : array [4] of boolean;
+
+	var i : integer;
+	i := 0;
+	while i < 4 do
+	begin
+		a[i] := i;
+		b[i] := 1.1;
+		c[i] := "foo";
+		d[i] := true;
+
+		i := i + 1;
+	end;
+
+	a2 := a;
+	b2 := b;
+	c2 := c;
+	d2 := d;
+
+	a := a3;
+	b := b3;
+	c := c3;
+	d := d3;
+	i := 0;
+
+	while i < 4 do
+	begin
+		writeln(a[i], " ", b[i], " ", c[i], " ", d[i]);
+		writeln(a2[i], " ", b2[i], " ", c2[i], " ", d2[i]);
+		writeln(a3[i], " ", b3[i], " ", c3[i], " ", d3[i]);
+		i := i + 1;
+	end;
+	
+end.

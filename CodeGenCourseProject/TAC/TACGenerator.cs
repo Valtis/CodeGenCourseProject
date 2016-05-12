@@ -98,16 +98,25 @@ namespace CodeGenCourseProject.TAC
         public void Visit(ArrayIndexNode node)
         {
             var nameNode = (IdentifierNode)node.Children[0];
+            nameNode.Accept(this);
+            tacValueStack.Pop();
+            var name = nameNode.Value;
             var expr = node.Children[1];
 
             expr.Accept(this);
 
-            var symbol = (ArraySymbol)symbolTable.GetSymbol(nameNode.Value);
+            var symbol = (ArraySymbol)symbolTable.GetSymbol(name);
+
+            var outerSymbol =
+               outerSymbolTables.Count > 0 ?
+                   outerSymbolTables.Peek().GetSymbol(name, node.Line)
+                   : null;
 
             var exprTAC = tacValueStack.Pop();
-            tacValueStack.Push(
-                new TACArrayIndex(node.Line, node.Column,
-                    nameNode.Value, exprTAC, symbol.BaseType, symbol.Id, symbol.IsReference));
+            var index = new TACArrayIndex(node.Line, node.Column,
+                    nameNode.Value, exprTAC, symbol.BaseType, symbol.Id, symbol.IsReference);
+            
+            tacValueStack.Push(index);
         }
 
         public void Visit(ArrayTypeNode arrayTypeNode)
@@ -146,15 +155,25 @@ namespace CodeGenCourseProject.TAC
         {
             var name = ((IdentifierNode)callNode.Children[0]).Value;
             var arguments = new List<TACValue>();
+            var functionSymbol = (FunctionSymbol)symbolTable.GetSymbol(name, callNode.Line);
 
             for (int i = 1; i < callNode.Children.Count; ++i)
             {
                 callNode.Children[i].Accept(this);
-                arguments.Add(tacValueStack.Pop());
+
+                // if argument is array, and the corresponding parameter is not
+                // a reference parameter, we must generate a defensive copy 
+                // so that any modifications in the called function do not 
+                // affect the original array 
+                var argument = tacValueStack.Pop();
+                if (functionSymbol != null && argument is TACIdentifier)
+                {
+                    argument = GenerateCopyIfNeeded(callNode, functionSymbol, i, argument);
+                }
+
+                arguments.Add(argument);
             }
-
-            var functionSymbol = (FunctionSymbol)symbolTable.GetSymbol(name, callNode.Line);
-
+          
             // inbuilt writeln function
             if (name == "writeln" && functionSymbol == null)
             {
@@ -184,6 +203,27 @@ namespace CodeGenCourseProject.TAC
                 Emit(call, temp);
                 tacValueStack.Push(temp);
             }
+        }
+
+        private TACValue GenerateCopyIfNeeded(CallNode callNode, FunctionSymbol functionSymbol, int i, TACValue argument)
+        {
+            var argumentSymbol = symbolTable.GetSymbol(
+                                    ((TACIdentifier)argument).UnmangledName, callNode.Line);
+            if (!(argumentSymbol is ArraySymbol))
+            {
+                return argument;
+            }
+            var functionArgumentIsReference = functionSymbol.IsReferenceParameters[i - 1];
+
+            if (functionArgumentIsReference)
+            {
+                return argument;
+            }
+            var temporary = GetTemporary(callNode.Children[i]);
+            Emit(new TACCloneArray((TACIdentifier)argument, temporary));
+
+            argument = temporary;
+            return argument;
         }
 
         public void Visit(EqualsNode equalsNode)
@@ -287,6 +327,8 @@ namespace CodeGenCourseProject.TAC
                 }
 
             }
+
+
             var outerSymbol =
                 outerSymbolTables.Count > 0 ?
                     outerSymbolTables.Peek().GetSymbol(name, identifierNode.Line)
@@ -453,8 +495,6 @@ namespace CodeGenCourseProject.TAC
 
         public void Visit(FunctionParameterVariableNode functionParameterNode)
         {
-            // for name mangling. FIXME: Extract name mangling code into separate helper
-
             var symbol = symbolTable.GetSymbol(functionParameterNode.Name.Value);
             var id = new TACIdentifier(symbol.Line, symbol.Column, symbol.Name, symbol.Type, symbol.Id);
 
@@ -467,8 +507,7 @@ namespace CodeGenCourseProject.TAC
 
         public void Visit(FunctionParameterArrayNode functionParameterArrayNode)
         {
-            // for name mangling. FIXME: Extract name mangling code into separate helper
-
+          
             var symbol = symbolTable.GetSymbol(functionParameterArrayNode.Name.Value);
             var id = new TACIdentifier(symbol.Line, symbol.Column,
                 symbol.Name, symbol.Type, symbol.Id);

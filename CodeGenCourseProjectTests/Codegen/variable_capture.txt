@@ -1,0 +1,62 @@
+﻿program variable_capture;
+begin
+	var a, b, c : integer;
+	a := 12;
+	b := 23;
+	c := (2*a) % 5;
+	var ai : array [23*b] of integer;
+	ai[0] := 2421;
+
+	procedure proc();
+	begin
+		var b : real;
+		b := 2.3;
+
+		procedure shadows(a : string, b : integer);
+		begin
+			writeln(a, " ", b, " ", ai[0], " ", c);
+			c := 19;
+			ai[1] := 1234567;
+		end;
+
+		shadows("hello", a);
+		writeln(a, " ", b, " ", c, " ", ai[1]);
+
+		procedure proc2();
+		begin
+			writeln(a);
+		end;
+
+		proc2();
+	end;
+
+	proc();
+
+	procedure proc2(var x : integer);
+	begin
+		x := 22;
+		procedure inner();
+		begin
+			x := 76;
+		end;
+		writeln(x);
+		inner();
+		writeln(x);
+		
+		var q : array [1] of integer;
+		ai := q;
+	end;
+
+	writeln(a);
+	proc2(a);
+	writeln(a);
+	writeln(ai.size);
+	var ai2 : array [14] of integer;
+
+	procedure proc3();
+	begin
+		writeln(ai2.size);
+	end;
+
+	proc3();
+end.
