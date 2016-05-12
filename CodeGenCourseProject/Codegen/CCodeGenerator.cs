@@ -568,6 +568,15 @@ void assert(char expr, int line)
             }
 
             EmitBlockStart();
+
+            if (function.Name == TACGenerator.ENTRY_POINT)
+            {
+                Emit("/*** AUTO-GENERATED CODE ***/");
+                Emit("#ifndef GC_DISABLE");
+                Emit("gc_init(__builtin_frame_address(0));");
+                Emit("#endif");
+                Emit("/*** END OF AUTO-GENERATED CODE ***/");
+            }
         }
 
         private void EmitStatement(TACStatement statement)
