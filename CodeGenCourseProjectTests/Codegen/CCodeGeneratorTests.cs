@@ -49,7 +49,7 @@ namespace CodeGenCourseProject.Codegen.Tests
             }
             return null;
         }
-        private List<string> CompileAndRun(string file)
+        private List<string> CompileAndRun(string file, string extraArgs="")
         {
             var reporter = new ErrorReporter();
             var lexer = new Lexer(@"..\..\Codegen\" + file, reporter);
@@ -81,7 +81,7 @@ namespace CodeGenCourseProject.Codegen.Tests
                 generator.SaveResult(stream);
             }
 
-            Run("gcc", "out.c");
+            Run("gcc", "out.c" + " " + extraArgs);
             return Run("a.exe", "");
         }
 
@@ -480,6 +480,53 @@ namespace CodeGenCourseProject.Codegen.Tests
             Assert.AreEqual(2, output.Count);
             Assert.AreEqual("This should be printed", output[0]);
             Assert.AreEqual(null, output[1]);
+        }
+
+        [TestMethod()]
+        public void GC1()
+        {
+            var output = CompileAndRun("gc.txt", "-DGC_DEBUG -DMAX_HEAP_SIZE=100");     
+            Assert.AreEqual(37, output.Count);
+            // Skipping uninteresting lines
+            Assert.AreEqual("Initializing GC", output[0]);
+            Assert.AreEqual("MAX_HEAP_SIZE: 100", output[1]);
+            Assert.AreEqual("Collecting dead objects", output[5]);
+            Assert.AreEqual("Memory in use: 80 bytes", output[6]);
+            Assert.AreEqual("GC finished", output[11]);
+            Assert.AreEqual("Memory in use: 60 bytes", output[12]);
+            Assert.AreEqual("Collecting dead objects", output[16]);
+            Assert.AreEqual("Memory in use: 100 bytes", output[17]);
+            Assert.AreEqual("GC finished", output[23]);
+            Assert.AreEqual("Memory in use: 60 bytes", output[24]);
+            Assert.AreEqual("Collecting dead objects", output[26]);
+            Assert.AreEqual("Memory in use: 80 bytes", output[27]);
+            Assert.AreEqual("GC finished", output[34]);
+            Assert.AreEqual("Memory in use: 80 bytes", output[35]);
+            Assert.AreEqual(null, output[36]);
+        }
+
+        [TestMethod()]
+        public void GC2()
+        {
+            var output = CompileAndRun("gc2.txt", "-DGC_DEBUG -DMAX_HEAP_SIZE=100");
+            Assert.AreEqual(36, output.Count);
+            // Skipping uninteresting lines
+            Assert.AreEqual("Initializing GC", output[0]);
+            Assert.AreEqual("MAX_HEAP_SIZE: 100", output[1]);
+            Assert.AreEqual("Collecting dead objects", output[5]);
+            Assert.AreEqual("Memory in use: 64 bytes", output[6]);
+            Assert.AreEqual("String array - scanning", output[11]);
+            Assert.AreEqual("GC finished", output[14]);
+            Assert.AreEqual("Memory in use: 24 bytes", output[15]);
+            Assert.AreEqual("Collecting dead objects", output[19]);
+            Assert.AreEqual("Memory in use: 94 bytes", output[20]);
+            Assert.AreEqual("String array - scanning", output[24]);
+            Assert.AreEqual("GC finished", output[29]);
+            Assert.AreEqual("Memory in use: 54 bytes", output[30]);
+            Assert.AreEqual("hello---------", output[32]);
+            Assert.AreEqual("world---------", output[33]);
+            Assert.AreEqual("test----------", output[34]);
+            Assert.AreEqual(null, output[35]);
         }
 
         [TestMethod()]

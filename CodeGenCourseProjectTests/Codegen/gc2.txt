@@ -1,0 +1,36 @@
+﻿program gc2;
+begin
+	{* Assumes 100 byte heap *}
+	var a : array [3] of string; {* 3*8 = 24 bytes *}
+
+	{* String literals should not trigger allocations *}
+	a[0] := "hello";
+	a[1] := "world";
+	a[2] := "test";
+	
+	var b : array [10] of integer; {* 40 bytes *}
+	var c : array [0] of integer; {* Effectively null ptr *}
+	b := c;
+
+	var d : array [10] of integer; {* another 40 bytes, should trigger gc *}
+	
+	d := c; 
+	{* We should have 64 byte heap with 24 bytes actually in use *}
+
+	{* string concatenations should trigger dynamic allocations *}
+	a[0] := a[0] + "---------"; {* +15 bytes (original string + null byte + this) *}
+	a[1] := a[1] + "---------"; {* +15 bytes *}
+	{* Should have 94 byte heap *}
+	a[2] := a[2] + "----------"; {* +15 bytes, should trigger gc *}
+	{* Should have 45 + 24 = 69 bytes in use at this point *}
+	
+	
+	{* 
+		Weak check to see if the memory is still usable; might print garbage or segfault
+		if the memory was incorrectly released. Or it could print the correct strings.
+		Undefined behaviour is fun.
+	*}
+	writeln(a[0]);
+	writeln(a[1]);
+	writeln(a[2]);
+end.

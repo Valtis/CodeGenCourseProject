@@ -108,7 +108,7 @@ namespace CodeGenCourseProject.Codegen
             EmitArrayStruct(C_INTEGER);
             EmitArrayStruct(C_REAL);
             EmitArrayStruct(C_BOOLEAN);
-            EmitArrayStruct(C_STRING);
+            EmitArrayStruct(C_STRING, C_OBJ_TYPE_STRING_ARRAY);
             EmitStringFunctions();
             EmitAssert();
             Emit("");
@@ -150,7 +150,7 @@ typedef struct {
 } GC_State;
 
 GC_State gc_state;
-
+/* Add allocation to the allocations linked list */
 void add_allocation(void *ptr, size_t size, enum Type type)
 {
     GC_PRINT(""add_allocation(% p, % d)\n"", ptr, size);
@@ -316,16 +316,16 @@ void gc_scan_graph_from(const allocation_t* cur)
 {
     if (cur->mark == 1)
     {
-        GC_PRINT(""Object already marked - not scanning"");
+        GC_PRINT(""Object already marked - not scanning\n"");
         return;
     }
     
     if (cur->type == TYPE_STRING_ARRAY)
     {
         GC_PRINT(""String array - scanning\n"");
-    string* arr = cur->ptr;
-    size_t size = cur->allocation_size / sizeof(string*);
-    int i = 0;
+        string* arr = cur->ptr;
+        size_t size = cur->allocation_size / sizeof(string*);
+        int i = 0;
         for (; i<size; ++i)
         {
             allocation_t* alloc = gc_state.head;
@@ -367,7 +367,7 @@ void* gc_malloc(size_t size, enum Type type)
         gc_collect();
         if (gc_state.allocated +  size > MAX_HEAP_SIZE)
         {
-            fprintf(stderr, ""Out of memory"");
+            fprintf(stderr, ""Out of memory\n"");
             exit(1);
         }
     }
@@ -388,7 +388,7 @@ void* gc_calloc(size_t num, size_t size, enum Type type)
         gc_collect();
         if (gc_state.allocated + num* size > MAX_HEAP_SIZE)
         {
-            fprintf(stderr, ""Out of memory"");
+            fprintf(stderr, ""Out of memory\n"");
             exit(1);
         }
     }

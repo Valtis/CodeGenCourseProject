@@ -1,0 +1,28 @@
+﻿program gc;
+begin
+	{* Assumes heap size of 100 bytes *}
+	var a : array [5] of integer; {* should take 5*4= 20 bytes *}
+	var b : array [15] of integer; {* should take 15*4= 60 bytes *}
+
+	a := b; {* pointer to 'a' should be lost *}
+	
+	procedure trigger();
+	begin
+		writeln("Before allocation");
+		var a : array [5] of string; {* should take 5*8 = 40 bytes  *}
+		var b : array [0] of string;
+		a := b; {* Overwrite the reference so that it won't remain in stack *}
+		writeln("After allocation");
+	end;
+	
+
+	{* Should trigger GC *}
+	trigger();
+	
+	{* At this point, entire heap should be used (100 bytes) *}
+	{* Should succeed, as the allocation made in trigger is garbage *}
+	var c : array [5] of integer; 
+	{* Heap should have 80 bytes *}
+	var d : array [6] of integer; {* Should trigger oom *}
+	writeln("Should not be printed");
+end.
