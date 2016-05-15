@@ -4,12 +4,15 @@ begin
     var name : string;
     var age, random_num : integer;
     var hitpoints, maxhitpoints, turn: integer;
+    var score : real;
+    score := 0.0;
     maxhitpoints := 60;
     hitpoints := maxhitpoints;
     turn := 1;
        
     var width, height : integer;
     
+
     width := 15;
     height := 15;    
 
@@ -18,8 +21,13 @@ begin
     monster_cnt := 0;
 
     var monster_alive : array [max_monsters] of boolean;
-    var monster_x, monster_y : array [max_monsters] of integer;
+    var monster_x, monster_y, monster_hitpoints : array [max_monsters] of integer;
 
+    {* used when printing hud, to prevent map from jumping up and down*}
+    {* Empty lines will be printed, if less messages were printed than msg_max *}
+    var msg_cnt, msg_max : integer;
+    msg_cnt := 0;
+    msg_max := 5;
 
 
     var commands : array [10] of string;
@@ -95,7 +103,16 @@ begin
     begin
         return y*width + x;        
     end;
+
+    function get_x_from_coordinate(coordinate : integer, width : integer) : integer;
+    begin
+        return coordinate % width;
+    end;
     
+    function get_y_from_coordinate(coordinate : integer, width : integer) : integer;
+    begin
+        return coordinate / width;
+    end;
     
     {* Game functions *} 
     
@@ -124,7 +141,14 @@ begin
     
     procedure print_hud();
     begin
-        writeln("Name: ", name, " Age: ", age, " HP: ", hitpoints, "/", maxhitpoints, " Turn: ", turn); 
+        writeln("Name: ", name, " Age: ", age, " HP: ", hitpoints, "/", maxhitpoints, " Score: ", score,  " Turn: ", turn); 
+        while msg_cnt < msg_max do
+        begin
+            msg_cnt := msg_cnt + 1;
+            writeln();
+        end;
+
+        msg_cnt := 0;
         writeln();
     end;
     
@@ -153,7 +177,7 @@ begin
                     {* Player has the highest priority *}
                     if (x = player_x) and (y = player_y) then
                     begin
-                        line := line + "@";
+                        line := line + "\\e[32m@\\e[0m";
                         return;
                     end;
                     {* Then monsters *}
@@ -166,7 +190,7 @@ begin
                         begin
                             if (monster_x[i] = x) and (monster_y[i] = y) then 
                             begin
-                                line := line + "M";
+                                line := line + "\\e[37mM\\e[0m";
                                 return;
                             end;
                         end;
@@ -177,7 +201,7 @@ begin
                     if passability[get_coordinate(x, y, width)] then
                         line := line + " "
                     else
-                        line := line + "#"; 
+                        line := line + "\\e[7m \\e[0m"; 
                 end;
 
                 draw_cell();
@@ -229,9 +253,6 @@ begin
             read(command);
             if is_valid_command(command) then
                 return command;
-
-            writeln("Invalid command '", command, "'"); 
-
         end;
     end;
 
@@ -268,6 +289,8 @@ begin
         var free_slot : integer;
         free_slot := get_free_monster_slot();
         monster_cnt := monster_cnt + 1;
+        writeln("A monster appears...");
+        msg_cnt := msg_cnt + 1;
 
         {* Strictly speaking not guaranteed to terminate *}
         var x, y : integer;
@@ -296,6 +319,7 @@ begin
                     if not already_monster_present then
                     begin
                         monster_alive[free_slot] := true;
+                        monster_hitpoints[free_slot] := random(20);
                         monster_x[free_slot] := x;
                         monster_y[free_slot] := y;
                         return;
@@ -303,10 +327,228 @@ begin
                 end;
             end;
         end;
+    end;
 
 
+    procedure attack_monster(monster : integer);
+    begin
+        var damage : integer;
+        {* 2d4 + 2 *}
+        damage := 2*(random(4)+1) + 2;
+        writeln("You attack the monster, dealing ", damage, " damage");
+        msg_cnt := msg_cnt + 1;
+        monster_hitpoints[monster] := monster_hitpoints[monster] - damage;
+        if monster_hitpoints[monster] <= 0 then
+        begin
+            msg_cnt := msg_cnt + 1;
+            writeln("The monster dies!");
+            score := score + 4.0;
+            monster_alive[monster] := false;
+            monster_cnt := monster_cnt - 1;
+        end;
+    end;
 
+    procedure update_player_position(passability : array [] of boolean, direction : integer, var player_x : integer, var player_y : integer);
+    begin
+        {* Don't move outside the map *}
+        var new_x, new_y : integer;
+        new_x := player_x + command_x_change[direction];
+        new_y := player_y + command_y_change[direction];
 
+        if (new_x < 0) or (new_x >= width) then
+        return;
+
+        if (new_y < 0) or (new_y >= height) then
+            return;
+
+        {* If monster is in the square, attack *}
+        var i : integer;
+        i := 0;
+
+        while i < max_monsters do
+        begin
+            if monster_alive[i] then
+            begin
+                if (monster_x[i] = new_x) and (monster_y[i] = new_y) then
+                begin
+                    attack_monster(i);
+                    return;
+                end; 
+            end;
+
+            i := i + 1;
+        end;
+
+        if passability[get_coordinate(new_x, new_y, width)] then
+        begin
+            player_x := new_x;
+            player_y := new_y;
+        end;
+    end;
+
+    procedure move_monsters(passability : array [] of boolean, player_x : integer, player_y : integer, width : integer);
+    begin
+        {* breadth-first search. Somewhat complicated by the language constraints *}
+        function find_path(start_x : integer, start_y : integer, width : integer) : integer;
+        begin
+            var parents, queue : array[width*height] of integer;
+            {* Circular queue *}
+            var i, queue_start, queue_end, queue_size : integer;
+            i := 0;
+            queue_size := 0;
+            queue_start := 0;
+            queue_end := 0;
+            while i < parents.size do
+            begin
+                queue[i] := -1;
+                parents[i] := -1;
+                i := i + 1;
+            end;
+
+            procedure enqueue(i : integer);
+            begin
+                assert(queue_size < width*height);
+                queue_size := queue_size + 1;
+                queue[queue_end] := i;
+                queue_end := (queue_end + 1) % (width * height);
+            end;
+
+            function dequeue() : integer;
+            begin
+                assert(queue_size > 0);
+                queue_size := queue_size - 1;
+                var value : integer;
+                value := queue[queue_start];
+                queue_start := (queue_start + 1) % (width * height);
+                return value;
+            end;
+
+            var start_coordinate : integer;
+            start_coordinate := get_coordinate(start_x, start_y, width);
+
+            enqueue(start_coordinate);
+
+            {* Actual BFS starts here *}
+            while queue_size > 0 do
+            begin
+                var coord : integer;
+                coord := dequeue();
+
+                if coord = get_coordinate(player_x, player_y, width) then
+                begin
+                    while true do 
+                    begin
+                        var parent : integer;
+                        parent := parents[coord];
+                        if parent = start_coordinate then
+                            return coord;
+
+                        coord := parent;
+                    end;
+                end;
+
+                var relx, rely : integer;
+                relx := -1;
+                rely := -1;
+
+                {* Go through coordinate neighbours *}
+                while rely <= 1 do
+                begin
+                    while relx <= 1 do
+                    begin
+
+                        procedure consider_coordinate();
+                        begin
+                            if (relx <> 0) or (rely <> 0) then
+                            begin
+                                var neighbour : integer; 
+                                neighbour := coord;
+                                var new_x, new_y : integer;
+                                new_x := get_x_from_coordinate(neighbour, width) + relx;
+                                new_y := get_y_from_coordinate(neighbour, width) + rely;
+
+                                if (new_x < 0) or (new_x >= width) then
+                                begin
+                                    return;
+                                end;
+                                if (new_y < 0) or (new_y >= height) then
+                                begin
+                                    return;
+                                end;
+
+                                if not passability[get_coordinate(new_x, new_y, width)] then
+                                begin
+                                    return;
+                                end;
+
+                                neighbour := get_coordinate(new_x, new_y, width);
+                            
+                                if parents[neighbour] = -1 then
+                                begin
+                                    parents[neighbour] := coord;
+                                    enqueue(neighbour);
+                                end;
+                            end;
+                        end; {* End consider_coordinate *}
+                        consider_coordinate();
+                        relx := relx + 1;
+                    end;
+
+                    relx := -1;
+                    rely := rely + 1;
+                end;
+            end;
+
+            return -1;
+        end; {* End find_path *}
+
+        var i : integer;
+        i := 0;
+        while i < max_monsters do
+        begin
+            if monster_alive[i] then
+            begin
+                var next : integer;
+                next := find_path(monster_x[i], monster_y[i], width);
+                if next <> -1 then
+                begin
+                    if next = get_coordinate(player_x, player_y, width) then
+                    begin
+                        {* 1d8 *}
+                        var damage : integer;
+                        damage := random(8) + 1;
+                        writeln("Monster hits you for ", damage, " damage");
+                        hitpoints := hitpoints - damage;                        
+                        msg_cnt := msg_cnt + 1;
+                    end
+                    else
+                    begin
+                        {* Check that monster is not blocking they way *}
+                        var other_monster : integer;
+                        other_monster := 0;
+                        var blocking : boolean;
+                        blocking := false;
+                        while other_monster < max_monsters do
+                        begin
+                            if monster_alive[other_monster] and (other_monster <> i) then
+                            begin
+                                if get_coordinate(monster_x[other_monster], monster_y[other_monster], width) = next then
+                                    blocking := true;
+                            end;
+
+                            other_monster := other_monster + 1;
+                        end;    
+
+                        if not blocking then
+                        begin
+                            monster_x[i] := get_x_from_coordinate(next, width);
+                            monster_y[i] := get_y_from_coordinate(next, width);
+                        end;
+                    end;
+                end;
+            end;
+            i := i + 1;
+        end;
     end;
 
     procedure update_game_state(
@@ -317,30 +559,27 @@ begin
         width : integer,
         height : integer);
     begin
+
+
+        if hitpoints < maxhitpoints then
+        begin
+            writeln("You heal a bit...");
+            msg_cnt := msg_cnt + 1;
+            hitpoints := hitpoints + 1;
+        end;
+
+        score := score - 0.1;
         assert(is_valid_command(command));
         var direction : integer;
         direction := get_command_number(command);
 
-        if (player_x + command_x_change[direction] < 0) or (player_x + command_x_change[direction] >= width) then
-            return;
-
-        if (player_y + command_y_change[direction] < 0) or (player_y + command_y_change[direction] >= height) then
-            return;
-
-        if passability[get_coordinate(player_x + command_x_change[direction], player_y + command_y_change[direction], width)] then
-        begin
-            player_x := player_x + command_x_change[direction];
-            player_y := player_y + command_y_change[direction];
-        end;
-
+        update_player_position(passability, direction, player_x, player_y);
         spawn_monster(passability, player_x, player_y);
+        move_monsters(passability, player_x, player_y, width);
 
         turn := turn + 1;
     end;
 
-
-    
-    
    
     {* width x height grid as one dimensional array *}
     var passability : array [width*height] of boolean;
@@ -359,13 +598,13 @@ begin
     initialize_map(passability, width, height);
     passability[get_coordinate(player_x, player_y, width)] := true; {* player position *}
 
+    cls();
     procedure main();
     begin
         var command : string;
         while true do
         begin
 
-            cls();
             print_hud();
             print_map(passability, player_x, player_y, width, height);
 
@@ -374,8 +613,13 @@ begin
             if command = "exit" then
                 return;
 
+            cls();
             update_game_state(command, player_x, player_y, passability, width, height);
-
+            if hitpoints <= 0 then
+            begin
+                writeln("YOU DIED!");
+                return;
+            end;
         end;
     end;  
 
