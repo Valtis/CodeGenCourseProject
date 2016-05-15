@@ -67,6 +67,7 @@
     <Compile Include="CFG\Analysis\ControlFlowAnalyzerTests.cs" />
     <Compile Include="Codegen\CCodeGeneratorTests.cs" />
     <Content Include="CFG\Analysis\call_function_that_captures_from_other_function.txt" />
+    <Content Include="CFG\Analysis\capture_function_parameter.txt" />
     <Content Include="CFG\bug_1.txt" />
     <Content Include="Codegen\array_assign.txt" />
     <Content Include="Codegen\array_indexes_as_args.txt" />

@@ -328,6 +328,13 @@ namespace CodeGenCourseProject.CFG.Analysis
                             {
                                 continue;
                             }
+
+                            // function parameters are always initialized
+                            if (function.Parameters.Contains(captured))
+                            {
+                                continue;
+                            }
+
                             // we need to use the line number of the call, not the 
                             // point where it is used
                             var id = new TACIdentifier(

@@ -1,0 +1,19 @@
+﻿program bug;
+begin
+	procedure outer(a : integer, var b : string);
+	begin
+		procedure captures();
+		begin
+			a := a + 1;
+			b := b + " foobar";
+		end;
+
+		captures();
+	end;
+
+	var a : integer;
+	var b : string;
+	a := 0;
+	b := "";
+	outer(a, b);
+end.

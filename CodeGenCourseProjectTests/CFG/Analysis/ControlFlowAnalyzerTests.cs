@@ -479,5 +479,18 @@ namespace CodeGenCourseProject.CFG.Analysis.Tests
             Analyze("call_function_that_captures_from_other_function.txt", reporter);
             Assert.AreEqual(0, reporter.Errors.Count);
         }
+
+        /*
+            Test for a bug that was found during manual testing 
+            Control flow analysis did not consider function parameters to be initialized
+            when capturing them in inner context
+        */
+        [TestMethod()]
+        public void CaptureFunctionParameters()
+        {
+            var reporter = new ErrorReporter();
+            Analyze("capture_function_parameter.txt", reporter);
+            Assert.AreEqual(0, reporter.Errors.Count);
+        }
     }
 }
