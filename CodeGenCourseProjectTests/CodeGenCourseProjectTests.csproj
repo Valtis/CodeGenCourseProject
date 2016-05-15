@@ -71,6 +71,7 @@
     <Content Include="CFG\bug_1.txt" />
     <Content Include="Codegen\array_assign.txt" />
     <Content Include="Codegen\array_indexes_as_args.txt" />
+    <Content Include="Codegen\array_index_captured_ref.txt" />
     <Content Include="Codegen\array_lower_bound_check.txt" />
     <Content Include="Codegen\array_size.txt" />
     <Content Include="Codegen\boolean_expressions.txt" />

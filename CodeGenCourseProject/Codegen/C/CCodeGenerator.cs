@@ -511,6 +511,19 @@ void assert(char expr, int line)
                 addressOperator = "&";
             }
 
+            string indexDeref = "";
+
+            if (tacArrayIndex.Index is TACIdentifier)
+            {
+                var ident = (TACIdentifier)tacArrayIndex.Index;
+                if (ident.IsReference || capturedVariables.Any(x => x.Identifier.Name == ident.Name))
+                {
+                    indexDeref = "*";
+                }
+
+            }
+
+            index = indexDeref + index;
             Emit("__validate_" + type + "_array_index(" + addressOperator + "" + tacArrayIndex.Name + ", " + index + ", " + (tacArrayIndex.Line + 1) + ");");
             cValues.Push(tacArrayIndex.Name + memberOperator + "arr[" + index + "]");
         }

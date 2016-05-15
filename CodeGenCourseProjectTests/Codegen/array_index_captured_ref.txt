@@ -1,0 +1,22 @@
+﻿program bug;
+begin
+	var i : integer;
+	i := 4;
+
+	procedure foo();
+	begin
+		var a : array [6] of integer;
+		a[i] := 6;
+		writeln(a[i]);
+	end;
+	foo();
+
+	procedure foo2(var i : integer);
+	begin
+		var a : array [6] of integer;
+		a[i] := 7;
+		writeln(a[i]);
+	end;
+
+	foo2(i);
+end.

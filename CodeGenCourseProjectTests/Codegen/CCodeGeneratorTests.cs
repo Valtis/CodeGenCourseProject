@@ -662,5 +662,19 @@ namespace CodeGenCourseProject.Codegen.Tests
             Assert.AreEqual("4 5 6", output[4]);
             Assert.AreEqual(null, output[5]);
         }
+
+        /*
+        Test case for a bug that was found during manual testing.
+        Captured array indexes and reference arg as index were not dereferenced correctly
+        */
+        [TestMethod()]
+        public void CapturedArrayIndex()
+        {
+            var output = CompileAndRun("array_index_captured_ref.txt");
+            Assert.AreEqual(3, output.Count);
+            Assert.AreEqual("6", output[0]);
+            Assert.AreEqual("7", output[1]);
+            Assert.AreEqual(null, output[2]);
+        }
     }
 }
