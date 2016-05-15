@@ -359,6 +359,7 @@ namespace CodeGenCourseProject.CFG.Analysis
         }
 
 
+        /* Not used - violates language semantics. Left here for posterity */
         private void CheckReferenceAssignments(Function function, HashSet<string> reportedRefParams, BasicBlock block)
         {
             foreach (var param in function.Parameters)

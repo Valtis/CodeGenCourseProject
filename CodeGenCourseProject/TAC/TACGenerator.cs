@@ -57,6 +57,7 @@ namespace CodeGenCourseProject.TAC
 
     public class TACGenerator : ASTVisitor
     {
+        private string programName;
         private readonly IList<Function> functions;
         // working stack; functions will be eventually moved into the function list
         private readonly Stack<Function> functionStack;
@@ -69,7 +70,7 @@ namespace CodeGenCourseProject.TAC
 
         // track identifiers that have been captured from the outer scope
         // (not function local variables or parameters)
-        private Stack<ISet<Parameter>> capturedIdentifiers;
+        private Stack<ISet<Variable>> capturedIdentifiers;
         // contains outer symbol tables (symbol table without current function locals etc.)
         // used to identify captured variables
         private Stack<SymbolTable> outerSymbolTables;
@@ -82,7 +83,7 @@ namespace CodeGenCourseProject.TAC
             symbolTable = new SymbolTable(null);
 
             outerSymbolTables = new Stack<SymbolTable>();
-            capturedIdentifiers = new Stack<ISet<Parameter>>();
+            capturedIdentifiers = new Stack<ISet<Variable>>();
             tempID = 0;
             labelID = 0;
         }
@@ -92,6 +93,14 @@ namespace CodeGenCourseProject.TAC
             get
             {
                 return functions;
+            }
+        }
+
+        public string ProgramName
+        {
+            get
+            {
+                return programName;
             }
         }
 
@@ -115,7 +124,7 @@ namespace CodeGenCourseProject.TAC
             var exprTAC = tacValueStack.Pop();
             var index = new TACArrayIndex(node.Line, node.Column,
                     nameNode.Value, exprTAC, symbol.BaseType, symbol.Id, symbol.IsReference);
-            
+
             tacValueStack.Push(index);
         }
 
@@ -173,7 +182,7 @@ namespace CodeGenCourseProject.TAC
 
                 arguments.Add(argument);
             }
-          
+
             // inbuilt writeln function
             if (name == "writeln" && functionSymbol == null)
             {
@@ -192,6 +201,38 @@ namespace CodeGenCourseProject.TAC
                     callNode.Column,
                     Helper.MangleFunctionName(name, functionSymbol.Id),
                     arguments);
+
+            /*
+                If the called function has captured variables, which are not locals for the function,
+                we need to capture them as well                   
+            */
+            if (functionStack.Count > 1) // Ignores the program node
+            {
+                Function f = null;
+                foreach (var func in functions)
+                {
+                    if (func.Name == Helper.MangleFunctionName(name, functionSymbol.Id))
+                    {
+                        f = func;
+                        break;
+                    }
+                }
+
+                if (f != null)
+                {
+                    foreach (var captured in f.CapturedVariables)
+                    {
+                        if (!functionStack.Peek().Locals.Contains(captured) && 
+                            !functionStack.Peek().Parameters.Contains(captured))
+                        {
+                            functionStack.Peek().
+                                CapturedVariables.
+                                Add(captured);
+                        }
+                    }
+
+                }
+            }
 
             if (callNode.NodeType() == SemanticChecker.VOID_TYPE)
             {
@@ -355,7 +396,7 @@ namespace CodeGenCourseProject.TAC
                 identifier = new TACIdentifier(
                     identifierNode.Line, identifierNode.Column, name, symbol.Type, symbol.Id, isReference);
                 capturedIdentifiers.Peek().Add(
-                    new Parameter(
+                    new Variable(
                         identifier,
                         symbol.Type,
                         true)); // always pass as reference
@@ -435,6 +476,7 @@ namespace CodeGenCourseProject.TAC
 
         public void Visit(ProgramNode programNode)
         {
+            programName = programNode.Name;
             var function = new Function(
                 programNode.Line,
                 programNode.Column,
@@ -507,7 +549,7 @@ namespace CodeGenCourseProject.TAC
 
         public void Visit(FunctionParameterArrayNode functionParameterArrayNode)
         {
-          
+
             var symbol = symbolTable.GetSymbol(functionParameterArrayNode.Name.Value);
             var id = new TACIdentifier(symbol.Line, symbol.Column,
                 symbol.Name, symbol.Type, symbol.Id);
@@ -542,6 +584,9 @@ namespace CodeGenCourseProject.TAC
             // array size expression is only present in the variable declaration node, so we
             // need a special node storing this value
 
+            // declarations are added to function local list so that they can be distinquished from
+            // captures when analyzing control flow
+
             if (variableDeclarationNode.Children[0] is ArrayTypeNode)
             {
                 variableDeclarationNode.Children[0].Accept(this);
@@ -549,10 +594,32 @@ namespace CodeGenCourseProject.TAC
                 for (int i = 1; i < variableDeclarationNode.Children.Count; ++i)
                 {
                     var name = (IdentifierNode)variableDeclarationNode.Children[i];
-                    var symbol = (ArraySymbol)symbolTable.GetSymbol(name.Value);
+                    var symbol = (ArraySymbol)symbolTable.GetSymbol(name.Value, variableDeclarationNode.Line+1);
                     Emit(new TACArrayDeclaration(
                         variableDeclarationNode.Line, variableDeclarationNode.Column, name.Value, symbol.BaseType, arraySize, symbol.Id));
                     AssertEmptyTacValueStack();
+
+                    functionStack.Peek().Locals.Add(
+                        new Variable(
+                            new TACIdentifier(name.Value, symbol.Type, symbol.Id, symbol.IsReference),
+                            symbol.Type,
+                            symbol.IsReference
+                        ));
+                }
+            }
+            else
+            {
+                for (int i = 1; i < variableDeclarationNode.Children.Count; ++i)
+                {
+                    var name = (IdentifierNode)variableDeclarationNode.Children[i];
+                    var symbol = (VariableSymbol)symbolTable.GetSymbol(name.Value, variableDeclarationNode.Line+1);
+
+                    functionStack.Peek().Locals.Add(
+                        new Variable(
+                            new TACIdentifier(name.Value, symbol.Type, symbol.Id, symbol.IsReference),
+                            symbol.Type,
+                            symbol.IsReference
+                        ));
                 }
             }
 
@@ -683,7 +750,7 @@ namespace CodeGenCourseProject.TAC
                 node.Line, node.Column, identifier.Value, symbol.Id, returnType);
 
             outerSymbolTables.Push(symbolTable.Clone());
-            capturedIdentifiers.Push(new HashSet<Parameter>());
+            capturedIdentifiers.Push(new HashSet<Variable>());
             functionStack.Push(function);
 
             // honestly starting to regret how I decided to handle function\procedure nodes in AST.
@@ -691,13 +758,13 @@ namespace CodeGenCourseProject.TAC
             // this one in particular is because I need the symbol table info here
             // that is only present in the child block
 
-            node.Children[block].Accept(this);
             symbolTable.PushLevel(((BlockNode)node.Children[block]).GetSymbols());
             for (int i = paramStart; i < node.Children.Count; ++i)
             {
                 node.Children[i].Accept(this);
             }
 
+            node.Children[block].Accept(this);
             symbolTable.PopLevel();
             var captured = capturedIdentifiers.Pop();
 

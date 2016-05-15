@@ -455,7 +455,7 @@ namespace CodeGenCourseProject.CFG.Analysis.Tests
             testHelper.AssertErrorMessage(2, Error.SEMANTIC_ERROR, 14, 15, "Usage of uninitialized variable 'b'");
         }
 
-        [TestMethod]
+        [TestMethod()]
         public void InvalidJump()
         {
             var reporter = new ErrorReporter();
@@ -465,6 +465,19 @@ namespace CodeGenCourseProject.CFG.Analysis.Tests
             var testHelper = new TestHelper(reporter);
             testHelper.AssertErrorMessage(0, Error.SEMANTIC_ERROR, 3, 11, "Usage of uninitialized variable 'a'");
             testHelper.AssertErrorMessage(1, Error.SEMANTIC_ERROR, 4, 22, "Usage of uninitialized variable 'a'");
+        }
+
+
+        /*
+            Test for a bug that was found during manual testing 
+            Function calls were not updating the capture list correctly
+        */
+        [TestMethod()]
+        public void CallingNonEnclosedFunctionThatCapturesVariables()
+        {
+            var reporter = new ErrorReporter();
+            Analyze("call_function_that_captures_from_other_function.txt", reporter);
+            Assert.AreEqual(0, reporter.Errors.Count);
         }
     }
 }

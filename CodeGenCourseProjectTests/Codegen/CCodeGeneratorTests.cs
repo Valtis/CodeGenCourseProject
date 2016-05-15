@@ -10,13 +10,15 @@ using System.IO;
 using System.Diagnostics;
 using System.Collections.Generic;
 using CodeGenCourseProject.Codegen.C;
+using System;
+using System.Threading;
 
 namespace CodeGenCourseProject.Codegen.Tests
 {
     [TestClass()]
     public class CCodeGeneratorTests
     {
-        private List<string> Run(string program, string args)
+        private List<string> Run(string program, string args, IList<string> stdin)
         {
             ProcessStartInfo startInfo = new ProcessStartInfo();
             startInfo.CreateNoWindow = true;
@@ -25,6 +27,7 @@ namespace CodeGenCourseProject.Codegen.Tests
             startInfo.WindowStyle = ProcessWindowStyle.Hidden;
             startInfo.Arguments = args;
             startInfo.RedirectStandardOutput = true;
+            startInfo.RedirectStandardInput = true;
 
 
             var output = new List<string>();
@@ -38,19 +41,30 @@ namespace CodeGenCourseProject.Codegen.Tests
                         (sender, arg) => output.Add(arg.Data);
                     process.Start();
                     process.BeginOutputReadLine();
+
+                    if (stdin != null)
+                    {
+                        foreach (var line in stdin)
+                        {
+                            process.StandardInput.WriteLine(line);
+                        }
+                    }
+
+
                     process.WaitForExit();
                 }
 
                 return output;
-  
+
             }
-            catch
+            catch (Exception e)
             {
+                Assert.AreEqual("", e.ToString());
                 Assert.Fail();
             }
             return null;
         }
-        private List<string> CompileAndRun(string file, string extraArgs="")
+        private List<string> CompileAndRun(string file, string extraArgs = "", IList<string> stdin=null)
         {
             var reporter = new ErrorReporter();
             var lexer = new Lexer(@"..\..\Codegen\" + file, reporter);
@@ -77,13 +91,18 @@ namespace CodeGenCourseProject.Codegen.Tests
             var generator = new CCodeGenerator(tacGenerator.Functions);
             generator.GenerateCode();
 
-            using (var stream = new FileStream("out.c", FileMode.Create))
+            var name = "test_" + file;
+         
+            using (var stream = new FileStream(name + ".c", FileMode.Create))
             {
                 generator.SaveResult(stream);
             }
 
-            Run("gcc", "out.c" + " " + extraArgs);
-            return Run("a.exe", "");
+
+            Run("gcc", name + ".c -o " + name + ".exe"  + " " + extraArgs, stdin);
+            var output = Run(name + ".exe", "", stdin);
+            return output;
+           
         }
 
         [TestMethod()]
@@ -181,7 +200,7 @@ namespace CodeGenCourseProject.Codegen.Tests
 
             Assert.AreEqual(null, output[32]);
         }
-        
+
         [TestMethod()]
         public void StringExpressions()
         {
@@ -270,7 +289,7 @@ namespace CodeGenCourseProject.Codegen.Tests
             Assert.AreEqual("1", output[11]);
             Assert.AreEqual(null, output[12]);
         }
-        
+
         [TestMethod()]
         public void ReferenceNonArrayParameters()
         {
@@ -486,7 +505,7 @@ namespace CodeGenCourseProject.Codegen.Tests
         [TestMethod()]
         public void GC1()
         {
-            var output = CompileAndRun("gc.txt", "-DGC_DEBUG -DMAX_HEAP_SIZE=100");     
+            var output = CompileAndRun("gc.txt", "-DGC_DEBUG -DMAX_HEAP_SIZE=100");
             Assert.AreEqual(37, output.Count);
             // Skipping uninteresting lines
             Assert.AreEqual("Initializing GC", output[0]);
@@ -510,7 +529,7 @@ namespace CodeGenCourseProject.Codegen.Tests
         public void GC2()
         {
             var output = CompileAndRun("gc2.txt", "-DGC_DEBUG -DMAX_HEAP_SIZE=100");
-            Assert.AreEqual(36, output.Count);
+            Assert.AreEqual(37, output.Count);
             // Skipping uninteresting lines
             Assert.AreEqual("Initializing GC", output[0]);
             Assert.AreEqual("MAX_HEAP_SIZE: 100", output[1]);
@@ -521,21 +540,55 @@ namespace CodeGenCourseProject.Codegen.Tests
             Assert.AreEqual("Memory in use: 24 bytes", output[15]);
             Assert.AreEqual("Collecting dead objects", output[19]);
             Assert.AreEqual("Memory in use: 94 bytes", output[20]);
-            Assert.AreEqual("String array - scanning", output[24]);
-            Assert.AreEqual("GC finished", output[29]);
-            Assert.AreEqual("Memory in use: 54 bytes", output[30]);
-            Assert.AreEqual("hello---------", output[32]);
-            Assert.AreEqual("world---------", output[33]);
-            Assert.AreEqual("test----------", output[34]);
-            Assert.AreEqual(null, output[35]);
+            Assert.AreEqual("String array - scanning", output[25]);
+            Assert.AreEqual("GC finished", output[30]);
+            Assert.AreEqual("Memory in use: 54 bytes", output[31]);
+            Assert.AreEqual("hello---------", output[33]);
+            Assert.AreEqual("world---------", output[34]);
+            Assert.AreEqual("test----------", output[35]);
+            Assert.AreEqual(null, output[36]);
         }
 
         [TestMethod()]
-        public void WritelnandReadArgsWhenRefs()
+        public void Read()
         {
-            Assert.Fail();
+            var output = CompileAndRun("read.txt", "", 
+                new List<string> {
+                    "123 34e2 hello",
+                    "567 32.12 capture()",
+                    "1243 15e-1 non-ref-arg",
+                    "987654, 2.5e2 ref-arg",
+                    "1 1.1 array-index",
+                    "2 2.2 array-args",
+                    "3 3.3 array-ref-args",
+                    "4 4.4 array-param",
+                    "5 5.5 array-ref-param",
+                    "6 6.6 array-capture",
+                    ""
+                });
+            Assert.AreEqual(20, output.Count);
+            Assert.AreEqual("123 3400.000000 hello", output[0]);
+            Assert.AreEqual("567 32.120000 capture()", output[1]);
+            Assert.AreEqual("567 32.120000 capture()", output[2]);
+            Assert.AreEqual("1243 1.500000 non-ref-arg", output[3]);
+            Assert.AreEqual("567 32.120000 capture()", output[4]);
+            Assert.AreEqual("987654 250.000000 ref-arg", output[5]);
+            Assert.AreEqual("987654 250.000000 ref-arg", output[6]);
+            Assert.AreEqual("1 1.100000 array-index", output[7]);
+            Assert.AreEqual("2 2.200000 array-args", output[8]);
+            Assert.AreEqual("1 1.100000 array-index", output[9]);
+            Assert.AreEqual("3 3.300000 array-ref-args", output[10]);
+            Assert.AreEqual("3 3.300000 array-ref-args", output[11]);
+            Assert.AreEqual("4 4.400000 array-param", output[12]);
+            Assert.AreEqual("3 3.300000 array-ref-args", output[13]);
+            Assert.AreEqual("5 5.500000 array-ref-param", output[14]);
+            Assert.AreEqual("5 5.500000 array-ref-param", output[15]);
+            Assert.AreEqual("6 6.600000 array-capture", output[16]);
+            Assert.AreEqual("6 6.600000 array-capture", output[17]);
+            Assert.AreEqual("0 0.000000 ", output[18]);
+            Assert.AreEqual(null, output[19]);
         }
-
+        
         [TestMethod()]
         public void IterativeFactorial()
         {
@@ -569,6 +622,29 @@ namespace CodeGenCourseProject.Codegen.Tests
         {
             var output = CompileAndRun("hello_world.txt");
             Assert.AreEqual("Hello, world!", output[0]);
+        }
+
+        [TestMethod()]
+        public void EscapedCharacters()
+        {
+            Assert.Fail();
+        }
+
+        /*
+        Test case for a bug that was found during manual testing.
+        Captured array was treated as non-reference and it generated broken C code
+        */
+        [TestMethod()]
+        public void PassCapturedArrayAsArgument()
+        {
+            var output = CompileAndRun("captured_array_as_argument.txt");
+            Assert.AreEqual(6, output.Count);
+            Assert.AreEqual("1 2 3", output[0]);
+            Assert.AreEqual("4 5 6", output[1]);
+            Assert.AreEqual("1 2 3", output[2]);
+            Assert.AreEqual("4 5 6", output[3]);
+            Assert.AreEqual("4 5 6", output[4]);
+            Assert.AreEqual(null, output[5]);
         }
     }
 }

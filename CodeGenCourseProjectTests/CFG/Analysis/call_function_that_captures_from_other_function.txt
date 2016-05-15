@@ -1,0 +1,17 @@
+﻿program bug;
+begin
+	var a : integer;
+
+	procedure captures();
+	begin
+		a := a * 2;
+	end;
+
+	procedure foo();
+	begin
+		captures();
+	end;
+	
+	a := 4;
+	foo();
+end.

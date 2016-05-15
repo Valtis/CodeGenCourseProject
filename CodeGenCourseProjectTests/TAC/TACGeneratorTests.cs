@@ -896,7 +896,6 @@ namespace CodeGenCourseProject.TAC.Tests
                 new List<TACValue>
                 {
                     new TACIdentifier("a", SemanticChecker.INTEGER_TYPE, 0),
-                    new TACIdentifier("b", SemanticChecker.BOOLEAN_TYPE, 1),
                     new TACIdentifier("c", SemanticChecker.STRING_TYPE, 2),
                     new TACIdentifier("d", SemanticChecker.REAL_TYPE, 3),
                 }),

@@ -186,7 +186,7 @@ namespace CodeGenCourseProject.SemanticChecking.Tests
             var semanticChecker = new SemanticChecker(reporter);
             node.Accept(semanticChecker);
 
-            Assert.AreEqual(49, reporter.Errors.Count);
+            Assert.AreEqual(50, reporter.Errors.Count);
 
             var helper = new TestHelper(reporter);
 
@@ -239,6 +239,7 @@ namespace CodeGenCourseProject.SemanticChecking.Tests
             helper.AssertErrorMessage(46, Error.SEMANTIC_ERROR, 147, 8, "Call to 'valid' has 1 arguments but 'valid' has 0 parameters");
             helper.AssertErrorMessage(47, Error.SEMANTIC_ERROR, 148, 15, "Argument 1 for 'valid2' has type 'integer' but corresponding parameter has type 'string'");
             helper.AssertErrorMessage(48, Error.SEMANTIC_ERROR, 152, 16, "Call to 'foo' has 2 arguments but 'foo' has 1 parameters");
+            helper.AssertErrorMessage(49, Error.SEMANTIC_ERROR, 156, 13, "Invalid argument for predefined function 'read'");
         }
         
 

@@ -152,4 +152,7 @@ begin
 	begin
 		foo(2.3, 2.1);
 	end;
+
+	var x : boolean;
+	read(x);
 end.

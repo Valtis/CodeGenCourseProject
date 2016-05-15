@@ -9,7 +9,7 @@ namespace CodeGenCourseProject.TAC
 {
     public class Function
     {
-        public class Parameter
+        public class Variable
         {
             private readonly TACIdentifier identifier;
             private readonly string type;
@@ -39,7 +39,7 @@ namespace CodeGenCourseProject.TAC
                 }
             }
 
-            public Parameter(TACIdentifier id, string type, bool isReference)
+            public Variable(TACIdentifier id, string type, bool isReference)
             {
                 this.identifier = id;
                 this.type = type;
@@ -48,8 +48,8 @@ namespace CodeGenCourseProject.TAC
 
             public override bool Equals(object obj)
             {
-                return obj is Parameter &&
-                    ((Parameter)obj).identifier.Equals(identifier);
+                return obj is Variable &&
+                    ((Variable)obj).identifier.Equals(identifier);
             }
 
             public override int GetHashCode()
@@ -62,9 +62,11 @@ namespace CodeGenCourseProject.TAC
         private readonly int column;
         private readonly string name;
         private readonly string unmangledName;
-        private readonly IList<Parameter> parameters;
+        private readonly IList<Variable> parameters;
+
+        private readonly ISet<Variable> locals; // local variables
         // values that function captures from outer context
-        private ISet<Parameter> capturedVariables;
+        private ISet<Variable> capturedVariables;
         private IList<TACStatement> statements;
         private readonly string returnType;
 
@@ -72,9 +74,10 @@ namespace CodeGenCourseProject.TAC
         {
             this.line = line;
             this.column = column;
-            this.parameters = new List<Parameter>();
+            this.parameters = new List<Variable>();
             this.statements = new List<TACStatement>();
-            this.CapturedVariables = new HashSet<Parameter>();
+            this.CapturedVariables = new HashSet<Variable>();
+            this.locals = new HashSet<Variable>();
             this.returnType = returnType;
             if (name != TACGenerator.ENTRY_POINT)
             {
@@ -105,7 +108,7 @@ namespace CodeGenCourseProject.TAC
             }
         }
 
-        internal IList<Parameter> Parameters
+        internal IList<Variable> Parameters
         {
             get
             {
@@ -145,7 +148,7 @@ namespace CodeGenCourseProject.TAC
             }
         }
 
-        public ISet<Parameter> CapturedVariables
+        public ISet<Variable> CapturedVariables
         {
             get
             {
@@ -158,6 +161,14 @@ namespace CodeGenCourseProject.TAC
             }
         }
 
+        public ISet<Variable> Locals
+        {
+            get
+            {
+                return locals;
+            }
+        }
+
         public override string ToString()
         {
             return Name;
@@ -165,7 +176,7 @@ namespace CodeGenCourseProject.TAC
 
         internal void AddParameter(TACIdentifier id, string type, bool isReferenceParameter)
         {
-            Parameters.Add(new Parameter(id, type, isReferenceParameter));
+            Parameters.Add(new Variable(id, type, isReferenceParameter));
         }
 
         internal void UpdateStatements(List<TACStatement> liveStatements)

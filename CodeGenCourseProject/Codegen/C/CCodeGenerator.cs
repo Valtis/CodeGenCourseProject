@@ -19,11 +19,12 @@ namespace CodeGenCourseProject.Codegen.C
         private const string C_BOOLEAN = "char";
         private const string C_STRING = "string";
         private const string C_VOID = "void";
-
         private const string C_INTEGER_ARRAY = C_INTEGER + "_array";
         private const string C_REAL_ARRAY = C_REAL + "_array";
         private const string C_BOOLEAN_ARRAY = C_BOOLEAN + "_array";
         private const string C_STRING_ARRAY = C_STRING + "_array";
+
+        private const string CAPTURE_NOTIFIER = "CAPTURED";
 
         private class Indentation
         {
@@ -57,7 +58,7 @@ namespace CodeGenCourseProject.Codegen.C
         private IList<Function> functions;
         private IList<string> program;
         private Indentation indentation;
-        private ISet<Parameter> capturedVariables;
+        private ISet<Variable> capturedVariables;
         private ISet<string> declared;
         private Stack<string> cValues;
 
@@ -97,9 +98,12 @@ namespace CodeGenCourseProject.Codegen.C
             Emit("/***** START OF AUTO-GENERATED HELPER CODE *****/");
             Emit("");
             Emit("typedef const char * string;");
+            Emit("#define " + CAPTURE_NOTIFIER);
             Emit("");
             EmitInclude("stdio.h");
             EmitInclude("stdlib.h");
+            EmitInclude("string.h");
+            EmitInclude("stdarg.h");
             Emit("");
             EmitGC();
             EmitArrayStruct(C_INTEGER);
@@ -107,6 +111,7 @@ namespace CodeGenCourseProject.Codegen.C
             EmitArrayStruct(C_BOOLEAN);
             EmitArrayStruct(C_STRING, GC.C_OBJ_TYPE_STRING_ARRAY);
             EmitStringFunctions();
+            EmitRead();
             EmitAssert();
             Emit("");
             Emit("/***** END OF AUTO-GENERATED HELPER CODE *****/");
@@ -118,7 +123,7 @@ namespace CodeGenCourseProject.Codegen.C
             Emit(GC.GetGCCode());
         }
 
-        private void EmitArrayStruct(string type, string gc_type=GC.C_OBJ_TYPE_NONE)
+        private void EmitArrayStruct(string type, string gc_type = GC.C_OBJ_TYPE_NONE)
         {
             string structName = type + "_array";
             Emit(@"
@@ -183,21 +188,10 @@ void __create_" + type + @"_array(" + structName + @" *in, int size, int line)
         private void EmitStringFunctions()
         {
             Emit(@"
-int str_len(const char *str)
-{
-    int length = 0;
-    while (*str != '\0')
-    {
-        length++;
-        str++;
-    }
-    return length;
-}
-
 const char *str_concat(const char *lhs, const char *rhs)
 {
-    int lhs_size = str_len(lhs);
-    int rhs_size = str_len(rhs); 
+    int lhs_size = strlen(lhs);
+    int rhs_size = strlen(rhs); 
     int size = lhs_size + rhs_size;
     size++; // null terminator
     char *dst = gc_malloc(size, " + GC.C_OBJ_TYPE_NONE + @");
@@ -221,6 +215,88 @@ const char *str_concat(const char *lhs, const char *rhs)
 }");
         }
 
+        private void EmitRead()
+        {
+            Emit(@"
+
+#ifndef READ_BUFFER_SIZE
+#define READ_BUFFER_SIZE 256
+#endif
+/*
+Read up to READ_BUFFER_SIZE-1 characters from the standard input. String is tokenized using single space.
+Tokens are converted to desired types. If there are less tokens than desired, rest of the values are
+default initialized (0, 0.0 for integer/real, """" for string)
+*/
+void read(const char *format, ...)
+{
+    // dynamic allocation in case the buffer size is defined to be really big
+    // and it ends up causing stack overflow if dynamic allocation is not used
+    char *buffer = gc_malloc(READ_BUFFER_SIZE, " + GC.C_OBJ_TYPE_NONE + @");
+    fgets(buffer, READ_BUFFER_SIZE, stdin);
+	va_list args;
+    va_start(args, format);
+    char *token = strtok(buffer, "" "");
+
+    while (*format != '\0')
+    {
+        if (*format == 'd')
+        {
+            int *ptr = va_arg(args, int *);
+            if (token == NULL)
+            {
+                *ptr = 0;
+            }
+            else 
+            {
+                *ptr = atoi(token);
+            }            
+        }
+        else if (*format == 'f')
+        {
+            double *ptr = va_arg(args, double *);
+            if (token == NULL)
+            {
+                *ptr = 0;
+            }
+            else 
+            {
+                *ptr = atof(token);
+            }       
+        }
+        else if (*format == 's')
+        {
+            string *ptr = va_arg(args , string *);
+            if (token == NULL)
+            {
+                *ptr = """";
+            }
+            else 
+            {
+                /*
+                    Required due to how the GC works: It only considers the start of the pointer when
+                    determining if object is alive or not. If we store the token directly, we are storing
+                    a pointer that likely points to the middle of the gc_malloc'd pointer, which is then
+                    considered to be free. This means we would be facing use-after-free bugs in the program.
+                    While changing the GC to consider the whole range (start -> start + alloc_size) wouldn't
+                    be difficult, I still opt for the lazier approach here, which is to copy the string
+                    to new gc_malloc'd ptr.
+                */
+                size_t size = strlen(token) + 1;
+                char *new_str = gc_malloc(size, " + GC.C_OBJ_TYPE_NONE + @");
+                strcpy(new_str, token);
+                new_str[size-1] = '\0';
+                if (new_str[size-2] == '\n')
+                    new_str[size-2] = '\0'; // erase newline in case this was the last arg                
+                *ptr = new_str;
+            }       
+        }
+
+        token = strtok(NULL, "" "");
+        ++format;
+    }
+    va_end(args);
+}");
+        }
         private void EmitAssert()
         {
             Emit(@"
@@ -231,8 +307,7 @@ void assert(char expr, int line)
         printf(""Assert failed at line %d\n"", line);
         exit(1);
     }
-}
-");
+}");
         }
 
         private void GenerateCode(Function function)
@@ -271,11 +346,11 @@ void assert(char expr, int line)
             }
             else
             {
-                var param_list = new List<string>(function.Parameters.Select(x => 
-                GetCType(x.Type) + " " +( x.IsReference ? "*" : "") + x.Identifier.Name));
+                var param_list = new List<string>(function.Parameters.Select(x =>
+                GetCType(x.Type) + " " + (x.IsReference ? "*" : "") + x.Identifier.Name));
 
                 param_list.AddRange(
-                    function.CapturedVariables.Select(x => GetCType(x.Type) + " *" + x.Identifier.Name));
+                    function.CapturedVariables.Select(x => CAPTURE_NOTIFIER + " " +  GetCType(x.Type) + " *" + x.Identifier.Name));
 
                 var param = string.Join(", ", param_list);
                 Emit(GetCType(function.ReturnType) + " " + function.Name + "(" + param + ")");
@@ -295,8 +370,8 @@ void assert(char expr, int line)
 
         private void EmitStatement(TACStatement statement)
         {
-            
-            string dest = "" ;
+
+            string dest = "";
             string lhs = "";
             string rhs = "";
             string operation = "";
@@ -320,8 +395,8 @@ void assert(char expr, int line)
             {
                 statement.Destination.Accept(this);
 
-                dest += 
-                    GetDereferenceOperator(statement.Destination) + 
+                dest +=
+                    GetDereferenceOperator(statement.Destination) +
                     cValues.Pop() + " = ";
             }
 
@@ -334,19 +409,19 @@ void assert(char expr, int line)
             if (statement.RightOperand != null)
             {
                 statement.RightOperand.Accept(this);
-                rhs += GetDereferenceOperator(statement.RightOperand) +  cValues.Pop();
+                rhs += GetDereferenceOperator(statement.RightOperand) + cValues.Pop();
             }
-                // rhs should never be empty if we have an operator
+            // rhs should never be empty if we have an operator
             operation = HandleOperator(lhs, rhs, statement.Operator, GetCType(statement.RightOperand));
 
 
-            cStatement = dest + operation +  ";";
+            cStatement = dest + operation + ";";
             Emit(cStatement);
         }
 
         string HandleOperator(string lhs, string rhs, Operator? op, string type)
         {
-            if(op.HasValue)
+            if (op.HasValue)
             {
                 if (op == Operator.CONCAT)
                 {
@@ -400,17 +475,21 @@ void assert(char expr, int line)
 
         public void Visit(TACIdentifier tacIdentifier)
         {
-            var type = "";
-            
+
             // arrays are alwayws pre-declared, non-arrays are declared on demand 
-            // as long as they aren't globals
+            cValues.Push(GetTypeIfNotDeclared(tacIdentifier) + tacIdentifier.Name);
+        }
+
+        private string GetTypeIfNotDeclared(TACIdentifier tacIdentifier)
+        {
+            var type = "";
             if (!declared.Contains(tacIdentifier.Name) && !tacIdentifier.Type.Contains(SemanticChecker.ARRAY_PREFIX))
             {
                 declared.Add(tacIdentifier.Name);
-
                 type = GetCType(tacIdentifier.Type) + " ";
             }
-            cValues.Push(type + tacIdentifier.Name);
+
+            return type;
         }
 
         public void Visit(TACArrayIndex tacArrayIndex)
@@ -422,7 +501,7 @@ void assert(char expr, int line)
             var addressOperator = "";
             var memberOperator = ".";
             // captured variables are always references
-            if (tacArrayIndex.IsReference || 
+            if (tacArrayIndex.IsReference ||
                 capturedVariables.Any(x => x.Identifier.Name == tacArrayIndex.Name))
             {
                 memberOperator = "->";
@@ -514,7 +593,7 @@ void assert(char expr, int line)
         public void Visit(TACJumpIfFalse tacJumpIfTrue)
         {
             tacJumpIfTrue.Condition.Accept(this);
-            Emit("if (!" + cValues.Pop()  + ")");
+            Emit("if (!" + cValues.Pop() + ")");
             cValues.Push("goto ____label_" + tacJumpIfTrue.Label.ID);
         }
 
@@ -527,7 +606,7 @@ void assert(char expr, int line)
         {
 
             Function func = null;
-            IList<Parameter> parameters = null;
+            IList<Variable> parameters = null;
             foreach (var function in functions)
             {
                 if (function.Name == tacCall.Function)
@@ -568,9 +647,9 @@ void assert(char expr, int line)
 
             foreach (var captured in func.CapturedVariables)
             {
-                args_string.Add(
-                    ((capturedVariables.Contains(captured) || 
-                        captured.Identifier.IsReference) ? 
+                args_string.Add(CAPTURE_NOTIFIER + " " +
+                    ((capturedVariables.Contains(captured) ||
+                        captured.Identifier.IsReference) ?
                         "" : "&") +
                     captured.Identifier.Name);
             }
@@ -593,12 +672,67 @@ void assert(char expr, int line)
         public void Visit(TACAssert tacAssert)
         {
             tacAssert.Expression.Accept(this);
-            cValues.Push("assert(" + cValues.Pop() +  ", " + (tacAssert.Line + 1) + ")");
+            cValues.Push("assert(" + cValues.Pop() + ", " + (tacAssert.Line + 1) + ")");
         }
 
         public void Visit(TACCallRead tacCallRead)
         {
-            throw new NotImplementedException();
+            var argStrings = new List<string>();
+            string formatString = "";
+
+            foreach (var arg in tacCallRead.Arguments)
+            {
+                arg.Accept(this);
+                var addressSymbol = "&";
+                var type = "";
+                if (arg is TACIdentifier)
+                {
+                    var ident = (TACIdentifier)arg;
+                    type = ident.Type;
+                    if (ident.IsReference || capturedVariables.Any(x => x.Identifier.Name == ident.Name))
+                    {
+                        addressSymbol = "";
+                    } 
+                }
+
+                if (arg is TACArrayIndex)
+                {
+                    var index = (TACArrayIndex)arg;
+                    type = index.Type;
+                }
+
+                switch (type)
+                {
+                    case SemanticChecker.INTEGER_TYPE:
+                        formatString += "d";
+                        break;
+                    case SemanticChecker.REAL_TYPE:
+                        formatString += "f";
+                        break;
+                    case SemanticChecker.STRING_TYPE:
+                        formatString += "s";
+                        break;
+                    default:
+                        throw new InternalCompilerError("Invalid type " + type + " when handling types for 'read'");
+                }
+
+                string value = cValues.Pop();
+                // count > 1 ---> it was declared only now (first use)
+                if (value.Split().Length > 1)
+                {
+                    Emit(value + ";");
+                    argStrings.Add(addressSymbol + value.Split()[1]);
+                }
+                else
+                {
+                    argStrings.Add(addressSymbol + value);
+                }
+            }
+
+
+
+            var args = string.Join(", ", argStrings);
+            cValues.Push("read(\"" + formatString + "\" ," + args + ")");
         }
 
         public void Visit(TACCloneArray tacCloneArray)
@@ -609,7 +743,7 @@ void assert(char expr, int line)
 
             if (source.IsReference)
             {
-                sizeExpr += "->"; 
+                sizeExpr += "->";
             }
             else
             {
@@ -625,7 +759,7 @@ void assert(char expr, int line)
         private string ArrayCreation(string name, string type, string size, string line)
         {
             Emit(type + "_array " + name + ";");
-            return ("__create_" + type + "_array(&" + name + ", " + size + ", " + line +")");
+            return ("__create_" + type + "_array(&" + name + ", " + size + ", " + line + ")");
         }
 
         private string ArrayCopy(TACIdentifier source, TACIdentifier destination, string type)
@@ -633,20 +767,18 @@ void assert(char expr, int line)
             var sourceRefSymbol = "&";
             var destRefSymbol = "&";
 
-            if (source.IsReference)
+            if (source.IsReference || capturedVariables.Any(x => x.Identifier.Name == source.Name))
             {
                 sourceRefSymbol = "";
             }
 
-            if (destination.IsReference)
+            if (destination.IsReference || capturedVariables.Any(x => x.Identifier.Name == destination.Name))
             {
                 destRefSymbol = "";
             }
 
-            return ("__copy_" + type + "_array(" + sourceRefSymbol + source.Name + ", " + destRefSymbol +  destination.Name +")");
+            return ("__copy_" + type + "_array(" + sourceRefSymbol + source.Name + ", " + destRefSymbol + destination.Name + ")");
         }
-
-
 
         private string GetCType(string miniPLType)
         {
@@ -707,7 +839,7 @@ void assert(char expr, int line)
             {
                 return GetCType(((TACArrayIndex)v).Type);
             }
-            
+
             return C_VOID;
         }
 

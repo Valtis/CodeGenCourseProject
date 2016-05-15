@@ -1,0 +1,82 @@
+﻿program valid_reading;
+begin
+	var a : integer;
+	var b : real;
+	var c : string;
+		
+	read(a, b, c);
+	writeln(a, " ", b, " ", c);
+	procedure capture();
+	begin
+		read(a, b, c);
+	writeln(a, " ", b, " ", c);
+	end;
+
+	capture();
+	writeln(a, " ", b, " ", c);
+	
+	procedure args(a : integer, b : real, c : string);
+	begin
+		read(a, b, c);
+		writeln(a, " ", b, " ", c);
+	end;
+
+	args(a, b, c);
+	writeln(a, " ", b, " ", c);
+
+	procedure ref_args(var a : integer, var b : real, var c : string);
+	begin
+		read(a, b, c);
+		writeln(a, " ", b, " ", c);
+	end;
+
+	ref_args(a, b, c);
+	writeln(a, " ", b, " ", c);
+	
+	var aa : array [2] of integer;
+	var ba : array [3] of real;
+	var ca : array [4] of string;
+	
+	read(aa[1], ba[2], ca[3]);
+	
+	writeln(aa[1], " ", ba[2], " ", ca[3]);
+
+	args(aa[1], ba[2], ca[3]);
+	writeln(aa[1], " ", ba[2], " ", ca[3]);
+
+	ref_args(aa[1], ba[2], ca[3]);
+	writeln(aa[1], " ", ba[2], " ", ca[3]);
+
+	procedure array_arg(a : array [] of integer, b : array [] of real, c : array [] of string);
+	begin
+		read(a[1], b[2], c[3]);
+		writeln(a[1], " ", b[2], " ", c[3]);
+	end;
+
+	array_arg(aa, ba, ca);
+	writeln(aa[1], " ", ba[2], " ", ca[3]);
+
+	procedure array_ref_arg(var a : array [] of integer, var b : array [] of real, var c : array [] of string);
+	begin
+		read(a[1], b[2], c[3]);
+		writeln(a[1], " ", b[2], " ", c[3]);
+	end;
+	
+	array_ref_arg(aa, ba, ca);
+	writeln(aa[1], " ", ba[2], " ", ca[3]);
+	
+	
+	procedure array_capture();
+	begin
+		read(aa[1], ba[2], ca[3]);
+		writeln(aa[1], " ", ba[2], " ", ca[3]);
+	end;
+
+	array_capture();
+	writeln(aa[1], " ", ba[2], " ", ca[3]);
+	
+	
+	{* Empty read *}
+	read(a, b, c);
+	writeln(a, " ", b, " ", c);
+end.

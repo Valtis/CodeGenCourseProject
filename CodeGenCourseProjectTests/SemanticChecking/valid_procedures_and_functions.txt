@@ -100,8 +100,8 @@ begin
 
 	writeln(2, 3, 4, "hello " + "world", true <> false);
 	writeln();
-	var arr : array [] of boolean;
-	read(arr[4], b, i, s);
+	var arr : array [] of real;
+	read(arr[4], i, s);
 
 	procedure read(a : string);
 	begin

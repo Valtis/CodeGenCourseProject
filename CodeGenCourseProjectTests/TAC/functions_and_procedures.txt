@@ -6,7 +6,7 @@ begin
 	var d : real;
 	writeln(1*3, true, "hello", 123.45);
 
-	read(a, b, c, d);
+	read(a, c, d);
 
 	procedure proc_1(a : integer, b : integer, var c : boolean);
 	begin

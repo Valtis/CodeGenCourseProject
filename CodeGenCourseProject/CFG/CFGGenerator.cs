@@ -29,12 +29,8 @@ namespace CodeGenCourseProject.CFG
 
         private CFGraph GenerateCFG(Function function)
         {
-            var blocks = CreateBlocks(function);
-
-            PrintBlocks(function, blocks);
-
+            var blocks = CreateBlocks(function);            
             var adjacencyList = CreateEdges(function, blocks);
-            PrintEdges(adjacencyList);
 
             return new CFGraph(blocks, adjacencyList);
         }

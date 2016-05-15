@@ -11,6 +11,11 @@ namespace CodeGenCourseProject.AST
     {
         private IdentifierToken identifier;
         
+        public string Name
+        {
+            get { return identifier.Value; }
+        }
+
         public ProgramNode(int line, int column, IdentifierToken identifier, ASTNode programBlock) : base(line, column)
         {
             this.identifier = identifier;

@@ -594,11 +594,11 @@ namespace CodeGenCourseProject.SemanticChecking
                 // we need to check for the valid use here
                 if (predeclaredIdentifiers.Contains(nameNode.Value))
                 {
-                    var acceptableTypes = new List<string> { ERROR_TYPE, INTEGER_TYPE, BOOLEAN_TYPE, STRING_TYPE, REAL_TYPE };
-
+                    List<string> acceptableTypes; 
                     // predefined functions
                     if (nameNode.Value == "read")
                     {
+                        acceptableTypes = new List<string> { ERROR_TYPE, INTEGER_TYPE, STRING_TYPE, REAL_TYPE };
                         if (argumentCount == 0)
                         {
                             reporter.ReportError(
@@ -609,13 +609,29 @@ namespace CodeGenCourseProject.SemanticChecking
                             return;
                         }
 
+                        
+
                         // arguments must be variables, or indexed arrays
                         for (int i = 1; i < argumentCount + 1; ++i)
                         {
-                            //    
+                                
                             var child = callNode.Children[i];
-                            // I'm about 110% sure I will have no idea what this condition does 5 minutes after I'm done with it
-                            if (!IsWritable(child, acceptableTypes))
+                            if (!acceptableTypes.Contains(child.NodeType()))
+                            {
+                                reporter.ReportError(
+                                    Error.SEMANTIC_ERROR,
+                                    "Invalid argument for predefined function 'read'",
+                                    child.Line,
+                                    child.Column);
+
+                                reporter.ReportError(
+                                    Error.NOTE_GENERIC,
+                                    "Argument has type '" + child.NodeType() + "' when the function expects one of '" +
+                                    INTEGER_TYPE + "', '" + STRING_TYPE + "' or '" + REAL_TYPE + "'",
+                                    child.Line,
+                                    child.Column);
+                            }
+                            else if (!IsWritable(child, acceptableTypes))
                             {
                                 reporter.ReportError(
                                     Error.SEMANTIC_ERROR,
@@ -633,6 +649,8 @@ namespace CodeGenCourseProject.SemanticChecking
                     }
                     else if (nameNode.Value == "writeln")
                     {
+                        acceptableTypes =
+                        acceptableTypes = new List<string> { ERROR_TYPE, INTEGER_TYPE, BOOLEAN_TYPE, STRING_TYPE, REAL_TYPE }; 
                         for (int i = 1; i < argumentCount + 1; ++i)
                         {
 

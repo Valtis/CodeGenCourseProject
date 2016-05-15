@@ -66,12 +66,14 @@
     <Compile Include="CFG\CFGGeneratorTests.cs" />
     <Compile Include="CFG\Analysis\ControlFlowAnalyzerTests.cs" />
     <Compile Include="Codegen\CCodeGeneratorTests.cs" />
+    <Content Include="CFG\Analysis\call_function_that_captures_from_other_function.txt" />
     <Content Include="CFG\bug_1.txt" />
     <Content Include="Codegen\array_assign.txt" />
     <Content Include="Codegen\array_indexes_as_args.txt" />
     <Content Include="Codegen\array_lower_bound_check.txt" />
     <Content Include="Codegen\array_size.txt" />
     <Content Include="Codegen\boolean_expressions.txt" />
+    <Content Include="Codegen\captured_array_as_argument.txt" />
     <Content Include="Codegen\false_assert.txt" />
     <Content Include="Codegen\gc.txt" />
     <Content Include="Codegen\gc2.txt" />
@@ -79,6 +81,7 @@
     <Content Include="Codegen\integer_expressions.txt" />
     <Content Include="Codegen\negative_array_size.txt" />
     <Content Include="Codegen\non_reference_array_parameters.txt" />
+    <Content Include="Codegen\read.txt" />
     <Content Include="Codegen\real_expressions.txt" />
     <Content Include="Codegen\recursive_factorial.txt" />
     <Content Include="Codegen\non_reference_non_array_parameters.txt" />
