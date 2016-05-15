@@ -64,7 +64,7 @@ namespace CodeGenCourseProject.Codegen.Tests
             }
             return null;
         }
-        private List<string> CompileAndRun(string file, string extraArgs = "", IList<string> stdin=null)
+        private List<string> CompileAndRun(string file, string extraArgs = "", IList<string> stdin = null)
         {
             var reporter = new ErrorReporter();
             var lexer = new Lexer(@"..\..\Codegen\" + file, reporter);
@@ -92,17 +92,17 @@ namespace CodeGenCourseProject.Codegen.Tests
             generator.GenerateCode();
 
             var name = "test_" + file;
-         
+
             using (var stream = new FileStream(name + ".c", FileMode.Create))
             {
                 generator.SaveResult(stream);
             }
 
 
-            Run("gcc", name + ".c -o " + name + ".exe"  + " " + extraArgs, stdin);
+            Run("gcc", name + ".c -o " + name + ".exe" + " " + extraArgs, stdin);
             var output = Run(name + ".exe", "", stdin);
             return output;
-           
+
         }
 
         [TestMethod()]
@@ -552,7 +552,7 @@ namespace CodeGenCourseProject.Codegen.Tests
         [TestMethod()]
         public void Read()
         {
-            var output = CompileAndRun("read.txt", "", 
+            var output = CompileAndRun("read.txt", "",
                 new List<string> {
                     "123 34e2 hello",
                     "567 32.12 capture()",
@@ -588,7 +588,7 @@ namespace CodeGenCourseProject.Codegen.Tests
             Assert.AreEqual("0 0.000000 ", output[18]);
             Assert.AreEqual(null, output[19]);
         }
-        
+
         [TestMethod()]
         public void IterativeFactorial()
         {
@@ -629,6 +629,22 @@ namespace CodeGenCourseProject.Codegen.Tests
         {
             Assert.Fail();
         }
+
+        [TestMethod()]
+        public void EvaluationOrder()
+        {
+            var output = CompileAndRun("left_to_right_evaluation.txt");
+            Assert.AreEqual(7, output.Count);
+            Assert.AreEqual("First", output[0]);
+            Assert.AreEqual("second", output[1]);
+
+            Assert.AreEqual("First", output[2]);
+            Assert.AreEqual("second", output[3]);
+            Assert.AreEqual("second", output[4]);
+            Assert.AreEqual("third", output[5]);
+            Assert.AreEqual(null, output[6]);
+        }
+
 
         /*
         Test case for a bug that was found during manual testing.

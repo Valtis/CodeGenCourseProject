@@ -1,0 +1,32 @@
+﻿program evaluation;
+begin
+	function first() : integer; 
+	begin
+		writeln("First");
+		return 1;
+	end;
+	
+	function second() : integer; 
+	begin
+		writeln("second");
+		return 2;
+	end;
+	
+	function third() : integer; 
+	begin
+		writeln("third");
+		return 3;
+	end;
+
+	var i : integer;
+	i := first()+second();
+
+
+	procedure test(i : integer, j : integer, k : integer);
+	begin
+		return
+	end;
+
+	test(first() + second(), second(), third());
+
+end.

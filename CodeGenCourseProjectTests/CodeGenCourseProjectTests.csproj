@@ -80,6 +80,7 @@
     <Content Include="Codegen\gc2.txt" />
     <Content Include="Codegen\hello_world.txt" />
     <Content Include="Codegen\integer_expressions.txt" />
+    <Content Include="Codegen\left_to_right_evaluation.txt" />
     <Content Include="Codegen\negative_array_size.txt" />
     <Content Include="Codegen\non_reference_array_parameters.txt" />
     <Content Include="Codegen\read.txt" />
