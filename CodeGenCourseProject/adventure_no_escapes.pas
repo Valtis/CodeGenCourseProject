@@ -105,12 +105,7 @@ begin
     
     procedure cls();
     begin
-        {* 
-        Requires either Windows 10 or posix-compliant shell! 
-        Note: cmd.exe seems to work out of the box, powershell seems to require a script listed here:
-        http://www.nivot.org/blog/post/2016/02/04/Windows-10-TH2-%28v1511%29-Console-Host-Enhancements
-        *}
-        writeln("\e[1;1H\e[2J");   
+        writeln("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
     end;
 
 
@@ -193,7 +188,7 @@ begin
                     {* Player has the highest priority *}
                     if (x = player_x) and (y = player_y) then
                     begin
-                        line := line + "\e[32;1m@\e[0m";
+                        line := line + "@";
                         return;
                     end;
                     {* Then monsters *}
@@ -206,7 +201,7 @@ begin
                         begin
                             if (monster_x[i] = x) and (monster_y[i] = y) then 
                             begin
-                                line := line + "\e[36;1mM\e[0m";
+                                line := line + "M";
                                 return;
                             end;
                         end;
@@ -217,7 +212,7 @@ begin
                     if passability[get_coordinate(x, y, width)] then
                         line := line + " "
                     else
-                        line := line + "\e[7m \e[0m"; 
+                        line := line + "#"; 
                 end;
 
                 draw_cell();
@@ -305,7 +300,7 @@ begin
         var free_slot : integer;
         free_slot := get_free_monster_slot();
         monster_cnt := monster_cnt + 1;
-        writeln("\e[31;1mA monster appears...\e[0m");
+        writeln("A monster appears...");
         msg_cnt := msg_cnt + 1;
 
         {* Strictly speaking not guaranteed to terminate *}
