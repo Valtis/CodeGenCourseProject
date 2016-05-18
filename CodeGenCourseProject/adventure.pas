@@ -94,7 +94,7 @@ begin
         Note: cmd.exe seems to work out of the box, powershell seems to require a script listed here:
         http://www.nivot.org/blog/post/2016/02/04/Windows-10-TH2-%28v1511%29-Console-Host-Enhancements
         *}
-        writeln("\\e[1;1H\\e[2J");   
+        writeln("\e[1;1H\e[2J");   
     end;
 
 
@@ -177,7 +177,7 @@ begin
                     {* Player has the highest priority *}
                     if (x = player_x) and (y = player_y) then
                     begin
-                        line := line + "\\e[32m@\\e[0m";
+                        line := line + "\e[32m@\e[0m";
                         return;
                     end;
                     {* Then monsters *}
@@ -190,7 +190,7 @@ begin
                         begin
                             if (monster_x[i] = x) and (monster_y[i] = y) then 
                             begin
-                                line := line + "\\e[37mM\\e[0m";
+                                line := line + "\e[37mM\e[0m";
                                 return;
                             end;
                         end;
@@ -201,7 +201,7 @@ begin
                     if passability[get_coordinate(x, y, width)] then
                         line := line + " "
                     else
-                        line := line + "\\e[7m \\e[0m"; 
+                        line := line + "\e[7m \e[0m"; 
                 end;
 
                 draw_cell();
