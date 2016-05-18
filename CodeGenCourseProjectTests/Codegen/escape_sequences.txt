@@ -1,0 +1,10 @@
+﻿program escape_sequences;
+begin
+    writeln("Hello\tWorld");
+    writeln("Hello\rWorld");
+    writeln("Hello\nWorld");
+    writeln("Hello\"World\"");
+    writeln("Hello\\World");
+    writeln("Hello\eWorld");    
+    writeln("Hello\bWorld");    
+end.

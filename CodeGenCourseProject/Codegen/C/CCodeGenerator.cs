@@ -273,7 +273,7 @@ void read(const char *format, ...)
             else 
             {
                 /*
-                    Required due to how the GC works: It only considers the start of the pointer when
+                    A copy is required due to how the GC works: It only considers the start of the pointer when
                     determining if object is alive or not. If we store the token directly, we are storing
                     a pointer that likely points to the middle of the gc_malloc'd pointer, which is then
                     considered to be free. This means we would be facing use-after-free bugs in the program.
@@ -579,7 +579,20 @@ void assert(char expr, int line)
 
         public void Visit(TACString tacString)
         {
-            cValues.Push("\"" + tacString.Value + "\"");
+            // we need to convert \n back to the escape sequence form, as line break in C string is not 
+            // acceptable without appending \ to the line. Similarily, \" must be replaced by the escape sequence, 
+            // as otherwise the string is broken by unexpected '"' characters
+            
+            // we also need to change \ to \\, as otherwise it is interpreted as start of escape sequence by the C compiler
+
+            string value = tacString.Value;
+            // ordering is critical here, as otherwise the escape secuence character gets malformed
+            value = value.Replace("\\", "\\\\");
+            value = value.Replace("\n", "\\n");
+            value = value.Replace("\"", "\\\"");
+            value = value.Replace("\r", "\\r"); // carriage return seems to be interpreted as new line as well
+
+            cValues.Push("\"" + value + "\"");
         }
 
         public void Visit(TACArraySize tacArraySize)
