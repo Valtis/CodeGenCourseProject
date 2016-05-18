@@ -76,6 +76,7 @@
     <Content Include="Codegen\array_size.txt" />
     <Content Include="Codegen\boolean_expressions.txt" />
     <Content Include="Codegen\captured_array_as_argument.txt" />
+    <Content Include="Codegen\expr2.txt" />
     <Content Include="Codegen\false_assert.txt" />
     <Content Include="Codegen\gc.txt" />
     <Content Include="Codegen\gc2.txt" />
@@ -88,6 +89,7 @@
     <Content Include="Codegen\real_expressions.txt" />
     <Content Include="Codegen\recursive_factorial.txt" />
     <Content Include="Codegen\non_reference_non_array_parameters.txt" />
+    <Content Include="Codegen\escape_sequences.txt" />
     <Compile Include="Lexing\LexerTests.cs" />
     <Compile Include="Lexing\StringTokenTests.cs" />
     <Compile Include="Parsing\ParserTests.cs" />
@@ -182,6 +184,7 @@
     <Content Include="Lexing\valid_operators.txt" />
     <Content Include="Lexing\valid_strings.txt" />
     <Content Include="Parsing\bug_1.txt" />
+    <Content Include="Parsing\bug_2.txt" />
     <Content Include="Parsing\invalid_assert_statements.txt" />
     <Content Include="Parsing\invalid_function_declarations.txt" />
     <Content Include="Parsing\invalid_if_statements.txt" />
