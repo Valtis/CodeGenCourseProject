@@ -1,0 +1,9 @@
+﻿program expr2;
+begin
+	writeln(1 + 2 + 3 + 4*5);
+	writeln("hello" + " " + "world" + "!!!");
+	writeln(4.4 - 1.1 - 2.2 / 0.5);
+	writeln(48 / 4 / 3 / 2-5);
+	writeln(true and true and false or false and true and true);
+	writeln(true and true and false or true and true and true);
+end.

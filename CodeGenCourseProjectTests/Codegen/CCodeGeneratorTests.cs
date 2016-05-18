@@ -59,8 +59,7 @@ namespace CodeGenCourseProject.Codegen.Tests
             }
             catch (Exception e)
             {
-                Assert.AreEqual("", e.ToString());
-                Assert.Fail();
+                Assert.Fail(program + ": " + e.ToString());
             }
             return null;
         }
@@ -625,9 +624,21 @@ namespace CodeGenCourseProject.Codegen.Tests
         }
 
         [TestMethod()]
-        public void EscapedCharacters()
+        public void EscapeSequences()
         {
-            Assert.Fail();
+            var output = CompileAndRun("escape_sequences.txt");
+            Assert.AreEqual(10, output.Count);
+            Assert.AreEqual("Hello\tWorld", output[0]);
+            Assert.AreEqual("Hello", output[1]);
+            Assert.AreEqual("World", output[2]);
+            Assert.AreEqual("Hello", output[3]);
+            Assert.AreEqual("World", output[4]);
+            Assert.AreEqual("Hello\"World\"", output[5]);
+            Assert.AreEqual("Hello\\World", output[6]);
+            // 0X1B is \e, but as it is non-standard, C# rejects the escape-sequence
+            Assert.AreEqual("Hello" + (char)0x1B +  "World", output[7]);
+            Assert.AreEqual("Hello\bWorld", output[8]);
+            Assert.AreEqual(null, output[9]);
         }
 
         [TestMethod()]
@@ -645,6 +656,19 @@ namespace CodeGenCourseProject.Codegen.Tests
             Assert.AreEqual(null, output[6]);
         }
 
+        [TestMethod()]
+        public void Expr2()
+        {
+            var output = CompileAndRun("expr2.txt");
+            Assert.AreEqual(7, output.Count);
+            Assert.AreEqual("26", output[0]);
+            Assert.AreEqual("hello world!!!", output[1]);
+            Assert.AreEqual("-1.100000", output[2]);
+            Assert.AreEqual("-3", output[3]);
+            Assert.AreEqual("0", output[4]);
+            Assert.AreEqual("1", output[5]);
+            Assert.AreEqual(null, output[6]);
+        }
 
         /*
         Test case for a bug that was found during manual testing.

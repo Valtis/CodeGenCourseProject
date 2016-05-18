@@ -7,15 +7,22 @@ using System.Collections.Generic;
 
 namespace CodeGenCourseProject.Parsing
 {
+    /**
+     * Recursive descent parser
+     * 
+     * */
+
     public class Parser
     {
         private Lexer lexer;
         private ErrorReporter reporter;
 
+        /* Token - AstNode pairs for operators*/
         private IDictionary<Type, Type> relationalOperators;
         private IDictionary<Type, Type> additionOperators;
         private IDictionary<Type, Type> multiplyOperators;
 
+        // valid types (integer, real, string, boolean)
         private ISet<string> validTypes;
 
         public Parser(Lexer lexer, ErrorReporter reporter)
@@ -42,6 +49,7 @@ namespace CodeGenCourseProject.Parsing
             relationalOperators.Add(typeof(GreaterThanToken), typeof(GreaterThanNode));
             relationalOperators.Add(typeof(NotEqualsToken), typeof(NotEqualsNode));
 
+            // sorted set instead of hash set for more consistent error reporting
             validTypes = new SortedSet<string>();
             validTypes.Add("integer");
             validTypes.Add("real");
@@ -680,6 +688,11 @@ namespace CodeGenCourseProject.Parsing
 
             var term = ParseTerm();
 
+
+            // if we have a sign:
+            // for integers and reals, just apply it directly (plus is no-op)
+            // for other nodes, add UnaryPlusNode or NegateNode. Semantic checker will check the validity
+            // of both, although otherwise UnaryPlusNode is no-op
             if (sign != null)
             {
                 if (term is IntegerNode)
@@ -701,19 +714,19 @@ namespace CodeGenCourseProject.Parsing
                     term = (ASTNode)Activator.CreateInstance(sign, signToken.Line, signToken.Column, term);
                 }
             }
-
-            if (additionOperators.ContainsKey(lexer.PeekToken().GetType()))
+            
+            while (additionOperators.ContainsKey(lexer.PeekToken().GetType()))
             {
                 var op = lexer.NextToken();
                 var term2 = ParseTerm();
-                var binaryNode = (ASTNode)Activator.CreateInstance(
+                term = (ASTNode)Activator.CreateInstance(
                     additionOperators[op.GetType()],
                     op.Line,
                     op.Column,
                     term,
                     term2
                     );
-                return binaryNode;
+                
             }
 
             return term;
@@ -724,18 +737,17 @@ namespace CodeGenCourseProject.Parsing
         {
             var factor = ParseFactor();
 
-            if (multiplyOperators.ContainsKey(lexer.PeekToken().GetType()))
+            while (multiplyOperators.ContainsKey(lexer.PeekToken().GetType()))
             {
                 var op = lexer.NextToken();
                 var factor2 = ParseFactor();
-                var binaryNode = (ASTNode)Activator.CreateInstance(
+                factor = (ASTNode)Activator.CreateInstance(
                     multiplyOperators[op.GetType()],
                     op.Line,
                     op.Column,
                     factor,
                     factor2
                     );
-                return binaryNode;
             }
 
             return factor;

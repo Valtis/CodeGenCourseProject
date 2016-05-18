@@ -2362,6 +2362,13 @@ namespace CodeGenCourseProject.Parsing.Tests
             Assert.IsTrue(reporter.Errors[0].Message.Contains("Unexpected token <identifier - 'call'> after the end"));
         }
 
+        /*
+        Lone return before else-keyword was invalid
+        if foo then
+            return <<----- error
+        else 
+            ... 
+        */
         [TestMethod()]
         public void Bug1()
         {
@@ -2397,6 +2404,84 @@ namespace CodeGenCourseProject.Parsing.Tests
                 ),
                 node);
 
+        }
+
+        /*
+            Due to poor reading, {} and [] were confused in expression rules; the former allows 0, 1 or more repetitions
+            while latter allows only 0 or 1. As I confused the former with the latter, expression like
+            a := 4 + 5 + 6; 
+            was invalid 
+        */
+        [TestMethod()]
+        public void Bug2()
+        {
+            var reporter = new ErrorReporter();
+            var lexer = new Lexer(@"..\..\Parsing\bug_2.txt", reporter);
+            var parser = new Parser(lexer, reporter);
+
+            var node = parser.Parse();
+
+            Assert.AreEqual(0, reporter.Errors.Count);
+            ASTMatches(
+                new ProgramNode(0, 0, new IdentifierToken("bug"),
+                    new BlockNode(0, 0,
+                        new VariableDeclarationNode(0, 0, 
+                            new IdentifierNode(0, 0, "integer"), 
+                            new IdentifierNode(0, 0, "a")), 
+                        new VariableDeclarationNode(0, 0,
+                            new IdentifierNode(0, 0, "boolean"),
+                            new IdentifierNode(0, 0, "b")), 
+                        new VariableAssignmentNode(0, 0, 
+                            new IdentifierNode(0, 0, "a"),
+                            new AddNode(0, 0, 
+                                new AddNode(0, 0,
+                                    new AddNode(0, 0,
+                                        new IntegerNode(0, 0, 1),
+                                        new IntegerNode(0, 0, 2)
+                                    ),
+                                    new IntegerNode(0, 0, 3)
+                                ),
+                                new MultiplyNode(0, 0,
+                                    new IntegerNode(0, 0, 4),
+                                    new IntegerNode(0, 0, 5)
+                                )
+                            )
+                        ),
+                        new VariableAssignmentNode(0, 0,
+                            new IdentifierNode(0, 0, "a"),
+                            new SubtractNode(0, 0,
+                                new DivideNode(0, 0,
+                                    new DivideNode(0, 0,
+                                        new IntegerNode(0, 0, 1),
+                                        new IntegerNode(0, 0, 2)
+                                    ),
+                                    new IntegerNode(0, 0, 3)
+                                ),
+                                new IntegerNode(0, 0, 4)
+                            )
+                        ),
+                        new VariableAssignmentNode(0, 0,
+                            new IdentifierNode(0, 0, "b"),
+                            new OrNode(0, 0,
+                                new AndNode(0, 0, 
+                                    new AndNode(0, 0,
+                                        new IdentifierNode(0, 0, "true"),
+                                        new IdentifierNode(0, 0, "true")
+                                    ),
+                                    new IdentifierNode(0, 0, "false")
+                                ),
+                                new AndNode(0, 0,
+                                    new AndNode(0, 0,
+                                        new IdentifierNode(0, 0, "false"),
+                                        new IdentifierNode(0, 0, "true")
+                                    ),
+                                    new IdentifierNode(0, 0, "true")
+                                )
+                            )
+                        )
+                    )
+                ),
+                node);
         }
 
         void ASTMatches(ASTNode expected, ASTNode actual)

@@ -1,0 +1,11 @@
+﻿{* Test for a bug caused by reading the grammar poorly *}
+program bug;
+begin
+	var a : integer;
+	var b : boolean;
+
+	a := 1 + 2 + 3 + 4*5;
+	a := 1 / 2 / 3 - 4;
+	b := true and true and false or false and true and true;
+
+end.
