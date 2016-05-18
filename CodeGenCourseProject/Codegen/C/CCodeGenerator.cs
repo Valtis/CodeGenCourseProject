@@ -176,7 +176,7 @@ void __create_" + type + @"_array(" + structName + @" *in, int size, int line)
             Emit(@"void __copy_" + type + "_array(const " + structName + " * const src, " + structName + @" *dst)
 {
     dst->size = src->size;
-    dst->arr = gc_malloc(src->size * sizeof(" + type + @"), " + GC.C_OBJ_TYPE_NONE + @");
+    dst->arr = gc_malloc(src->size * sizeof(" + type + @"), " + gc_type + @");
     int i = 0;
     for (; i < src->size; ++i)
     {
