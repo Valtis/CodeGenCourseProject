@@ -277,7 +277,7 @@ begin
         {* Always spawn monster on turn 2 *}
         
         var change, monster_spawn_prob : integer;
-        monster_spawn_prob := 15;
+        monster_spawn_prob := 10 + turn / 3;
         change := random(100);
 
         if (turn <> 2) and (change >= monster_spawn_prob) then
