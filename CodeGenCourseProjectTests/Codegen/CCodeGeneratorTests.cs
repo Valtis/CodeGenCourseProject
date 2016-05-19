@@ -700,5 +700,18 @@ namespace CodeGenCourseProject.Codegen.Tests
             Assert.AreEqual("7", output[1]);
             Assert.AreEqual(null, output[2]);
         }
+        /*
+          Test case for a bug that was found during manual testing.
+          Array returning was completely broken - turns out no test case was testing this!
+        */
+        [TestMethod()]
+        public void ArrayReturnBug()
+        {
+            var output = CompileAndRun("array_return_bug.txt");
+            Assert.AreEqual(3, output.Count);
+            Assert.AreEqual("2", output[0]);
+            Assert.AreEqual("6 8", output[1]);
+            Assert.AreEqual(null, output[2]);
+        }
     }
 }

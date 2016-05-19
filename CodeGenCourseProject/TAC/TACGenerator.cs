@@ -520,7 +520,10 @@ namespace CodeGenCourseProject.TAC
             }
             else
             {
-                type = ((IdentifierNode)((ArrayTypeNode)functionNode.Children[1]).Children[0]).Value;
+                type = 
+                    SemanticChecker.ARRAY_PREFIX + 
+                    ((IdentifierNode)((ArrayTypeNode)functionNode.Children[1]).Children[0]).Value +
+                    SemanticChecker.ARRAY_SUFFIX;
             }
 
             ProcedureFunctionHelper(

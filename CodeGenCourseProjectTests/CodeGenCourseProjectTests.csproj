@@ -65,6 +65,7 @@
     <Compile Include="AST\VariableAssignmentNodeTests.cs" />
     <Compile Include="CFG\CFGGeneratorTests.cs" />
     <Compile Include="CFG\Analysis\ControlFlowAnalyzerTests.cs" />
+    <Content Include="Codegen\array_return_bug.txt" />
     <Compile Include="Codegen\CCodeGeneratorTests.cs" />
     <Content Include="CFG\Analysis\call_function_that_captures_from_other_function.txt" />
     <Content Include="CFG\Analysis\capture_function_parameter.txt" />

@@ -483,7 +483,10 @@ void assert(char expr, int line)
         private string GetTypeIfNotDeclared(TACIdentifier tacIdentifier)
         {
             var type = "";
-            if (!declared.Contains(tacIdentifier.Name) && !tacIdentifier.Type.Contains(SemanticChecker.ARRAY_PREFIX))
+            if (!declared.Contains(tacIdentifier.Name) &&
+                // non-temporary arrays are already pre-declared due to them requiring array size expression.
+                // Temporary arrays are always assigned into (function return value), and can be declared on-demand 
+                (!tacIdentifier.Type.Contains(SemanticChecker.ARRAY_PREFIX) || tacIdentifier.Name.StartsWith("__t")))
             {
                 declared.Add(tacIdentifier.Name);
                 type = GetCType(tacIdentifier.Type) + " ";

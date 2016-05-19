@@ -1,0 +1,19 @@
+﻿program example;
+begin
+    
+    function ret_arr() : array [] of integer;
+    begin
+        var f : array [2] of integer;
+        
+        f[0] := 6;
+        f[1] := 8;
+        
+        return f;
+    end;
+    
+    writeln(ret_arr().size);
+    var b : array [] of integer;
+    b := ret_arr();
+    writeln(b[0], " ", b[1]);
+    
+end.
