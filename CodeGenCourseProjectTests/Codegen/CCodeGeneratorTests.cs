@@ -91,14 +91,17 @@ namespace CodeGenCourseProject.Codegen.Tests
             generator.GenerateCode();
 
             var name = "test_" + file;
+            var c_file = name + ".c";
+            File.Delete(c_file);
 
-            using (var stream = new FileStream(name + ".c", FileMode.Create))
+            using (var stream = new FileStream(c_file, FileMode.Create))
             {
                 generator.SaveResult(stream);
             }
 
-
-            Run("gcc", name + ".c -o " + name + ".exe" + " " + extraArgs, stdin);
+            var output_exe = name + ".exe";
+            File.Delete(output_exe);
+            Run("gcc", c_file + " -o " + output_exe + " " + extraArgs, stdin);
             var output = Run(name + ".exe", "", stdin);
             return output;
 
@@ -301,7 +304,7 @@ namespace CodeGenCourseProject.Codegen.Tests
             Assert.AreEqual(null, output[4]);
         }
 
-        [TestMethod]
+        [TestMethod()]
         public void NonReferenceArrayParameters()
         {
             var output = CompileAndRun("non_reference_array_parameters.txt");

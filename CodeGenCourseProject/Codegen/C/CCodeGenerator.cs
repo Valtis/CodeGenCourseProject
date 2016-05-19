@@ -783,6 +783,7 @@ void assert(char expr, int line)
             sizeExpr += "size";
 
             Emit(GetBaseCType(source.Type) + "_array " + destination.Name + ";");
+            declared.Add(destination.Name);
             cValues.Push(ArrayCopy(source, destination, GetBaseCType(source.Type)));
         }
 
