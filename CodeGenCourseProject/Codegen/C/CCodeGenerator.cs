@@ -695,7 +695,9 @@ void assert(char expr, int line)
                 tacReturn.Expression.Accept(this);
                 expr = cValues.Pop();
             }
-            cValues.Push("return " + expr);
+
+            var derefOperation = "";
+            cValues.Push("return " + GetDereferenceOperator(tacReturn.Expression) + expr);
         }
 
         public void Visit(TACAssert tacAssert)

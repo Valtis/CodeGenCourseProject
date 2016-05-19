@@ -408,7 +408,7 @@ namespace CodeGenCourseProject.TAC
                 {
                     isReference = ((VariableSymbol)symbol).IsReference;
                 }
-                else if (outerSymbol is ArraySymbol)
+                else if (symbol is ArraySymbol)
                 {
                     isReference = ((ArraySymbol)symbol).IsReference;
                 }

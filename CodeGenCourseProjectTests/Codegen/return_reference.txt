@@ -1,0 +1,37 @@
+﻿program example;
+begin
+        
+    function ret_arr(var a : array [] of integer) : array [] of integer;
+    begin        
+        return a;
+    end;
+
+    function ret_ref(var a : real) : real;
+    begin        
+        return a;
+    end;
+
+	var a : boolean;
+	a := false;
+
+    function ret_capt() : boolean;
+    begin        
+        return a;
+    end;
+        
+        
+    var f : array [2] of integer;
+        
+    f[0] := 6;
+    f[1] := 8;
+            
+    writeln(ret_arr(f).size);
+    var b : array [] of integer;
+    b := ret_arr(f);
+    writeln(b[0], " ", b[1]);
+        
+    var c : real;
+    c := 23.4;
+    writeln(ret_ref(c));    
+    writeln(ret_capt());    
+end.

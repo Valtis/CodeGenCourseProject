@@ -167,6 +167,7 @@
     <Content Include="Codegen\recursive_fibonacci.txt" />
     <Content Include="Codegen\reference_array_parameters.txt" />
     <Content Include="Codegen\reference_non_array_parameters.txt" />
+    <Content Include="Codegen\return_reference.txt" />
     <Content Include="Codegen\string_expressions.txt" />
     <Content Include="Codegen\array_upper_bound_check.txt" />
     <Content Include="Codegen\true_assert.txt" />

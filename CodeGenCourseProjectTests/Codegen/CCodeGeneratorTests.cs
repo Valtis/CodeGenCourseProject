@@ -713,5 +713,21 @@ namespace CodeGenCourseProject.Codegen.Tests
             Assert.AreEqual("6 8", output[1]);
             Assert.AreEqual(null, output[2]);
         }
+
+        /*
+          Test case for a bug that was found during manual testing.
+          References were not dereferenced correctly when returning them
+        */
+        [TestMethod()]
+        public void ReferenceReturnBug()
+        {
+            var output = CompileAndRun("return_reference.txt");
+            Assert.AreEqual(5, output.Count);
+            Assert.AreEqual("2", output[0]);
+            Assert.AreEqual("6 8", output[1]);
+            Assert.AreEqual("23.400000", output[2]);
+            Assert.AreEqual("0", output[3]);
+            Assert.AreEqual(null, output[4]);
+        }
     }
 }
