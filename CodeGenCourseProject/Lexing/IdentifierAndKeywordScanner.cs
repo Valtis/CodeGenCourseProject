@@ -70,6 +70,7 @@ namespace CodeGenCourseProject.Lexing
             return char.IsDigit(chr) || IsLetter(chr);
         }
 
+        // the char.IsLetter accepts larger set of characters that is desirable
         private bool IsLetter(char chr)
         {
             return (chr >= 'a' && chr <= 'z') || (chr >= 'A' && chr <= 'Z');

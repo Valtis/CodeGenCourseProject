@@ -17,6 +17,13 @@ namespace CodeGenCourseProject.Lexing
             escapeSequences['n'] = '\n';
             escapeSequences['t'] = '\t';
             escapeSequences['r'] = '\r';
+            escapeSequences['b'] = '\b';
+            // \e is non-standard escape sequence character, supported by GCC and clang tcc
+            // it is accepted for the sole purpose of supporting VT100 escape sequences for the
+            // example adventure.pas program
+            // Alas, as it is non-standard, we may not actually use \e here as C# compiler rejects it
+            // so we have to use the numerical value instead
+            escapeSequences['e'] = (char)0x1B;
             escapeSequences['\\'] = '\\';
             escapeSequences['"'] = '\"';
         }
