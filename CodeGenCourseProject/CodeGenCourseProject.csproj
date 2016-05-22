@@ -84,7 +84,7 @@
     <Compile Include="AST\WhileNode.cs" />
     <Compile Include="CFG\BasicBlock.cs" />
     <Compile Include="CFG\CFGGenerator.cs" />
-    <Compile Include="CFG\CFGGraph.cs" />
+    <Compile Include="CFG\CFGraph.cs" />
     <Compile Include="Codegen\C\CCodeGenerator.cs" />
     <Compile Include="Codegen\CodeGenerator.cs" />
     <Compile Include="CFG\Analysis\CFGAnalyzer.cs" />
