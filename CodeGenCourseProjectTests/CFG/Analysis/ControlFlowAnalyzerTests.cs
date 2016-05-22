@@ -296,19 +296,6 @@ namespace CodeGenCourseProject.CFG.Analysis.Tests
         }
 
         [TestMethod()]
-        [Ignore()] // disabled, as mandatory reference assignment is disabled
-        public void InvalidProcedure2()
-        {
-            var reporter = new ErrorReporter();
-            Analyze("invalid_procedure2.txt", reporter);
-            Assert.AreEqual(3, reporter.Errors.Count);
-            var testHelper = new TestHelper(reporter);
-            testHelper.AssertErrorMessage(0, Error.SEMANTIC_ERROR, 7, 20, "Parameter 'c' may remain uninitialized at function exit");
-            testHelper.AssertErrorMessage(1, Error.SEMANTIC_ERROR, 8, 20, "Parameter 'd' may remain uninitialized at function exit");
-            testHelper.AssertErrorMessage(2, Error.SEMANTIC_ERROR, 9, 20, "Parameter 'e' may remain uninitialized at function exit");
-        }
-
-        [TestMethod()]
         public void ValidFunction()
         {
             var reporter = new ErrorReporter();
