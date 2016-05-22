@@ -16,6 +16,29 @@ namespace CodeGenCourseProject
     {
         static void Main(string[] args)
         {
+            try
+            {
+                DoCompile(args);
+            }
+            catch (InternalCompilerError e)
+            {
+                Console.WriteLine("Internal compiler error: " + e.ToString());
+            }
+            catch (Exception e)
+            {
+                if (e is DirectoryNotFoundException || e is FileNotFoundException)
+                {
+                    Console.WriteLine("Could not find the file '" + args[0] + "'");
+                }
+                else
+                {
+                    throw;
+                }
+            }
+        }
+
+        private static void DoCompile(string [] args)
+        {
             if (args.Length < 1)
             {
                 Console.WriteLine("Mini-pascal file must be provided as command line argument");
@@ -24,18 +47,17 @@ namespace CodeGenCourseProject
 
             var reporter = new ErrorReporter();
             var lexer = new Lexer(args[0], reporter);
-        
+
             var parser = new Parser(lexer, reporter);
             var root = parser.Parse();
 
             var semanticChecker = new SemanticChecker(reporter);
             root.Accept(semanticChecker);
-            
+
             if (reporter.Errors.Count != 0)
             {
                 reporter.PrintMessages();
                 Console.WriteLine("\n\nAborting compilation");
-                Console.ReadKey();
                 return;
             }
 
@@ -53,7 +75,6 @@ namespace CodeGenCourseProject
             if (reporter.Errors.Count != 0)
             {
                 Console.WriteLine("\n\nAborting compilation");
-                Console.ReadKey();
                 return;
             }
 
@@ -63,7 +84,7 @@ namespace CodeGenCourseProject
             using (var stream = new FileStream(tacGenerator.ProgramName + ".c", FileMode.Create))
             {
                 generator.SaveResult(stream);
-            } 
+            }
         }
     }
 }

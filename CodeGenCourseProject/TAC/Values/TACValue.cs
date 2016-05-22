@@ -1,5 +1,8 @@
 ﻿namespace CodeGenCourseProject.TAC.Values
 {
+    /*
+    Abstract base class for three-addres code values
+    */
     public abstract class TACValue
     {
         private readonly int line;

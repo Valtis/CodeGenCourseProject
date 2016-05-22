@@ -5,6 +5,10 @@ using System.Collections.Generic;
 
 namespace CodeGenCourseProject.SemanticChecking
 {
+    /*
+    Semantic checker. Perform type checks and similar checks and decorates the AST with types and
+    symbol table data.
+     */
     public class SemanticChecker : ASTVisitor
     {
         private ErrorReporter reporter;
@@ -101,6 +105,8 @@ namespace CodeGenCourseProject.SemanticChecking
             {
                 child.Accept(this);
             }
+
+            // has type expression
             if (arrayTypeNode.Children.Count == 2)
             {
                 var exprChild = arrayTypeNode.Children[1];
@@ -194,6 +200,7 @@ namespace CodeGenCourseProject.SemanticChecking
 
             var returnType = functionReturnTypeStack.Peek();
 
+            // procedures cannot return a value
             if (returnNode.Children.Count == 1 && returnType == VOID_TYPE && returnNode.Children[0].NodeType() != ERROR_TYPE)
             {
                 reporter.ReportError(
@@ -204,6 +211,7 @@ namespace CodeGenCourseProject.SemanticChecking
                 return;
             }
 
+            // functions must return an expression with a correct type
             if (returnNode.Children.Count == 1 && returnNode.Children[0].NodeType() != returnType &&
                returnNode.Children[0].NodeType() != ERROR_TYPE && returnType != ERROR_TYPE)
             {
@@ -215,7 +223,7 @@ namespace CodeGenCourseProject.SemanticChecking
                     returnNode.Children[0].Column);
                 return;
             }
-
+            // function must return a value (no "return;" statements)
             if (returnNode.Children.Count == 0 && returnType != VOID_TYPE && returnType != ERROR_TYPE)
             {
                 reporter.ReportError(
@@ -246,6 +254,9 @@ namespace CodeGenCourseProject.SemanticChecking
         public void Visit(GreaterThanOrEqualNode greaterThanOrEqualNode)
         {
             HandleBinaryOperator(greaterThanOrEqualNode, ">=", new List<string> { INTEGER_TYPE, REAL_TYPE, STRING_TYPE, BOOLEAN_TYPE });
+
+            // HandleBinaryOperator sets the node type to the common child type 
+            // e.g. 1 >= 2 would have type "integer", but we always want a type boolean
             if (greaterThanOrEqualNode.NodeType() != ERROR_TYPE)
             {
                 greaterThanOrEqualNode.SetNodeType(BOOLEAN_TYPE);
@@ -268,6 +279,8 @@ namespace CodeGenCourseProject.SemanticChecking
         public void Visit(GreaterThanNode greaterThanNode)
         {
             HandleBinaryOperator(greaterThanNode, ">", new List<string> { INTEGER_TYPE, REAL_TYPE, STRING_TYPE, BOOLEAN_TYPE });
+            // HandleBinaryOperator sets the node type to the common child type 
+            // e.g. 1 > 2 would have type "integer", but we always want a type boolean
             if (greaterThanNode.NodeType() != ERROR_TYPE)
             {
                 greaterThanNode.SetNodeType(BOOLEAN_TYPE);
@@ -332,6 +345,9 @@ namespace CodeGenCourseProject.SemanticChecking
         public void Visit(LessThanOrEqualNode lessThanOrEqualNode)
         {
             HandleBinaryOperator(lessThanOrEqualNode, "<=", new List<string> { INTEGER_TYPE, REAL_TYPE, STRING_TYPE, BOOLEAN_TYPE });
+
+            // HandleBinaryOperator sets the node type to the common child type 
+            // e.g. 1 <= 2 would have type "integer", but we always want a type boolean
             if (lessThanOrEqualNode.NodeType() != ERROR_TYPE)
             {
                 lessThanOrEqualNode.SetNodeType(BOOLEAN_TYPE);
@@ -341,6 +357,9 @@ namespace CodeGenCourseProject.SemanticChecking
         public void Visit(LessThanNode lessThanNode)
         {
             HandleBinaryOperator(lessThanNode, "<", new List<string> { INTEGER_TYPE, REAL_TYPE, STRING_TYPE, BOOLEAN_TYPE });
+
+            // HandleBinaryOperator sets the node type to the common child type 
+            // e.g. 1 < 2 would have type "integer", but we always want a type boolean
             if (lessThanNode.NodeType() != ERROR_TYPE)
             {
                 lessThanNode.SetNodeType(BOOLEAN_TYPE);
@@ -495,6 +514,9 @@ namespace CodeGenCourseProject.SemanticChecking
         public void Visit(NotEqualsNode notEqualsNode)
         {
             HandleBinaryOperator(notEqualsNode, "<>", new List<string> { INTEGER_TYPE, REAL_TYPE, STRING_TYPE, BOOLEAN_TYPE });
+
+            // HandleBinaryOperator sets the node type to the common child type 
+            // e.g. 1 <> 2 would have type "integer", but we always want a type boolean
             if (notEqualsNode.NodeType() != ERROR_TYPE)
             {
                 notEqualsNode.SetNodeType(BOOLEAN_TYPE);
@@ -563,13 +585,14 @@ namespace CodeGenCourseProject.SemanticChecking
         public void Visit(EqualsNode equalsNode)
         {
             HandleBinaryOperator(equalsNode, "=", new List<string> { INTEGER_TYPE, REAL_TYPE, STRING_TYPE, BOOLEAN_TYPE });
+            // HandleBinaryOperator sets the node type to the common child type 
+            // e.g. 1 = 2 would have type "integer", but we always want a type boolean
             if (equalsNode.NodeType() != ERROR_TYPE)
             {
                 equalsNode.SetNodeType(BOOLEAN_TYPE);
             }
         }
-
-
+        
         public void Visit(CallNode callNode)
         {
             if (callNode.Children.Count < 1)
@@ -588,10 +611,10 @@ namespace CodeGenCourseProject.SemanticChecking
             }
 
             callNode.SetNodeType(ERROR_TYPE);
+
+            // if symbol is null, it could be predefined function
             if (symbol == null)
             {
-                // if this is predefined identifier, it is accepted by visit(IdentifierNode)
-                // we need to check for the valid use here
                 if (predeclaredIdentifiers.Contains(nameNode.Value))
                 {
                     List<string> acceptableTypes; 
@@ -608,10 +631,9 @@ namespace CodeGenCourseProject.SemanticChecking
                                 nameNode.Column);
                             return;
                         }
-
                         
-
-                        // arguments must be variables, or indexed arrays
+                        // arguments must be variables, or indexed arrays (writable) and have the 
+                        // correct type
                         for (int i = 1; i < argumentCount + 1; ++i)
                         {
                                 
@@ -653,9 +675,7 @@ namespace CodeGenCourseProject.SemanticChecking
                         acceptableTypes = new List<string> { ERROR_TYPE, INTEGER_TYPE, BOOLEAN_TYPE, STRING_TYPE, REAL_TYPE }; 
                         for (int i = 1; i < argumentCount + 1; ++i)
                         {
-
                             var child = callNode.Children[i];
-                            // I'm about 110% sure I will have no idea what this condition does 5 minutes after I'm done with it
                             if (!acceptableTypes.Contains(child.NodeType()))
                             {
                                 reporter.ReportError(
@@ -794,7 +814,6 @@ namespace CodeGenCourseProject.SemanticChecking
                 node.SetNodeType(ERROR_TYPE);
                 return;
             }
-
 
             node.SetNodeType(INTEGER_TYPE);
         }

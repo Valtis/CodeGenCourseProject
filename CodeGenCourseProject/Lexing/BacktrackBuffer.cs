@@ -15,17 +15,19 @@ namespace CodeGenCourseWork.Lexing
         private IList<Token> backtrackBuffer;
         private int backtrackPosition;
 
+        private const int SENTINEL = -1;
+
         internal BacktrackBuffer(int size)
         {
             backtrackBuffer = new List<Token>();
             bufferSize = size;
             // used to index the backtrack buffer. -1 means empty
-            backtrackPosition = -1;
+            backtrackPosition = SENTINEL;
         }
 
         internal bool Empty()
         {
-            return backtrackPosition == -1;
+            return backtrackPosition == SENTINEL;
         }
 
         internal void Backtrack()
@@ -50,12 +52,15 @@ namespace CodeGenCourseWork.Lexing
 
         internal void AddToken(Token token)
         {
-            if (backtrackPosition != -1)
+            // if token is not at sentinel position, we are re-inserting
+            // tokens that are already present in the buffer. Advance position instead
+            if (backtrackPosition != SENTINEL)
             {
                 --backtrackPosition;
                 return;
             }
 
+            // otherwise add the new token and drop the ones that are outside buffer range
             backtrackBuffer.Insert(0, token);
             while (backtrackBuffer.Count > bufferSize)
             {

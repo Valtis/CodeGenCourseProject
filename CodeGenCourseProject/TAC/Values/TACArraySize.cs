@@ -12,6 +12,7 @@ namespace CodeGenCourseProject.TAC.Values
 
         public TACArraySize(TACValue array) : this(0, 0, array)
         {
+
         }
 
         public TACArraySize(int line, int column, TACValue array) : base(line, column)

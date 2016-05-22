@@ -9,6 +9,9 @@ namespace CodeGenCourseProject.Lexing
     {
         private IDictionary<string, Type> operators;
 
+        /*
+        Parses operator tokens 
+        */
         internal OperatorScanner(TextReader reader, ErrorReporter reporter) : base(reader, reporter)
         {
             operators = new Dictionary<string, Type>();
@@ -30,7 +33,8 @@ namespace CodeGenCourseProject.Lexing
             operators.Add("]", typeof(RBracketToken));
             operators.Add(":=", typeof(AssignmentToken));
             operators.Add(".", typeof(PeriodToken));
-            operators.Add(",", typeof(CommaToken));
+            operators.Add(",", typeof(CommaToken)); 
+            // semicolon isn't really an operator, but we treat it as such for simplicity 
             operators.Add(";", typeof(SemicolonToken));
             operators.Add(":", typeof(ColonToken));
         }

@@ -696,7 +696,6 @@ void assert(char expr, int line)
                 expr = cValues.Pop();
             }
 
-            var derefOperation = "";
             cValues.Push("return " + GetDereferenceOperator(tacReturn.Expression) + expr);
         }
 
