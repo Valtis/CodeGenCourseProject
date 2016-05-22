@@ -609,7 +609,7 @@ begin
     
     writeln("How old are you?");
     read(age); 
-    {* Seed random number generator with age, as we do not have access to more sophisticated source of enthropy *}
+    {* Seed random number generator with age, as we do not have access to more sophisticated source of entropy *}
     random_1 := 32007779 + age;
     random_2 := 23717810  + age*2;
     random_3 := 52636370  + age*3;
@@ -619,6 +619,7 @@ begin
     passability[get_coordinate(player_x, player_y, width)] := true; {* player position *}
 
     cls();
+    
     procedure main();
     begin
         var command : string;
