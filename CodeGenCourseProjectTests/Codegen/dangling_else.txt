@@ -1,0 +1,11 @@
+﻿program dangling_else;
+begin
+	var a : integer;
+	a := 5;
+	if a > 4 then
+		if a > 6 then
+		    writeln("hello")
+		else
+			writeln("world");
+
+end.

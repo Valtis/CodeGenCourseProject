@@ -77,6 +77,7 @@
     <Content Include="Codegen\array_size.txt" />
     <Content Include="Codegen\boolean_expressions.txt" />
     <Content Include="Codegen\captured_array_as_argument.txt" />
+    <Content Include="Codegen\dangling_else.txt" />
     <Content Include="Codegen\expr2.txt" />
     <Content Include="Codegen\false_assert.txt" />
     <Content Include="Codegen\gc.txt" />
@@ -122,7 +123,6 @@
     <Content Include="CFG\Analysis\invalid_functions.txt" />
     <Content Include="CFG\Analysis\invalid_if_branch_only_initialization_with_else_branch.txt" />
     <Content Include="CFG\Analysis\invalid_procedure1.txt" />
-    <Content Include="CFG\Analysis\invalid_procedure2.txt" />
     <Content Include="CFG\Analysis\invalid_variable_if_block.txt" />
     <Content Include="CFG\Analysis\invalid_nested_if_statements.txt" />
     <Content Include="CFG\Analysis\invalid_variable_used_in_if_blocks_before_initialization_in_block.txt" />

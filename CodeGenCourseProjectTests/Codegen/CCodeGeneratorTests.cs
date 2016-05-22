@@ -673,6 +673,14 @@ namespace CodeGenCourseProject.Codegen.Tests
             Assert.AreEqual(null, output[6]);
         }
 
+        [TestMethod()]
+        public void DanglingElse()
+        {
+            var output = CompileAndRun("dangling_else.txt");
+            Assert.AreEqual(2, output.Count);
+            Assert.AreEqual("world", output[0]);
+            Assert.AreEqual(null, output[1]);
+        }
         /*
         Test case for a bug that was found during manual testing.
         Captured array was treated as non-reference and it generated broken C code
