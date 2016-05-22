@@ -108,7 +108,9 @@ namespace CodeGenCourseWork.Lexing.Tests
         {
             var reporter = new ErrorReporter();
             var lexer = new Lexer(@"..\..\Lexing\valid_numbers.txt", reporter);
-            
+
+            Assert.AreEqual(0, reporter.Errors.Count);
+
             Assert.AreEqual(new IntegerToken(1234), lexer.NextToken());
             Assert.AreEqual(new IntegerToken(12345568), lexer.NextToken());
             Assert.AreEqual(new RealToken(987.654), lexer.NextToken());
@@ -122,9 +124,9 @@ namespace CodeGenCourseWork.Lexing.Tests
             Assert.AreEqual(new RealToken(9.82e-4), lexer.NextToken());
             Assert.AreEqual(new MinusToken(), lexer.NextToken());
             Assert.AreEqual(new IntegerToken(42), lexer.NextToken());
+            Assert.AreEqual(new RealToken(1.23e3), lexer.NextToken());
             Assert.AreEqual(new EOFToken(), lexer.NextToken());
 
-            Assert.AreEqual(0, reporter.Errors.Count);
         }
 
         [TestMethod()]

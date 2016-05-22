@@ -37,32 +37,38 @@ namespace CodeGenCourseProject.Lexing
             int separatorLine = 0;
             int separatorColumn = 0;
 
-            // effectively a state machine for parsing integers and reals
+            // effectively a state machine for parsing integers and reals. 
+            // Extremely messy, unfortunately
             while (Reader.PeekCharacter().HasValue)
             {
                 var character = Reader.PeekCharacter().Value;
+                // append any nymbers
                 if (char.IsDigit(character))
                 {
                     builder.Append(character);
                 }
-                else if (character == '-')
+                // negative sign is handled by parser (ex. -93245)
+                else if (character == '-' || character == '+')
                 {
                     // only part of number if previous char was 'e', otherwise signals end of string
                     var str = builder.ToString();
                     if (str[str.Length - 1] == 'e')
                     {
-                        builder.Append('-');
+                        builder.Append(character);
                     }
                     else
                     {
                         break;
                     }
                 }
+                // if this is first dot, type is converted from integer to real.
+                // additional dots are a lexical error
                 else if (character == '.')
                 {
                     if (isInteger)
                     {
                         isInteger = false;
+                        // C# double.Parse expects the decimal separator to be culturally correct
                         builder.Append(CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator);
                         separatorLine = Reader.Line;
                         separatorColumn = Reader.Column;
@@ -88,6 +94,7 @@ namespace CodeGenCourseProject.Lexing
                     {
                         if (character == 'e')
                         {
+                            // language specification does not allow reals like 123e2
                             if (isInteger)
                             {
                                 Reporter.ReportError(
@@ -98,6 +105,7 @@ namespace CodeGenCourseProject.Lexing
                             }
                             else
                             {
+                                // only first 'e' is acceptable
                                 if (!sawExponent)
                                 {
                                     sawExponent = true;
@@ -167,6 +175,9 @@ namespace CodeGenCourseProject.Lexing
                 {
                     var index = str.IndexOf(CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator);
                     var length = str.Length;
+
+                    // above state machine accepts strings like 123.e3
+                    // check for those here
                     if (index == str.Length - 1 || !char.IsDigit(str[index + 1]))
                     {
                         Reporter.ReportError(
