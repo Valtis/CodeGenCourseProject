@@ -1,5 +1,6 @@
 ﻿namespace CodeGenCourseProject.AST
 {
+    // Visitor interface
     public interface ASTVisitor
     {
         void Visit(AddNode node);

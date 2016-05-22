@@ -7,7 +7,7 @@ namespace CodeGenCourseProject.AST
         public FunctionNode(
             int line, 
             int column, 
-            ASTNode name, 
+            IdentifierNode name, 
             ASTNode returnType, 
             ASTNode block, 
             params ASTNode[] parameters) : base(line, column)

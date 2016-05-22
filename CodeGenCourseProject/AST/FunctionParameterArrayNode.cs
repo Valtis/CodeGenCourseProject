@@ -6,7 +6,7 @@ namespace CodeGenCourseProject.AST
     {
         private readonly bool isReferenceParameter;
 
-        public FunctionParameterArrayNode(int line, int column, ASTNode expr, ASTNode name, ASTNode type, bool isReference) : base(line, column)
+        public FunctionParameterArrayNode(int line, int column, ASTNode expr, IdentifierNode name, IdentifierNode type, bool isReference) : base(line, column)
         {
             Children.Add(name);
             Children.Add(type);
