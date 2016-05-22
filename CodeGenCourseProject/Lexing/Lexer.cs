@@ -14,7 +14,7 @@ namespace CodeGenCourseProject.Lexing
         public const int BACKTRACK_BUFFER_SIZE = 4;
 
         private TextReader reader;
-        private ErrorReporter reporter;
+        private MessageReporter reporter;
         private IList<TokenScanner> parsers;
 
         // maintain a list of previously read tokens in order to allow backtracking if needed
@@ -28,7 +28,7 @@ namespace CodeGenCourseProject.Lexing
             }
         }
         
-        public Lexer(string path, ErrorReporter reporter, int spacesPerTab=8)
+        public Lexer(string path, MessageReporter reporter, int spacesPerTab=8)
         {
 
             reader = new TextReader(path, spacesPerTab);
@@ -130,7 +130,7 @@ namespace CodeGenCourseProject.Lexing
 
             // ...or report error if no scanner recognizes the token
             reporter.ReportError(
-                Error.LEXICAL_ERROR,
+                MessageKind.LEXICAL_ERROR,
                 "Invalid start for token: " + "'" + character.Value + "'",
                 line,
                 column

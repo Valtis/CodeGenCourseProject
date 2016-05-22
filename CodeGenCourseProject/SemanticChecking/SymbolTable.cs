@@ -9,10 +9,10 @@ namespace CodeGenCourseProject.SemanticChecking
     internal class SymbolTable
     {
         private int id;
-        private ErrorReporter reporter;
+        private MessageReporter reporter;
         Stack<SymbolTableLevel> stack;
 
-        public SymbolTable(ErrorReporter reporter)
+        public SymbolTable(MessageReporter reporter)
         {
             this.reporter = reporter;
             stack = new Stack<SymbolTableLevel>();

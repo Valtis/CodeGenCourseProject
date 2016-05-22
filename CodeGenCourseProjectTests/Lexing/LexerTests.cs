@@ -12,7 +12,7 @@ namespace CodeGenCourseWork.Lexing.Tests
         [TestMethod()]
         public void ValidIdentifiersAreAccepted()
         {
-            var reporter = new ErrorReporter();
+            var reporter = new MessageReporter();
             var lexer = new Lexer(@"..\..\Lexing\valid_identifiers.txt", reporter);
 
             Assert.AreEqual(new IdentifierToken("i"), lexer.NextToken());
@@ -34,7 +34,7 @@ namespace CodeGenCourseWork.Lexing.Tests
         [TestMethod()]
         public void ValidKeywordsAreHandled()
         {
-            var reporter = new ErrorReporter();
+            var reporter = new MessageReporter();
             var lexer = new Lexer(@"..\..\Lexing\valid_keywords.txt", reporter);
 
             Assert.AreEqual(new OrToken(), lexer.NextToken());
@@ -67,7 +67,7 @@ namespace CodeGenCourseWork.Lexing.Tests
         [TestMethod()]
         public void ValidOperatorsAreHandled()
         {
-            var reporter = new ErrorReporter();
+            var reporter = new MessageReporter();
             var lexer = new Lexer(@"..\..\Lexing\valid_operators.txt", reporter);
 
             Assert.AreEqual(new PlusToken(), lexer.NextToken());
@@ -106,7 +106,7 @@ namespace CodeGenCourseWork.Lexing.Tests
         [TestMethod()]
         public void ValidNumbersAreHandled()
         {
-            var reporter = new ErrorReporter();
+            var reporter = new MessageReporter();
             var lexer = new Lexer(@"..\..\Lexing\valid_numbers.txt", reporter);
 
             Assert.AreEqual(0, reporter.Errors.Count);
@@ -132,7 +132,7 @@ namespace CodeGenCourseWork.Lexing.Tests
         [TestMethod()]
         public void InvalidNumbersAreHandled()
         {
-            var reporter = new ErrorReporter();
+            var reporter = new MessageReporter();
             var lexer = new Lexer(@"..\..\Lexing\invalid_numbers.txt", reporter);
 
             Assert.AreEqual(new IntegerToken(1), lexer.NextToken());
@@ -160,57 +160,57 @@ namespace CodeGenCourseWork.Lexing.Tests
             Assert.AreEqual(11, reporter.Errors.Count);
 
 
-            Assert.AreEqual(Error.LEXICAL_ERROR, reporter.Errors[0].Type);
+            Assert.AreEqual(MessageKind.LEXICAL_ERROR, reporter.Errors[0].Type);
             Assert.AreEqual(0, reporter.Errors[0].Line);
             Assert.AreEqual(0, reporter.Errors[0].Column);
             Assert.AreEqual("Number does not fit 32 bit signed integer", reporter.Errors[0].Message);
             
-            Assert.AreEqual(Error.LEXICAL_ERROR, reporter.Errors[1].Type);
+            Assert.AreEqual(MessageKind.LEXICAL_ERROR, reporter.Errors[1].Type);
             Assert.AreEqual(2, reporter.Errors[1].Line);
             Assert.AreEqual(7, reporter.Errors[1].Column);
             Assert.IsTrue(reporter.Errors[1].Message.Contains("Erroneus extra decimal"));
             
-            Assert.AreEqual(Error.LEXICAL_ERROR, reporter.Errors[2].Type);
+            Assert.AreEqual(MessageKind.LEXICAL_ERROR, reporter.Errors[2].Type);
             Assert.AreEqual(4, reporter.Errors[2].Line);
             Assert.AreEqual(3, reporter.Errors[2].Column);
             Assert.IsTrue(reporter.Errors[2].Message.Contains("Decimal separator must be"));
 
-            Assert.AreEqual(Error.LEXICAL_ERROR, reporter.Errors[3].Type);
+            Assert.AreEqual(MessageKind.LEXICAL_ERROR, reporter.Errors[3].Type);
             Assert.AreEqual(6, reporter.Errors[3].Line);
             Assert.AreEqual(3, reporter.Errors[3].Column);
             Assert.IsTrue(reporter.Errors[3].Message.Contains("Integer cannot contain"));
 
-            Assert.AreEqual(Error.LEXICAL_ERROR, reporter.Errors[4].Type);
+            Assert.AreEqual(MessageKind.LEXICAL_ERROR, reporter.Errors[4].Type);
             Assert.AreEqual(8, reporter.Errors[4].Line);
             Assert.AreEqual(7, reporter.Errors[4].Column);
             Assert.IsTrue(reporter.Errors[4].Message.Contains("Real number cannot contain more"));
 
-            Assert.AreEqual(Error.LEXICAL_ERROR, reporter.Errors[5].Type);
+            Assert.AreEqual(MessageKind.LEXICAL_ERROR, reporter.Errors[5].Type);
             Assert.AreEqual(10, reporter.Errors[5].Line);
             Assert.AreEqual(3, reporter.Errors[5].Column);
             Assert.IsTrue(reporter.Errors[5].Message.Contains("Decimal separator must be"));
 
-            Assert.AreEqual(Error.LEXICAL_ERROR, reporter.Errors[6].Type);
+            Assert.AreEqual(MessageKind.LEXICAL_ERROR, reporter.Errors[6].Type);
             Assert.AreEqual(12, reporter.Errors[6].Line);
             Assert.AreEqual(8, reporter.Errors[6].Column);
             Assert.IsTrue(reporter.Errors[6].Message.Contains("Erroneus extra decimal"));
 
-            Assert.AreEqual(Error.LEXICAL_ERROR, reporter.Errors[7].Type);
+            Assert.AreEqual(MessageKind.LEXICAL_ERROR, reporter.Errors[7].Type);
             Assert.AreEqual(14, reporter.Errors[7].Line);
             Assert.AreEqual(0, reporter.Errors[7].Column);
             Assert.AreEqual("Number does not fit 64 bit real", reporter.Errors[7].Message);
 
-            Assert.AreEqual(Error.LEXICAL_ERROR, reporter.Errors[8].Type);
+            Assert.AreEqual(MessageKind.LEXICAL_ERROR, reporter.Errors[8].Type);
             Assert.AreEqual(15, reporter.Errors[8].Line);
             Assert.AreEqual(4, reporter.Errors[8].Column);
             Assert.IsTrue(reporter.Errors[8].Message.Contains("Invalid character 'x'"));
 
-            Assert.AreEqual(Error.LEXICAL_ERROR, reporter.Errors[9].Type);
+            Assert.AreEqual(MessageKind.LEXICAL_ERROR, reporter.Errors[9].Type);
             Assert.AreEqual(16, reporter.Errors[9].Line);
             Assert.AreEqual(8, reporter.Errors[9].Column);
             Assert.IsTrue(reporter.Errors[9].Message.Contains("Invalid character 'y'"));
 
-            Assert.AreEqual(Error.LEXICAL_ERROR, reporter.Errors[10].Type);
+            Assert.AreEqual(MessageKind.LEXICAL_ERROR, reporter.Errors[10].Type);
             Assert.AreEqual(17, reporter.Errors[10].Line);
             Assert.AreEqual(0, reporter.Errors[10].Column);
             Assert.IsTrue(reporter.Errors[10].Message.Contains("Real cannot end in 'e'"));
@@ -219,7 +219,7 @@ namespace CodeGenCourseWork.Lexing.Tests
         [TestMethod()]
         public void ValidCommentsAreHandled()
         {
-            var reporter = new ErrorReporter();
+            var reporter = new MessageReporter();
             var lexer = new Lexer(@"..\..\Lexing\valid_comments.txt", reporter);
 
             Assert.AreEqual(new VarToken(), lexer.NextToken());
@@ -237,7 +237,7 @@ namespace CodeGenCourseWork.Lexing.Tests
         [TestMethod()]
         public void InvalidCommentsAreHandled()
         {
-            var reporter = new ErrorReporter();
+            var reporter = new MessageReporter();
             var lexer = new Lexer(@"..\..\Lexing\invalid_comments.txt", reporter);
 
             Assert.AreEqual(new PlusToken(), lexer.NextToken());
@@ -247,13 +247,13 @@ namespace CodeGenCourseWork.Lexing.Tests
             Assert.AreEqual(2, reporter.Errors.Count);
 
 
-            Assert.AreEqual(Error.LEXICAL_ERROR, reporter.Errors[0].Type);
+            Assert.AreEqual(MessageKind.LEXICAL_ERROR, reporter.Errors[0].Type);
             Assert.AreEqual(0, reporter.Errors[0].Line);
             Assert.AreEqual(1, reporter.Errors[0].Column);
             Assert.IsTrue(reporter.Errors[0].Message.Contains("Unexpected character '+'"));
 
 
-            Assert.AreEqual(Error.LEXICAL_ERROR, reporter.Errors[1].Type);
+            Assert.AreEqual(MessageKind.LEXICAL_ERROR, reporter.Errors[1].Type);
             Assert.AreEqual(4, reporter.Errors[1].Line);
             Assert.AreEqual(26, reporter.Errors[1].Column);
             Assert.IsTrue(reporter.Errors[1].Message.Contains("Unexpected end of file"));
@@ -262,7 +262,7 @@ namespace CodeGenCourseWork.Lexing.Tests
         [TestMethod()]
         public void IntendationIsHandledCorrectlyWhenTabIs8Char()
         {
-            var reporter = new ErrorReporter();
+            var reporter = new MessageReporter();
             var lexer = new Lexer(@"..\..\Lexing\indentation.txt", reporter, 8);
 
 
@@ -316,7 +316,7 @@ namespace CodeGenCourseWork.Lexing.Tests
         [TestMethod()]
         public void IntendationIsHandledCorrectlyWhenTabIs4Char()
         {
-            var reporter = new ErrorReporter();
+            var reporter = new MessageReporter();
             var lexer = new Lexer(@"..\..\Lexing\indentation.txt", reporter, 4);
 
             Token token;
@@ -369,7 +369,7 @@ namespace CodeGenCourseWork.Lexing.Tests
         [TestMethod()]
         public void ValidStringsAreHandled()
         {
-            var reporter = new ErrorReporter();
+            var reporter = new MessageReporter();
             var lexer = new Lexer(@"..\..\Lexing\valid_strings.txt", reporter);
 
             Assert.AreEqual(new StringToken("hello"), lexer.NextToken());
@@ -383,7 +383,7 @@ namespace CodeGenCourseWork.Lexing.Tests
         [TestMethod()]
         public void IdentifiersDoNotAcceptIncorrectLetter()
         {
-            var reporter = new ErrorReporter();
+            var reporter = new MessageReporter();
             var lexer = new Lexer(@"..\..\Lexing\invalid_letters.txt", reporter);
 
             Assert.AreEqual(new IdentifierToken("ab"), lexer.NextToken());
@@ -395,16 +395,16 @@ namespace CodeGenCourseWork.Lexing.Tests
             Assert.AreEqual(4, reporter.Errors.Count);
             // a-z, A-Z, numbers, _ should only be accepted
             var helper = new TestHelper(reporter);
-            helper.AssertErrorMessage(0, Error.LEXICAL_ERROR, 0, 2, "Invalid start for token");
-            helper.AssertErrorMessage(1, Error.LEXICAL_ERROR, 0, 6, "Invalid start for token");
-            helper.AssertErrorMessage(2, Error.LEXICAL_ERROR, 0, 10, "Invalid start for token");
-            helper.AssertErrorMessage(3, Error.LEXICAL_ERROR, 0, 13, "Invalid start for token");
+            helper.AssertErrorMessage(0, MessageKind.LEXICAL_ERROR, 0, 2, "Invalid start for token");
+            helper.AssertErrorMessage(1, MessageKind.LEXICAL_ERROR, 0, 6, "Invalid start for token");
+            helper.AssertErrorMessage(2, MessageKind.LEXICAL_ERROR, 0, 10, "Invalid start for token");
+            helper.AssertErrorMessage(3, MessageKind.LEXICAL_ERROR, 0, 13, "Invalid start for token");
         }
 
         [TestMethod()]
         public void InvalidStringsAreHandled()
         {
-            var reporter = new ErrorReporter();
+            var reporter = new MessageReporter();
             var lexer = new Lexer(@"..\..\Lexing\invalid_strings.txt", reporter);
 
             Assert.AreEqual(new StringToken("invalidq escape sequeunces"), lexer.NextToken());
@@ -415,17 +415,17 @@ namespace CodeGenCourseWork.Lexing.Tests
 
             Assert.AreEqual(3, reporter.Errors.Count);
 
-            Assert.AreEqual(Error.LEXICAL_ERROR, reporter.Errors[0].Type);
+            Assert.AreEqual(MessageKind.LEXICAL_ERROR, reporter.Errors[0].Type);
             Assert.AreEqual(0, reporter.Errors[0].Line);
             Assert.AreEqual(9, reporter.Errors[0].Column);
             Assert.IsTrue(reporter.Errors[0].Message.Contains("Invalid escape sequence '\\q'"));
 
-            Assert.AreEqual(Error.LEXICAL_ERROR, reporter.Errors[1].Type);
+            Assert.AreEqual(MessageKind.LEXICAL_ERROR, reporter.Errors[1].Type);
             Assert.AreEqual(0, reporter.Errors[1].Line);
             Assert.AreEqual(24, reporter.Errors[1].Column);
             Assert.IsTrue(reporter.Errors[1].Message.Contains("Invalid escape sequence '\\u'"));
 
-            Assert.AreEqual(Error.LEXICAL_ERROR, reporter.Errors[2].Type);
+            Assert.AreEqual(MessageKind.LEXICAL_ERROR, reporter.Errors[2].Type);
             Assert.AreEqual(2, reporter.Errors[2].Line);
             Assert.AreEqual(20, reporter.Errors[2].Column);
             Assert.IsTrue(reporter.Errors[2].Message.Contains("String is not terminated"));
@@ -434,7 +434,7 @@ namespace CodeGenCourseWork.Lexing.Tests
         [TestMethod()]
         public void BacktrackingPeekingAndNextWorks()
         {
-            var reporter = new ErrorReporter();
+            var reporter = new MessageReporter();
             var lexer = new Lexer(@"..\..\Lexing\backtracking.txt", reporter);
 
             Assert.AreEqual(new IntegerToken(1), lexer.NextToken());

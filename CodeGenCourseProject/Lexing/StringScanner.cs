@@ -11,7 +11,7 @@ namespace CodeGenCourseProject.Lexing
     internal class StringScanner : TokenScanner
     {
         private IDictionary<char, char> escapeSequences;
-        internal StringScanner(TextReader reader, ErrorReporter reporter) : base(reader, reporter)
+        internal StringScanner(TextReader reader, MessageReporter reporter) : base(reader, reporter)
         {
             escapeSequences = new Dictionary<char, char>();
             escapeSequences['n'] = '\n';
@@ -50,7 +50,7 @@ namespace CodeGenCourseProject.Lexing
                   }
                   else if (character == '\n')
                   {
-                      Reporter.ReportError(Error.LEXICAL_ERROR,
+                      Reporter.ReportError(MessageKind.LEXICAL_ERROR,
                           "String is not terminated",
                           Reader.Line,
                           Reader.Column
@@ -89,7 +89,7 @@ namespace CodeGenCourseProject.Lexing
             else
             {
                 Reporter.ReportError(
-                    Error.LEXICAL_ERROR,
+                    MessageKind.LEXICAL_ERROR,
                     "Invalid escape sequence '\\" + nextChar + "'",
                     Reader.Line,
                     Reader.Column);

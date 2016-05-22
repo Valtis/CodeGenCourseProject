@@ -11,7 +11,7 @@ namespace CodeGenCourseProject.SemanticChecking
      */
     public class SemanticChecker : ASTVisitor
     {
-        private ErrorReporter reporter;
+        private MessageReporter reporter;
         private SymbolTable symbolTable;
         private const string ERROR_TYPE = "errortype";
         public const string INTEGER_TYPE = "integer";
@@ -35,7 +35,7 @@ namespace CodeGenCourseProject.SemanticChecking
         // used to verify return statement type
         private Stack<string> functionReturnTypeStack;
 
-        public SemanticChecker(ErrorReporter reporter)
+        public SemanticChecker(MessageReporter reporter)
         {
             this.reporter = reporter;
             symbolTable = new SymbolTable(reporter);
@@ -60,7 +60,7 @@ namespace CodeGenCourseProject.SemanticChecking
             if (expr.NodeType() != ERROR_TYPE && expr.NodeType() != INTEGER_TYPE)
             {
                 reporter.ReportError(
-                    Error.SEMANTIC_ERROR,
+                    MessageKind.SEMANTIC_ERROR,
                     "Invalid type '" + expr.NodeType() + "' for array indexing",
                     expr.Line,
                     expr.Column);
@@ -80,7 +80,7 @@ namespace CodeGenCourseProject.SemanticChecking
             if (!(symbol is ArraySymbol))
             {
                 reporter.ReportError(
-                    Error.SEMANTIC_ERROR,
+                    MessageKind.SEMANTIC_ERROR,
                     "Cannot index '" + name.Value + "' as it is not an array",
                     node.Line,
                     node.Column);
@@ -118,7 +118,7 @@ namespace CodeGenCourseProject.SemanticChecking
                 if (exprChild.NodeType() != INTEGER_TYPE)
                 {
                     reporter.ReportError(
-                        Error.SEMANTIC_ERROR,
+                        MessageKind.SEMANTIC_ERROR,
                         "Invalid type '" + exprChild.NodeType() + "' for array size expression",
                         exprChild.Line,
                         exprChild.Column);
@@ -163,14 +163,14 @@ namespace CodeGenCourseProject.SemanticChecking
             if (expr.NodeType() != ERROR_TYPE && expr.NodeType() != BOOLEAN_TYPE)
             {
                 reporter.ReportError(
-                    Error.SEMANTIC_ERROR,
+                    MessageKind.SEMANTIC_ERROR,
                     "Invalid type '" + expr.NodeType() + "' for while statement condition",
                     expr.Line,
                     expr.Column
                     );
 
                 reporter.ReportError(
-                    Error.NOTE_GENERIC,
+                    MessageKind.NOTE_GENERIC,
                     "While statement condition must have type 'boolean'", 0, 0);
 
             }
@@ -186,7 +186,7 @@ namespace CodeGenCourseProject.SemanticChecking
             if (functionReturnTypeStack.Count == 0)
             {
                 reporter.ReportError(
-                    Error.SEMANTIC_ERROR,
+                    MessageKind.SEMANTIC_ERROR,
                     "Return statement outside function or procedure body",
                     returnNode.Line,
                     returnNode.Column);
@@ -204,7 +204,7 @@ namespace CodeGenCourseProject.SemanticChecking
             if (returnNode.Children.Count == 1 && returnType == VOID_TYPE && returnNode.Children[0].NodeType() != ERROR_TYPE)
             {
                 reporter.ReportError(
-                    Error.SEMANTIC_ERROR,
+                    MessageKind.SEMANTIC_ERROR,
                     "Return statement in procedure cannot return a value",
                     returnNode.Line,
                     returnNode.Column);
@@ -216,7 +216,7 @@ namespace CodeGenCourseProject.SemanticChecking
                returnNode.Children[0].NodeType() != ERROR_TYPE && returnType != ERROR_TYPE)
             {
                 reporter.ReportError(
-                    Error.SEMANTIC_ERROR,
+                    MessageKind.SEMANTIC_ERROR,
                     "Return statement has type '" + returnNode.Children[0].NodeType() +
                     "' when enclosing function has type '" + returnType + "'",
                     returnNode.Children[0].Line,
@@ -227,7 +227,7 @@ namespace CodeGenCourseProject.SemanticChecking
             if (returnNode.Children.Count == 0 && returnType != VOID_TYPE && returnType != ERROR_TYPE)
             {
                 reporter.ReportError(
-                    Error.SEMANTIC_ERROR,
+                    MessageKind.SEMANTIC_ERROR,
                     "Return statement must have an expression with type '" + returnType +
                     "', as it is enclosed by a function, not procedure",
                     returnNode.Line,
@@ -305,12 +305,12 @@ namespace CodeGenCourseProject.SemanticChecking
             if (expr.NodeType() != ERROR_TYPE && expr.NodeType() != BOOLEAN_TYPE)
             {
                 reporter.ReportError(
-                    Error.SEMANTIC_ERROR,
+                    MessageKind.SEMANTIC_ERROR,
                     "Invalid type '" + expr.NodeType() + "' for if statement condition",
                     expr.Line,
                     expr.Column);
 
-                reporter.ReportError(Error.NOTE_GENERIC, "If statement condition must have type 'boolean'", 0, 0);
+                reporter.ReportError(MessageKind.NOTE_GENERIC, "If statement condition must have type 'boolean'", 0, 0);
             }
 
         }
@@ -430,7 +430,7 @@ namespace CodeGenCourseProject.SemanticChecking
             if (symbol is FunctionSymbol)
             {
                 reporter.ReportError(
-                    Error.SEMANTIC_ERROR,
+                    MessageKind.SEMANTIC_ERROR,
                     "Cannot assign into function or procedure",
                     nameNode.Line,
                     nameNode.Column);
@@ -442,7 +442,7 @@ namespace CodeGenCourseProject.SemanticChecking
                 child.NodeType() != expression.NodeType())
             {
                 reporter.ReportError(
-                    Error.SEMANTIC_ERROR,
+                    MessageKind.SEMANTIC_ERROR,
                     "Cannot assign an expression with type '" + expression.NodeType() + "' into a variable " +
                     "with type '" + child.NodeType() + "'",
                     expression.Line,
@@ -625,7 +625,7 @@ namespace CodeGenCourseProject.SemanticChecking
                         if (argumentCount == 0)
                         {
                             reporter.ReportError(
-                                Error.SEMANTIC_ERROR,
+                                MessageKind.SEMANTIC_ERROR,
                                 "Predefined procedure 'read' expects at least one argument",
                                 nameNode.Line,
                                 nameNode.Column);
@@ -641,13 +641,13 @@ namespace CodeGenCourseProject.SemanticChecking
                             if (!acceptableTypes.Contains(child.NodeType()))
                             {
                                 reporter.ReportError(
-                                    Error.SEMANTIC_ERROR,
+                                    MessageKind.SEMANTIC_ERROR,
                                     "Invalid argument for predefined function 'read'",
                                     child.Line,
                                     child.Column);
 
                                 reporter.ReportError(
-                                    Error.NOTE_GENERIC,
+                                    MessageKind.NOTE_GENERIC,
                                     "Argument has type '" + child.NodeType() + "' when the function expects one of '" +
                                     INTEGER_TYPE + "', '" + STRING_TYPE + "' or '" + REAL_TYPE + "'",
                                     child.Line,
@@ -656,13 +656,13 @@ namespace CodeGenCourseProject.SemanticChecking
                             else if (!IsWritable(child, acceptableTypes))
                             {
                                 reporter.ReportError(
-                                    Error.SEMANTIC_ERROR,
+                                    MessageKind.SEMANTIC_ERROR,
                                     "Invalid argument for predefined function 'read'",
                                     child.Line,
                                     child.Column);
 
                                 reporter.ReportError(
-                                    Error.NOTE_GENERIC,
+                                    MessageKind.NOTE_GENERIC,
                                     "Argument must be a non-array variable or indexed array",
                                     child.Line,
                                     child.Column);
@@ -679,7 +679,7 @@ namespace CodeGenCourseProject.SemanticChecking
                             if (!acceptableTypes.Contains(child.NodeType()))
                             {
                                 reporter.ReportError(
-                                    Error.SEMANTIC_ERROR,
+                                    MessageKind.SEMANTIC_ERROR,
                                     "Invalid argument type '" + child.NodeType() + "' for predefined function 'writeln'",
                                     child.Line,
                                     child.Column);
@@ -698,7 +698,7 @@ namespace CodeGenCourseProject.SemanticChecking
             else if (!(symbol is FunctionSymbol))
             {
                 reporter.ReportError(
-                    Error.SEMANTIC_ERROR,
+                    MessageKind.SEMANTIC_ERROR,
                     "Identifier '" + symbol.Name + "' is not callable",
                     callNode.Line,
                     callNode.Column
@@ -712,7 +712,7 @@ namespace CodeGenCourseProject.SemanticChecking
             if (functionSymbol.ParamTypes.Count != argumentCount)
             {
                 reporter.ReportError(
-                    Error.SEMANTIC_ERROR,
+                    MessageKind.SEMANTIC_ERROR,
                     "Call to '" + symbol.Name + "' has " + argumentCount + " arguments but '" +
                     symbol.Name + "' has " + functionSymbol.ParamTypes.Count + " parameters",
                     callNode.Line,
@@ -731,7 +731,7 @@ namespace CodeGenCourseProject.SemanticChecking
                 if (argType != ERROR_TYPE && paramType != ERROR_TYPE && argType != paramType)
                 {
                     reporter.ReportError(
-                        Error.SEMANTIC_ERROR,
+                        MessageKind.SEMANTIC_ERROR,
                         "Argument " + (i + 1) + " for '" + symbol.Name + "' has type '" +
                         argType + "' but corresponding parameter has type '" + paramType + "'",
                         callNode.Children[i + 1].Line,
@@ -748,14 +748,14 @@ namespace CodeGenCourseProject.SemanticChecking
                 if (!IsWritable(callNode.Children[i + 1], acceptableTypes) && isReference)
                 {
                     reporter.ReportError(
-                       Error.SEMANTIC_ERROR,
+                       MessageKind.SEMANTIC_ERROR,
                        "Argument " + (i + 1) + " for '" + symbol.Name + "' is invalid, " +
                        "as the corresponding parameter is reference type",
                        callNode.Children[i + 1].Line,
                        callNode.Children[i + 1].Column);
 
                     reporter.ReportError(
-                       Error.NOTE_GENERIC,
+                       MessageKind.NOTE_GENERIC,
                        "Argument must be writable",
                        0,0);
                     ++argErrors;
@@ -783,13 +783,13 @@ namespace CodeGenCourseProject.SemanticChecking
             if (expr.NodeType() != ERROR_TYPE && expr.NodeType() != BOOLEAN_TYPE)
             {
                 reporter.ReportError(
-                    Error.SEMANTIC_ERROR,
+                    MessageKind.SEMANTIC_ERROR,
                     "Invalid type '" + expr.NodeType() + "' for assert statement",
                     expr.Line,
                     expr.Column);
 
                 reporter.ReportError(
-                    Error.NOTE_GENERIC,
+                    MessageKind.NOTE_GENERIC,
                     "Assert statement must have type 'boolean'", 0, 0);
             }
         }
@@ -806,7 +806,7 @@ namespace CodeGenCourseProject.SemanticChecking
             if (!type.Contains(ARRAY_PREFIX) && type != ERROR_TYPE)
             {
                 reporter.ReportError(
-                    Error.SEMANTIC_ERROR,
+                    MessageKind.SEMANTIC_ERROR,
                     "Cannot get the size of an expression with type '" + type + "'",
                     node.Line,
                     node.Column);
@@ -869,7 +869,7 @@ namespace CodeGenCourseProject.SemanticChecking
                 if (child.NodeType() != ERROR_TYPE && child.NodeType() != INTEGER_TYPE)
                 {
                     reporter.ReportError(
-                        Error.SEMANTIC_ERROR,
+                        MessageKind.SEMANTIC_ERROR,
                         "Invalid type '" + child.NodeType() + "' for array size expression",
                         child.Line,
                         child.Column);
@@ -919,12 +919,12 @@ namespace CodeGenCourseProject.SemanticChecking
                     types = "one of " + types;
                 }
                 reporter.ReportError(
-                    Error.SEMANTIC_ERROR,
+                    MessageKind.SEMANTIC_ERROR,
                     "Invalid type '" + child.NodeType() + "' for operator '" + op + "'",
                     node.Line,
                     node.Column);
 
-                reporter.ReportError(Error.NOTE_GENERIC, "Operator expects " + types, 0, 0);
+                reporter.ReportError(MessageKind.NOTE_GENERIC, "Operator expects " + types, 0, 0);
 
                 node.SetNodeType(ERROR_TYPE);
                 return;
@@ -958,19 +958,19 @@ namespace CodeGenCourseProject.SemanticChecking
                 node.SetNodeType(ERROR_TYPE);
 
                 reporter.ReportError(
-                    Error.SEMANTIC_ERROR,
+                    MessageKind.SEMANTIC_ERROR,
                     "Invalid types '" + lhs.NodeType() + "' and '" + rhs.NodeType() + "' for operator '" + op + "'",
                     node.Line,
                     node.Column);
 
                 reporter.ReportError(
-                    Error.NOTE,
+                    MessageKind.NOTE,
                     "Left hand side expression has type '" + lhs.NodeType() + "'",
                     lhs.Line,
                     lhs.Column);
 
                 reporter.ReportError(
-                    Error.NOTE,
+                    MessageKind.NOTE,
                     "Right hand side expression has type '" + rhs.NodeType() + "'",
                     rhs.Line,
                     rhs.Column);
@@ -986,12 +986,12 @@ namespace CodeGenCourseProject.SemanticChecking
                     types = "one of " + types;
                 }
                 reporter.ReportError(
-                    Error.SEMANTIC_ERROR,
+                    MessageKind.SEMANTIC_ERROR,
                     "Invalid type '" + lhs.NodeType() + "' for operator '" + op + "'",
                     node.Line,
                     node.Column);
 
-                reporter.ReportError(Error.NOTE_GENERIC, "Operator expects " + types, 0, 0);
+                reporter.ReportError(MessageKind.NOTE_GENERIC, "Operator expects " + types, 0, 0);
 
                 node.SetNodeType(ERROR_TYPE);
                 return;
@@ -1047,7 +1047,7 @@ namespace CodeGenCourseProject.SemanticChecking
         private void ReportUnavailableType(IdentifierNode name)
         {
             reporter.ReportError(
-                    Error.SEMANTIC_ERROR,
+                    MessageKind.SEMANTIC_ERROR,
                     "Type '" + name.Value + "' is inaccessible",
                     name.Line,
                     name.Column);
@@ -1055,7 +1055,7 @@ namespace CodeGenCourseProject.SemanticChecking
             var symbol = symbolTable.GetSymbol(name.Value);
 
             reporter.ReportError(
-                    Error.NOTE,
+                    MessageKind.NOTE,
                     "Previous declaration overrides the type",
                     symbol.Line,
                     symbol.Column);
@@ -1064,7 +1064,7 @@ namespace CodeGenCourseProject.SemanticChecking
         private void ReportRedeclaration(IdentifierNode nameNode)
         {
             reporter.ReportError(
-                Error.SEMANTIC_ERROR,
+                MessageKind.SEMANTIC_ERROR,
                 "Redeclaration of identifier '" + nameNode.Value + "'",
                 nameNode.Line,
                 nameNode.Column);
@@ -1076,7 +1076,7 @@ namespace CodeGenCourseProject.SemanticChecking
         private void ReportUndeclaredIdentifier(IdentifierNode nameNode)
         {
             reporter.ReportError(
-                Error.SEMANTIC_ERROR,
+                MessageKind.SEMANTIC_ERROR,
                 "Identifier '" + nameNode.Value + "' has not been declared",
                 nameNode.Line,
                 nameNode.Column);
@@ -1085,7 +1085,7 @@ namespace CodeGenCourseProject.SemanticChecking
         private void ReportPreviousDeclaration(Symbol symbol)
         {
             reporter.ReportError(
-                Error.NOTE,
+                MessageKind.NOTE,
                 "Identifier '" + symbol.Name + "' was declared here",
                 symbol.Line,
                 symbol.Column);

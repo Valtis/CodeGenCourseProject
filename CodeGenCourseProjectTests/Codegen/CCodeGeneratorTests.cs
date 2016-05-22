@@ -65,7 +65,7 @@ namespace CodeGenCourseProject.Codegen.Tests
         }
         private List<string> CompileAndRun(string file, string extraArgs = "", IList<string> stdin = null)
         {
-            var reporter = new ErrorReporter();
+            var reporter = new MessageReporter();
             var lexer = new Lexer(@"..\..\Codegen\" + file, reporter);
             var parser = new Parser(lexer, reporter);
 

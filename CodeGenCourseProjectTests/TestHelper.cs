@@ -6,15 +6,15 @@ namespace CodeGenCourseProjectTests
 {
     internal class TestHelper
     {
-        ErrorReporter reporter;
-        internal TestHelper(ErrorReporter reporter)
+        MessageReporter reporter;
+        internal TestHelper(MessageReporter reporter)
         {
             this.reporter = reporter;
         }
 
         internal void AssertErrorMessage(
             int errorNumber,
-            Error errorKind,
+            MessageKind errorKind,
             int line,
             int column,
             params string [] messages)

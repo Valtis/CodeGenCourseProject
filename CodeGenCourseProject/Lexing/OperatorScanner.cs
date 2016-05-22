@@ -12,7 +12,7 @@ namespace CodeGenCourseProject.Lexing
         /*
         Parses operator tokens 
         */
-        internal OperatorScanner(TextReader reader, ErrorReporter reporter) : base(reader, reporter)
+        internal OperatorScanner(TextReader reader, MessageReporter reporter) : base(reader, reporter)
         {
             operators = new Dictionary<string, Type>();
 

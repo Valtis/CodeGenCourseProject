@@ -5,8 +5,8 @@ using System.Collections.Generic;
 internal class SymbolTableLevel
 {
     private IDictionary<string, Symbol> symbols;
-    private ErrorReporter reporter;
-    public SymbolTableLevel(ErrorReporter reporter)
+    private MessageReporter reporter;
+    public SymbolTableLevel(MessageReporter reporter)
     {
         this.reporter = reporter;
         symbols = new Dictionary<string, Symbol>();
@@ -17,7 +17,7 @@ internal class SymbolTableLevel
         if (symbols.ContainsKey(s.Name))
         {
             reporter.ReportError(
-                Error.SEMANTIC_ERROR,
+                MessageKind.SEMANTIC_ERROR,
                 "Redeclaration of identifier '" + s.Name + "'",
                 s.Line,
                 s.Column);
@@ -25,7 +25,7 @@ internal class SymbolTableLevel
             var original = GetSymbol(s.Name);
 
             reporter.ReportError(
-                Error.NOTE,
+                MessageKind.NOTE,
                 "Identifier '" + original.Name + "' was declared here",
                 original.Line,
                 original.Column);

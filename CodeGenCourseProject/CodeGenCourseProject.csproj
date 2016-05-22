@@ -89,8 +89,8 @@
     <Compile Include="Codegen\CodeGenerator.cs" />
     <Compile Include="CFG\Analysis\CFGAnalyzer.cs" />
     <Compile Include="Codegen\C\GC.cs" />
-    <Compile Include="ErrorHandling\ErrorData.cs" />
-    <Compile Include="ErrorHandling\ErrorReporter.cs" />
+    <Compile Include="ErrorHandling\MessageData.cs" />
+    <Compile Include="ErrorHandling\MessageReporter.cs" />
     <Compile Include="InternalCompilerError.cs" />
     <Compile Include="Lexing\BacktrackBuffer.cs" />
     <Compile Include="Lexing\CommentScanner.cs" />

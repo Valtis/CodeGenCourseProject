@@ -15,7 +15,7 @@ namespace CodeGenCourseProject.Parsing
     public class Parser
     {
         private Lexer lexer;
-        private ErrorReporter reporter;
+        private MessageReporter reporter;
 
         /* Token - AstNode pairs for operators */
         private IDictionary<Type, Type> relationalOperators;
@@ -25,7 +25,7 @@ namespace CodeGenCourseProject.Parsing
         // valid types (integer, real, string, boolean)
         private ISet<string> validTypes;
 
-        public Parser(Lexer lexer, ErrorReporter reporter)
+        public Parser(Lexer lexer, MessageReporter reporter)
         {
             this.lexer = lexer;
             this.reporter = reporter;
@@ -86,7 +86,7 @@ namespace CodeGenCourseProject.Parsing
             catch (InvalidParseException ex)
             {
                 reporter.ReportError(
-                    Error.NOTE_GENERIC,
+                    MessageKind.NOTE_GENERIC,
                     "Main block must end in a '.'",
                     0,
                     0);
@@ -95,7 +95,7 @@ namespace CodeGenCourseProject.Parsing
             if (!(lexer.PeekToken() is EOFToken))
             {
                 reporter.ReportError(
-                    Error.SYNTAX_ERROR,
+                    MessageKind.SYNTAX_ERROR,
                     "Unexpected token " + lexer.PeekToken().ToString() + " after the end of program block",
                     lexer.PeekToken().Line,
                     lexer.PeekToken().Column);
@@ -146,7 +146,7 @@ namespace CodeGenCourseProject.Parsing
             catch (InvalidParseException ex)
             {
                 reporter.ReportError(
-                    Error.NOTE,
+                    MessageKind.NOTE,
                     "Error occured when parsing code block beginning here",
                     begin.Line,
                     begin.Column);
@@ -201,7 +201,7 @@ namespace CodeGenCourseProject.Parsing
             catch (InvalidParseException ex)
             {
                 reporter.ReportError(
-                   Error.NOTE,
+                   MessageKind.NOTE,
                    "Error occured when parsing statement",
                    next.Line,
                    next.Column);
@@ -210,7 +210,7 @@ namespace CodeGenCourseProject.Parsing
             }
 
             reporter.ReportError(
-                Error.SYNTAX_ERROR,
+                MessageKind.SYNTAX_ERROR,
                 "Unexpected token " + next.ToString() + " when start of a statement was expected",
                  next.Line,
                  next.Column);
@@ -255,7 +255,7 @@ namespace CodeGenCourseProject.Parsing
             catch (InvalidParseException ex)
             {
                 reporter.ReportError(
-                   Error.NOTE,
+                   MessageKind.NOTE,
                    "Error occured when parsing function call",
                    identifier.Line,
                    identifier.Column);
@@ -307,7 +307,7 @@ namespace CodeGenCourseProject.Parsing
                 var token = lexer.PeekToken();
                 if (token is EqualsToken)
                 {
-                    reporter.ReportError(Error.NOTE_GENERIC,
+                    reporter.ReportError(MessageKind.NOTE_GENERIC,
                         "Perhaps you meant to use assignment ':=' instead of comparison '='?",
                         0,
                         0);
@@ -324,7 +324,7 @@ namespace CodeGenCourseProject.Parsing
             catch (InvalidParseException ex)
             {
                 reporter.ReportError(
-                    Error.NOTE,
+                    MessageKind.NOTE,
                     "Error occured while parsing variable assignment",
                     assignmentToken.Line,
                     assignmentToken.Column);
@@ -357,7 +357,7 @@ namespace CodeGenCourseProject.Parsing
             catch (InvalidParseException ex)
             {
                 reporter.ReportError(
-                    Error.NOTE,
+                    MessageKind.NOTE,
                     "Error occured while parsing return statement",
                     ret.Line,
                     ret.Column);
@@ -383,13 +383,13 @@ namespace CodeGenCourseProject.Parsing
                 if (lexer.PeekToken() is BeginToken)
                 {
                     reporter.ReportError(
-                        Error.SYNTAX_ERROR,
+                        MessageKind.SYNTAX_ERROR,
                         "If statement condition must be followed by 'then'",
                         lexer.PeekToken().Line,
                         lexer.PeekToken().Column);
 
                     reporter.ReportError(
-                        Error.NOTE,
+                        MessageKind.NOTE,
                         "Error occured while parsing if statement",
                         ifToken.Line,
                         ifToken.Column);
@@ -422,7 +422,7 @@ namespace CodeGenCourseProject.Parsing
             catch (InvalidParseException ex)
             {
                 reporter.ReportError(
-                    Error.NOTE,
+                    MessageKind.NOTE,
                     "Error occured while parsing if statement",
                     ifToken.Line,
                     ifToken.Column);
@@ -442,13 +442,13 @@ namespace CodeGenCourseProject.Parsing
                 if (lexer.PeekToken() is BeginToken)
                 {
                     reporter.ReportError(
-                        Error.SYNTAX_ERROR,
+                        MessageKind.SYNTAX_ERROR,
                         "While statement condition must be followed by 'do'",
                         lexer.PeekToken().Line,
                         lexer.PeekToken().Column);
 
                     reporter.ReportError(
-                        Error.NOTE,
+                        MessageKind.NOTE,
                         "Error occured while parsing while statement",
                         whileToken.Line,
                         whileToken.Column);
@@ -469,7 +469,7 @@ namespace CodeGenCourseProject.Parsing
             catch (InvalidParseException ex)
             {
                 reporter.ReportError(
-                    Error.NOTE,
+                    MessageKind.NOTE,
                     "Error occured while parsing while statement",
                     whileToken.Line,
                     whileToken.Column);
@@ -488,7 +488,7 @@ namespace CodeGenCourseProject.Parsing
             catch (InvalidParseException ex)
             {
                 reporter.ReportError(
-                    Error.NOTE,
+                    MessageKind.NOTE,
                     "Error occured while parsing variable declaration",
                     varToken.Line,
                     varToken.Column);
@@ -558,14 +558,14 @@ namespace CodeGenCourseProject.Parsing
             if (!validTypes.Contains(type.Value))
             {
                 reporter.ReportError(
-                    Error.SYNTAX_ERROR,
+                    MessageKind.SYNTAX_ERROR,
                     "'" + type.Value + "' is not a valid type",
                     type.Line,
                     type.Column);
 
                 var types = string.Join(", ", validTypes);
                 reporter.ReportError(
-                    Error.NOTE_GENERIC,
+                    MessageKind.NOTE_GENERIC,
                     "Valid types are " + types,
                     0, 0);
                 throw new InvalidParseException();
@@ -585,12 +585,12 @@ namespace CodeGenCourseProject.Parsing
                 // for better error handling
                 if (lexer.PeekToken() is BeginToken)
                 {
-                    reporter.ReportError(Error.SYNTAX_ERROR,
+                    reporter.ReportError(MessageKind.SYNTAX_ERROR,
                         "Procedure declaration must end in ';'",
                         lexer.PeekToken().Line,
                         lexer.PeekToken().Column);
 
-                    reporter.ReportError(Error.NOTE,
+                    reporter.ReportError(MessageKind.NOTE,
                         "Error occured while parsing procedure declaration",
                         procedure.Line,
                         procedure.Column);
@@ -609,7 +609,7 @@ namespace CodeGenCourseProject.Parsing
             } catch (InvalidParseException ex)
             {
                 reporter.ReportError(
-                   Error.NOTE,
+                   MessageKind.NOTE,
                    "Error occured while parsing procedure declaration",
                    procedure.Line,
                    procedure.Column);
@@ -633,12 +633,12 @@ namespace CodeGenCourseProject.Parsing
                 // for better error handling
                 if (lexer.PeekToken() is BeginToken)
                 {
-                    reporter.ReportError(Error.SYNTAX_ERROR,
+                    reporter.ReportError(MessageKind.SYNTAX_ERROR,
                         "Procedure declaration must end in ';'",
                         lexer.PeekToken().Line,
                         lexer.PeekToken().Column);
 
-                    reporter.ReportError(Error.NOTE,
+                    reporter.ReportError(MessageKind.NOTE,
                         "Error occured while parsing function declaration",
                         function.Line,
                         function.Column);
@@ -659,7 +659,7 @@ namespace CodeGenCourseProject.Parsing
             catch (InvalidParseException ex)
             {
                 reporter.ReportError(
-                   Error.NOTE,
+                   MessageKind.NOTE,
                    "Error occured while parsing function declaration",
                    function.Line,
                    function.Column);
@@ -881,7 +881,7 @@ namespace CodeGenCourseProject.Parsing
             }
 
             reporter.ReportError(
-                Error.SYNTAX_ERROR,
+                MessageKind.SYNTAX_ERROR,
                 "Unexpected token " + token.ToString() + " when expression was expected",
                 token.Line,
                 token.Column);
@@ -936,7 +936,7 @@ namespace CodeGenCourseProject.Parsing
         private void ReportUnexpectedToken(Token expected, Token actual)
         {
             reporter.ReportError(
-                Error.SYNTAX_ERROR,
+                MessageKind.SYNTAX_ERROR,
                 "Expected token " + expected + " but was actually " + actual,
                 actual.Line,
                 actual.Column);

@@ -14,7 +14,7 @@ namespace CodeGenCourseProject.CFG.Tests
     {
         private IDictionary<string, CFGraph> GetCFGGraph(string name)
         {
-            var reporter = new ErrorReporter();
+            var reporter = new MessageReporter();
             var lexer = new Lexer(@"..\..\CFG\" + name, reporter);
             var parser = new Parser(lexer, reporter);
 

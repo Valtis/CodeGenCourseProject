@@ -13,7 +13,7 @@ namespace CodeGenCourseProject.Lexing
     {
 
 
-        internal NumberScanner(TextReader reader, ErrorReporter reporter) : base(reader, reporter)
+        internal NumberScanner(TextReader reader, MessageReporter reporter) : base(reader, reporter)
         {
         }
 
@@ -76,13 +76,13 @@ namespace CodeGenCourseProject.Lexing
                     else
                     {
                         Reporter.ReportError(
-                            Error.LEXICAL_ERROR,
+                            MessageKind.LEXICAL_ERROR,
                             "Erroneus extra decimal separator",
                             Reader.Line,
                             Reader.Column);
 
                         Reporter.ReportError(
-                            Error.NOTE,
+                            MessageKind.NOTE,
                             "Original separator is here",
                             separatorLine,
                             separatorColumn);
@@ -98,7 +98,7 @@ namespace CodeGenCourseProject.Lexing
                             if (isInteger)
                             {
                                 Reporter.ReportError(
-                                    Error.LEXICAL_ERROR,
+                                    MessageKind.LEXICAL_ERROR,
                                     "Integer cannot contain exponent",
                                     Reader.Line,
                                     Reader.Column);
@@ -117,13 +117,13 @@ namespace CodeGenCourseProject.Lexing
                                 else
                                 {
                                     Reporter.ReportError(
-                                        Error.LEXICAL_ERROR,
+                                        MessageKind.LEXICAL_ERROR,
                                         "Real number cannot contain more than one exponent",
                                         Reader.Line,
                                         Reader.Column);
 
                                     Reporter.ReportError(
-                                      Error.NOTE,
+                                      MessageKind.NOTE,
                                       "Original exponent here",
                                       exponentLine,
                                       exponentColumn);
@@ -133,7 +133,7 @@ namespace CodeGenCourseProject.Lexing
                         else
                         {
                             Reporter.ReportError(
-                                Error.LEXICAL_ERROR,
+                                MessageKind.LEXICAL_ERROR,
                                 "Invalid character '" + character + "' encountered when parsing a number",
                                 Reader.Line,
                                 Reader.Column);
@@ -160,7 +160,7 @@ namespace CodeGenCourseProject.Lexing
                 catch (OverflowException e)
                 {
                     Reporter.ReportError(
-                        Error.LEXICAL_ERROR,
+                        MessageKind.LEXICAL_ERROR,
                         "Number does not fit 32 bit signed integer",
                         line,
                         column);
@@ -181,7 +181,7 @@ namespace CodeGenCourseProject.Lexing
                     if (index == str.Length - 1 || !char.IsDigit(str[index + 1]))
                     {
                         Reporter.ReportError(
-                            Error.LEXICAL_ERROR,
+                            MessageKind.LEXICAL_ERROR,
                             "Decimal separator must be followed by a number",
                             separatorLine,
                             separatorColumn);
@@ -192,7 +192,7 @@ namespace CodeGenCourseProject.Lexing
                 if (str[str.Length - 1] == 'e')
                 {
                     Reporter.ReportError(
-                        Error.LEXICAL_ERROR,
+                        MessageKind.LEXICAL_ERROR,
                         "Real cannot end in 'e'",
                         line,
                         column);
@@ -208,7 +208,7 @@ namespace CodeGenCourseProject.Lexing
                 catch (OverflowException e)
                 {
                     Reporter.ReportError(
-                        Error.LEXICAL_ERROR,
+                        MessageKind.LEXICAL_ERROR,
                         "Number does not fit 64 bit real",
                         line,
                         column);

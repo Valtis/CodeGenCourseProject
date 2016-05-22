@@ -12,7 +12,7 @@ namespace CodeGenCourseProject.Lexing
         private ISet<char> whitespace;
 
 
-        internal WhitespaceScanner(TextReader reader, ErrorReporter reporter) : base(reader, reporter)
+        internal WhitespaceScanner(TextReader reader, MessageReporter reporter) : base(reader, reporter)
         {
             whitespace = new HashSet<char>();
             whitespace.Add(' ');

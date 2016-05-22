@@ -15,7 +15,7 @@ namespace CodeGenCourseProject.Lexing
 
         private IDictionary<string, Type> keywords;
 
-        internal IdentifierAndKeywordScanner(TextReader reader, ErrorReporter reporter) : base(reader, reporter)
+        internal IdentifierAndKeywordScanner(TextReader reader, MessageReporter reporter) : base(reader, reporter)
         {
             keywords = new Dictionary<string, Type>();
 

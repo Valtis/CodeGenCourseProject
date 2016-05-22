@@ -11,11 +11,11 @@ namespace CodeGenCourseProject.CFG.Analysis
 {
     public class CFGAnalyzer
     {
-        private readonly ErrorReporter reporter;
+        private readonly MessageReporter reporter;
         private readonly IList<Function> functions;
         private readonly IDictionary<string, CFGraph> graphs;
         private readonly ISet<int> unreachableBlocks;
-        public CFGAnalyzer(ErrorReporter reporter, IList<Function> functions, IDictionary<string, CFGraph> graphs)
+        public CFGAnalyzer(MessageReporter reporter, IList<Function> functions, IDictionary<string, CFGraph> graphs)
         {
             this.reporter = reporter;
             this.functions = functions;
@@ -81,7 +81,7 @@ namespace CodeGenCourseProject.CFG.Analysis
                     statement = function.Statements[pos++];
                 }
                 reporter.ReportError(
-                    Error.WARNING,
+                    MessageKind.WARNING,
                     "Unreachable code",
                     statement.Line,
                     statement.Column);
@@ -342,13 +342,13 @@ namespace CodeGenCourseProject.CFG.Analysis
                             if (!CheckLocalParameterAssignment(id, block))
                             {
                                 reporter.ReportError(
-                                    Error.SEMANTIC_ERROR,
+                                    MessageKind.SEMANTIC_ERROR,
                                     "Captured variable '" + captured.Identifier.UnmangledName + "' might be uninitialized at this point",
                                     call.Line,
                                     call.Column);
 
                                 reporter.ReportError(
-                                    Error.NOTE,
+                                    MessageKind.NOTE,
                                     "Variable is used here",
                                     captured.Identifier.Line,
                                     captured.Identifier.Column);
@@ -369,7 +369,7 @@ namespace CodeGenCourseProject.CFG.Analysis
                 {
                     missingReturnReported = true;
                     reporter.ReportError(
-                        Error.SEMANTIC_ERROR,
+                        MessageKind.SEMANTIC_ERROR,
                         "Not all control paths return a value in function '" +
                         function.UnmangledName + "'",
                         function.Line,
@@ -451,13 +451,13 @@ namespace CodeGenCourseProject.CFG.Analysis
         private void ReportUninitializedVariable(TACIdentifier identifier)
         {
             reporter.ReportError(
-                Error.SEMANTIC_ERROR,
+                MessageKind.SEMANTIC_ERROR,
                 "Usage of uninitialized variable '" + identifier.UnmangledName + "'",
                 identifier.Line,
                 identifier.Column);
 
             reporter.ReportError(
-                Error.NOTE_GENERIC,
+                MessageKind.NOTE_GENERIC,
                 "At least one control flow path exists where this variable remains uninitialized",
                 identifier.Line,
                 identifier.Column);

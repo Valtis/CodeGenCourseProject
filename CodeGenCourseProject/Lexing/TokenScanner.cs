@@ -9,7 +9,7 @@ namespace CodeGenCourseProject.Lexing
     internal abstract class TokenScanner
     {
         private readonly TextReader reader;
-        private ErrorReporter reporter;
+        private MessageReporter reporter;
 
         internal TextReader Reader
         {
@@ -19,7 +19,7 @@ namespace CodeGenCourseProject.Lexing
             }
         }
 
-        public ErrorReporter Reporter
+        public MessageReporter Reporter
         {
             get
             {
@@ -32,7 +32,7 @@ namespace CodeGenCourseProject.Lexing
             }
         }
 
-        internal TokenScanner(TextReader reader, ErrorReporter reporter)
+        internal TokenScanner(TextReader reader, MessageReporter reporter)
         {
             this.reader = reader;
             this.Reporter = reporter;

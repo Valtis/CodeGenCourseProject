@@ -9,7 +9,7 @@ namespace CodeGenCourseProject.Lexing
     class CommentScanner : TokenScanner
     {
 
-        internal CommentScanner(TextReader reader, ErrorReporter reporter) : base(reader, reporter)
+        internal CommentScanner(TextReader reader, MessageReporter reporter) : base(reader, reporter)
         {
 
         }
@@ -27,7 +27,7 @@ namespace CodeGenCourseProject.Lexing
             if (!Reader.PeekCharacter().HasValue || Reader.PeekCharacter().Value != '*')
             {
                 Reporter.ReportError(
-                    Error.LEXICAL_ERROR,
+                    MessageKind.LEXICAL_ERROR,
                     "Unexpected character '" + Reader.PeekCharacter().Value + "' when '*' was expected",
                     Reader.Line,
                     Reader.Column);
@@ -65,13 +65,13 @@ namespace CodeGenCourseProject.Lexing
         private void ReportUnexpectedEOF(int startLine, int startColumn)
         {
             Reporter.ReportError(
-               Error.LEXICAL_ERROR,
+               MessageKind.LEXICAL_ERROR,
                "Unexpected end of file when scanning comment",
                Reader.Line-1,
                Reader.Lines[Reader.Line -1].Length-1);
 
             Reporter.ReportError(
-               Error.NOTE,
+               MessageKind.NOTE,
                "Comment started here",
                startLine,
                startColumn);

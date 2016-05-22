@@ -45,7 +45,7 @@ namespace CodeGenCourseProject
                 return;
             }
 
-            var reporter = new ErrorReporter();
+            var reporter = new MessageReporter();
             var lexer = new Lexer(args[0], reporter);
 
             var parser = new Parser(lexer, reporter);

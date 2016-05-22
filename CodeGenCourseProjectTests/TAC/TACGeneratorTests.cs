@@ -13,7 +13,7 @@ namespace CodeGenCourseProject.TAC.Tests
     {
         private IList<Function> GetFunctions(string name, int functions)
         {
-            var reporter = new ErrorReporter();
+            var reporter = new MessageReporter();
             var lexer = new Lexer(@"..\..\TAC\" + name, reporter);
             var parser = new Parser(lexer, reporter);
 

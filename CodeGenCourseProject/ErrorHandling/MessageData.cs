@@ -6,9 +6,9 @@ namespace CodeGenCourseProject.ErrorHandling
     /*
     Class representing a single error, warning or note 
     */
-    public class ErrorData
+    public class MessageData
     {
-        private readonly Error type;
+        private readonly MessageKind type;
         private readonly string msg;
 
         // line, column are zero-based internally
@@ -21,7 +21,7 @@ namespace CodeGenCourseProject.ErrorHandling
         private const int DIRECTION_CHANGE_COLUMN_LENGTH = 10;
         private const int LINE_LENGTH = 6;
 
-        public Error Type
+        public MessageKind Type
         {
             get
             {
@@ -53,7 +53,7 @@ namespace CodeGenCourseProject.ErrorHandling
             }
         }
 
-        public ErrorData(string[] lines, Error type, string msg, int line, int column)
+        public MessageData(string[] lines, MessageKind type, string msg, int line, int column)
         {
             this.lines = lines;
             this.type = type;
@@ -69,38 +69,38 @@ namespace CodeGenCourseProject.ErrorHandling
             switch (Type)
             {
 
-                case Error.NOTE_GENERIC:
-                case Error.NOTE:
+                case MessageKind.NOTE_GENERIC:
+                case MessageKind.NOTE:
                     color = ConsoleColor.Cyan;
                     Console.ForegroundColor = color;
                     Console.Write("Note: ");
                     break;
 
-                case Error.WARNING:
+                case MessageKind.WARNING:
                     color = ConsoleColor.Yellow;
                     Console.ForegroundColor = color;
                     Console.Write("\n\nWarning: ");
                     break;
 
-                case Error.LEXICAL_ERROR:
+                case MessageKind.LEXICAL_ERROR:
                     color = ConsoleColor.Red;
                     Console.ForegroundColor = color;
                     Console.Write("\n\nLexical error: ");
                     break;
 
-                case Error.SEMANTIC_ERROR:
+                case MessageKind.SEMANTIC_ERROR:
                     color = ConsoleColor.Red;
                     Console.ForegroundColor = color;
                     Console.Write("\n\nSemantic error: ");
                     break;
 
-                case Error.SYNTAX_ERROR:
+                case MessageKind.SYNTAX_ERROR:
                     color = ConsoleColor.Red;
                     Console.ForegroundColor = color;
                     Console.Write("\n\nSyntax error: ");
                     break;
                 default:
-                    Console.Write("<INVALID_ERROR_TYPE>: ");
+                    Console.Write("<INVALID_MESSAGE_TYPE>: ");
                     break;
             }
 
@@ -108,7 +108,7 @@ namespace CodeGenCourseProject.ErrorHandling
             Console.ResetColor();
             Console.Write(msg);
             
-            if (type != Error.NOTE_GENERIC)
+            if (type != MessageKind.NOTE_GENERIC)
             {
                 Console.Write(" at line " + (line + 1) + " column " + (column + 1));
             }
@@ -118,10 +118,10 @@ namespace CodeGenCourseProject.ErrorHandling
                 return;
             }
 
-            if (type != Error.NOTE_GENERIC)
+            if (type != MessageKind.NOTE_GENERIC)
             {
-                // Print the lines before and after error, as well as the error line and the ~~~~~ line
-                // Also naturally handle the case where the error is on the first or last line, and the
+                // Print the lines before and after message, as well as the message line and the ~~~~~ line
+                // Also naturally handle the case where the message is on the first or last line, and the
                 // previous or following line cannot be printed
 
                 PrintPrecedingCodeLine();

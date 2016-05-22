@@ -14,7 +14,7 @@ namespace CodeGenCourseProject.Parsing.Tests
         [TestMethod()]
         public void MinimalProgramIsAccepted()
         {
-            var reporter = new ErrorReporter();
+            var reporter = new MessageReporter();
             var lexer = new Lexer(@"..\..\Parsing\valid_minimal_program.txt", reporter);
             var parser = new Parser(lexer, reporter);
 
@@ -36,7 +36,7 @@ namespace CodeGenCourseProject.Parsing.Tests
         [TestMethod()]
         public void MinimalProgramWithoutTrailingSemicolonIsAccepted()
         {
-            var reporter = new ErrorReporter();
+            var reporter = new MessageReporter();
             var lexer = new Lexer(@"..\..\Parsing\valid_minimal_program_without_trailing_semicolon.txt", reporter);
             var parser = new Parser(lexer, reporter);
 
@@ -65,7 +65,7 @@ namespace CodeGenCourseProject.Parsing.Tests
         [TestMethod()]
         public void MinimalProgramWithTrailingSemicolonIsAccepted()
         {
-            var reporter = new ErrorReporter();
+            var reporter = new MessageReporter();
             var lexer = new Lexer(@"..\..\Parsing\valid_minimal_program_with_trailing_semicolon.txt", reporter);
             var parser = new Parser(lexer, reporter);
 
@@ -94,7 +94,7 @@ namespace CodeGenCourseProject.Parsing.Tests
         [TestMethod()]
         public void ProgramWithMissingSemicolonsInMiddleOfStatementBlockIsRejected()
         {
-            var reporter = new ErrorReporter();
+            var reporter = new MessageReporter();
             var lexer = new Lexer(@"..\..\Parsing\invalid_program_with_missing_semicolon_in_mid_statement.txt", reporter);
             var parser = new Parser(lexer, reporter);
 
@@ -126,7 +126,7 @@ namespace CodeGenCourseProject.Parsing.Tests
         [TestMethod()]
         public void ProgramWithMissingDotIsRejected()
         {
-            var reporter = new ErrorReporter();
+            var reporter = new MessageReporter();
             var lexer = new Lexer(@"..\..\Parsing\invalid_program_with_missing_dot.txt", reporter);
             var parser = new Parser(lexer, reporter);
 
@@ -145,7 +145,7 @@ namespace CodeGenCourseProject.Parsing.Tests
 
             Assert.AreEqual(1, reporter.Errors.Count);
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[0].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[0].Type);
             Assert.AreEqual(2, reporter.Errors[0].Line);
             Assert.AreEqual(3, reporter.Errors[0].Column);
             Assert.IsTrue(reporter.Errors[0].Message.Contains("Expected token <operator - '.'>"));
@@ -154,7 +154,7 @@ namespace CodeGenCourseProject.Parsing.Tests
         [TestMethod()]
         public void ProgramWithMissingProgramKeywordIsRejected()
         {
-            var reporter = new ErrorReporter();
+            var reporter = new MessageReporter();
             var lexer = new Lexer(@"..\..\Parsing\invalid_minimal_program_1.txt", reporter);
             var parser = new Parser(lexer, reporter);
 
@@ -166,7 +166,7 @@ namespace CodeGenCourseProject.Parsing.Tests
                 new ErrorNode(),
                 node);
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[0].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[0].Type);
             Assert.AreEqual(0, reporter.Errors[0].Line);
             Assert.AreEqual(0, reporter.Errors[0].Column);
             Assert.IsTrue(reporter.Errors[0].Message.Contains("Expected token <keyword - 'program'> but was actually <identifier - 'foo'>"));
@@ -175,7 +175,7 @@ namespace CodeGenCourseProject.Parsing.Tests
         [TestMethod()]
         public void ProgramWithMissingInitialBeginKeywordIsRejected()
         {
-            var reporter = new ErrorReporter();
+            var reporter = new MessageReporter();
             var lexer = new Lexer(@"..\..\Parsing\invalid_minimal_program_2.txt", reporter);
             var parser = new Parser(lexer, reporter);
 
@@ -187,7 +187,7 @@ namespace CodeGenCourseProject.Parsing.Tests
                 new ErrorNode(),
                 node);
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[0].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[0].Type);
             Assert.AreEqual(1, reporter.Errors[0].Line);
             Assert.AreEqual(8, reporter.Errors[0].Column);
             Assert.IsTrue(reporter.Errors[0].Message.Contains("Expected token <keyword - 'begin'> but was actually <identifier - 'a'>"));
@@ -196,7 +196,7 @@ namespace CodeGenCourseProject.Parsing.Tests
         [TestMethod()]
         public void ValidExpressionsAreAccepted()
         {
-            var reporter = new ErrorReporter();
+            var reporter = new MessageReporter();
             var lexer = new Lexer(@"..\..\Parsing\valid_expressions.txt", reporter);
             var parser = new Parser(lexer, reporter);
 
@@ -612,7 +612,7 @@ namespace CodeGenCourseProject.Parsing.Tests
         [TestMethod()]
         public void InvalidExpressionsAreRejected()
         {
-            var reporter = new ErrorReporter();
+            var reporter = new MessageReporter();
             var lexer = new Lexer(@"..\..\Parsing\invalid_expressions.txt", reporter);
             var parser = new Parser(lexer, reporter);
 
@@ -660,88 +660,88 @@ namespace CodeGenCourseProject.Parsing.Tests
                 ),
                 node);
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[0].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[0].Type);
             Assert.AreEqual(2, reporter.Errors[0].Line);
             Assert.AreEqual(18, reporter.Errors[0].Column);
             Assert.IsTrue(reporter.Errors[0].Message.Contains("Unexpected token <operator - ';'> when expression"));
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[1].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[1].Type);
             Assert.AreEqual(3, reporter.Errors[1].Line);
             Assert.AreEqual(13, reporter.Errors[1].Column);
             Assert.IsTrue(reporter.Errors[1].Message.Contains("Unexpected token <keyword - 'or'> when expression"));
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[2].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[2].Type);
             Assert.AreEqual(5, reporter.Errors[2].Line);
             Assert.AreEqual(17, reporter.Errors[2].Column);
             Assert.IsTrue(reporter.Errors[2].Message.Contains("Expected token <identifier - 'size'>"));
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[3].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[3].Type);
             Assert.AreEqual(6, reporter.Errors[3].Line);
             Assert.AreEqual(17, reporter.Errors[3].Column);
             Assert.IsTrue(reporter.Errors[3].Message.Contains("Expected token <identifier>"));
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[4].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[4].Type);
             Assert.AreEqual(7, reporter.Errors[4].Line);
             Assert.AreEqual(18, reporter.Errors[4].Column);
             Assert.IsTrue(reporter.Errors[4].Message.Contains("Unexpected token <operator - ';'> when expression"));
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[5].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[5].Type);
             Assert.AreEqual(8, reporter.Errors[5].Line);
             Assert.AreEqual(13, reporter.Errors[5].Column);
             Assert.IsTrue(reporter.Errors[5].Message.Contains("Unexpected token <operator - '*'> when expression"));
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[6].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[6].Type);
             Assert.AreEqual(9, reporter.Errors[6].Line);
             Assert.AreEqual(17, reporter.Errors[6].Column);
             Assert.IsTrue(reporter.Errors[6].Message.Contains("Expected token <operator - ';'>"));
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[7].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[7].Type);
             Assert.AreEqual(10, reporter.Errors[7].Line);
             Assert.AreEqual(14, reporter.Errors[7].Column);
             Assert.IsTrue(reporter.Errors[7].Message.Contains("Unexpected token <operator - '-'> when expression"));
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[8].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[8].Type);
             Assert.AreEqual(11, reporter.Errors[8].Line);
             Assert.AreEqual(16, reporter.Errors[8].Column);
             Assert.IsTrue(reporter.Errors[8].Message.Contains("Unexpected token <operator - ';'> when expression"));
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[9].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[9].Type);
             Assert.AreEqual(12, reporter.Errors[9].Line);
             Assert.AreEqual(13, reporter.Errors[9].Column);
             Assert.IsTrue(reporter.Errors[9].Message.Contains("Unexpected token <operator - '='> when expression"));
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[10].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[10].Type);
             Assert.AreEqual(13, reporter.Errors[10].Line);
             Assert.AreEqual(10, reporter.Errors[10].Column);
             Assert.IsTrue(reporter.Errors[10].Message.Contains("Expected token <operator - ':='>"));
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[11].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[11].Type);
             Assert.AreEqual(14, reporter.Errors[11].Line);
             Assert.AreEqual(8, reporter.Errors[11].Column);
             Assert.IsTrue(reporter.Errors[11].Message.Contains("Unexpected token <operator - ':='>"));
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[12].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[12].Type);
             Assert.AreEqual(15, reporter.Errors[12].Line);
             Assert.AreEqual(12, reporter.Errors[12].Column);
             Assert.IsTrue(reporter.Errors[12].Message.Contains("Expected token <operator - ']'>"));
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[13].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[13].Type);
             Assert.AreEqual(16, reporter.Errors[13].Line);
             Assert.AreEqual(9, reporter.Errors[13].Column);
             Assert.IsTrue(reporter.Errors[13].Message.Contains("Expected token <operator - ':='>"));
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[14].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[14].Type);
             Assert.AreEqual(17, reporter.Errors[14].Line);
             Assert.AreEqual(18, reporter.Errors[14].Column);
             Assert.IsTrue(reporter.Errors[14].Message.Contains("Unexpected token <operator - ']'> when expression"));
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[15].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[15].Type);
             Assert.AreEqual(22, reporter.Errors[15].Line);
             Assert.AreEqual(8, reporter.Errors[15].Column);
             Assert.IsTrue(reporter.Errors[15].Message.Contains("Expected token <operator - ';'> but was"));
 
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[16].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[16].Type);
             Assert.AreEqual(29, reporter.Errors[16].Line);
             Assert.AreEqual(8, reporter.Errors[16].Column);
             Assert.IsTrue(reporter.Errors[16].Message.Contains("Expected token <operator - ';'> but was"));
@@ -750,7 +750,7 @@ namespace CodeGenCourseProject.Parsing.Tests
         [TestMethod()]
         public void ValidCallsAreAccepted()
         {
-            var reporter = new ErrorReporter();
+            var reporter = new MessageReporter();
             var lexer = new Lexer(@"..\..\Parsing\valid_function_calls.txt", reporter);
             var parser = new Parser(lexer, reporter);
 
@@ -859,7 +859,7 @@ namespace CodeGenCourseProject.Parsing.Tests
         public void InvalidCallsAreRejected()
         {
 
-            var reporter = new ErrorReporter();
+            var reporter = new MessageReporter();
             var lexer = new Lexer(@"..\..\Parsing\invalid_function_calls.txt", reporter);
             var parser = new Parser(lexer, reporter);
 
@@ -932,62 +932,62 @@ namespace CodeGenCourseProject.Parsing.Tests
                 ),
                 node);
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[0].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[0].Type);
             Assert.AreEqual(2, reporter.Errors[0].Line);
             Assert.AreEqual(18, reporter.Errors[0].Column);
             Assert.IsTrue(reporter.Errors[0].Message.Contains("Unexpected token <operator - ';'> when expression "));
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[1].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[1].Type);
             Assert.AreEqual(2, reporter.Errors[1].Line);
             Assert.AreEqual(18, reporter.Errors[1].Column);
             Assert.IsTrue(reporter.Errors[1].Message.Contains("Expected token <operator - ')'> but was"));
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[2].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[2].Type);
             Assert.AreEqual(3, reporter.Errors[2].Line);
             Assert.AreEqual(17, reporter.Errors[2].Column);
             Assert.IsTrue(reporter.Errors[2].Message.Contains("Expected token <operator - ':='>"));
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[3].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[3].Type);
             Assert.AreEqual(4, reporter.Errors[3].Line);
             Assert.AreEqual(31, reporter.Errors[3].Column);
             Assert.IsTrue(reporter.Errors[3].Message.Contains("Expected token <operator - ')'>"));
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[4].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[4].Type);
             Assert.AreEqual(5, reporter.Errors[4].Line);
             Assert.AreEqual(35, reporter.Errors[4].Column);
             Assert.IsTrue(reporter.Errors[4].Message.Contains("Unexpected token <operator - ')'>"));
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[5].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[5].Type);
             Assert.AreEqual(6, reporter.Errors[5].Line);
             Assert.AreEqual(24, reporter.Errors[5].Column);
             Assert.IsTrue(reporter.Errors[5].Message.Contains("Unexpected token <operator - ','>"));
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[6].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[6].Type);
             Assert.AreEqual(7, reporter.Errors[6].Line);
             Assert.AreEqual(29, reporter.Errors[6].Column);
             Assert.IsTrue(reporter.Errors[6].Message.Contains("Unexpected token <operator - '='>"));
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[7].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[7].Type);
             Assert.AreEqual(9, reporter.Errors[7].Line);
             Assert.AreEqual(23, reporter.Errors[7].Column);
             Assert.IsTrue(reporter.Errors[7].Message.Contains("Unexpected token <operator - ';'> when expression"));
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[8].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[8].Type);
             Assert.AreEqual(9, reporter.Errors[8].Line);
             Assert.AreEqual(23, reporter.Errors[8].Column);
             Assert.IsTrue(reporter.Errors[8].Message.Contains("Expected token <operator - ')'> but was"));
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[9].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[9].Type);
             Assert.AreEqual(10, reporter.Errors[9].Line);
             Assert.AreEqual(38, reporter.Errors[9].Column);
             Assert.IsTrue(reporter.Errors[9].Message.Contains("Unexpected token <operator - ')'> when expression"));
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[10].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[10].Type);
             Assert.AreEqual(12, reporter.Errors[10].Line);
             Assert.AreEqual(17, reporter.Errors[10].Column);
             Assert.IsTrue(reporter.Errors[10].Message.Contains("Unexpected token <operator - ')'> when expression"));
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[11].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[11].Type);
             Assert.AreEqual(14, reporter.Errors[11].Line);
             Assert.AreEqual(24, reporter.Errors[11].Column);
             Assert.IsTrue(reporter.Errors[11].Message.Contains("Unexpected token <operator - ')'> when expression"));
@@ -997,7 +997,7 @@ namespace CodeGenCourseProject.Parsing.Tests
         public void ValidReturnStatementsAreAccepted()
         {
 
-            var reporter = new ErrorReporter();
+            var reporter = new MessageReporter();
             var lexer = new Lexer(@"..\..\Parsing\valid_return_statements.txt", reporter);
             var parser = new Parser(lexer, reporter);
 
@@ -1035,7 +1035,7 @@ namespace CodeGenCourseProject.Parsing.Tests
         public void InvalidReturnStatementsAreRejected()
         {
 
-            var reporter = new ErrorReporter();
+            var reporter = new MessageReporter();
             var lexer = new Lexer(@"..\..\Parsing\invalid_return_statements.txt", reporter);
             var parser = new Parser(lexer, reporter);
 
@@ -1054,17 +1054,17 @@ namespace CodeGenCourseProject.Parsing.Tests
                 node);
 
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[0].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[0].Type);
             Assert.AreEqual(2, reporter.Errors[0].Line);
             Assert.AreEqual(17, reporter.Errors[0].Column);
             Assert.IsTrue(reporter.Errors[0].Message.Contains("Unexpected token <operator - ';'> when expression"));
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[1].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[1].Type);
             Assert.AreEqual(3, reporter.Errors[1].Line);
             Assert.AreEqual(15, reporter.Errors[1].Column);
             Assert.IsTrue(reporter.Errors[1].Message.Contains("Unexpected token <operator - '>='> when expression"));
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[2].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[2].Type);
             Assert.AreEqual(4, reporter.Errors[2].Line);
             Assert.AreEqual(21, reporter.Errors[2].Column);
             Assert.IsTrue(reporter.Errors[2].Message.Contains("Expected token <operator - ')'>"));
@@ -1073,7 +1073,7 @@ namespace CodeGenCourseProject.Parsing.Tests
         [TestMethod()]
         public void ValidReadStatementsAreAccepted()
         {
-            var reporter = new ErrorReporter();
+            var reporter = new MessageReporter();
             var lexer = new Lexer(@"..\..\Parsing\valid_read_statements.txt", reporter);
             var parser = new Parser(lexer, reporter);
 
@@ -1123,7 +1123,7 @@ namespace CodeGenCourseProject.Parsing.Tests
         [TestMethod()]
         public void ValidWriteStatementsAreAccepted()
         {
-            var reporter = new ErrorReporter();
+            var reporter = new MessageReporter();
             var lexer = new Lexer(@"..\..\Parsing\valid_write_statements.txt", reporter);
             var parser = new Parser(lexer, reporter);
 
@@ -1164,7 +1164,7 @@ namespace CodeGenCourseProject.Parsing.Tests
         [TestMethod()]
         public void ValidAssertStatementsAreAccepted()
         {
-            var reporter = new ErrorReporter();
+            var reporter = new MessageReporter();
             var lexer = new Lexer(@"..\..\Parsing\valid_assert_statements.txt", reporter);
             var parser = new Parser(lexer, reporter);
 
@@ -1191,7 +1191,7 @@ namespace CodeGenCourseProject.Parsing.Tests
         [TestMethod()]
         public void InvalidAssertStatementsAreRejected()
         {
-            var reporter = new ErrorReporter();
+            var reporter = new MessageReporter();
             var lexer = new Lexer(@"..\..\Parsing\invalid_assert_statements.txt", reporter);
             var parser = new Parser(lexer, reporter);
 
@@ -1208,18 +1208,18 @@ namespace CodeGenCourseProject.Parsing.Tests
                 ),
                 node);
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[0].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[0].Type);
             Assert.AreEqual(2, reporter.Errors[0].Line);
             Assert.AreEqual(15, reporter.Errors[0].Column);
             Assert.IsTrue(reporter.Errors[0].Message.Contains("Unexpected token <operator - ')'> when expression"));
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[1].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[1].Type);
             Assert.AreEqual(3, reporter.Errors[1].Line);
             Assert.AreEqual(18, reporter.Errors[1].Column);
             Assert.IsTrue(reporter.Errors[1].Message.Contains("Unexpected token <operator - ')'> when expression"));
 
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[2].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[2].Type);
             Assert.AreEqual(4, reporter.Errors[2].Line);
             Assert.AreEqual(18, reporter.Errors[2].Column);
             Assert.IsTrue(reporter.Errors[2].Message.Contains("Expected token <operator - ')'>"));
@@ -1229,7 +1229,7 @@ namespace CodeGenCourseProject.Parsing.Tests
         [TestMethod()]
         public void ValidNesterBlocksAreAccepted()
         {
-            var reporter = new ErrorReporter();
+            var reporter = new MessageReporter();
             var lexer = new Lexer(@"..\..\Parsing\valid_nested_blocks.txt", reporter);
             var parser = new Parser(lexer, reporter);
 
@@ -1276,7 +1276,7 @@ namespace CodeGenCourseProject.Parsing.Tests
         [TestMethod()]
         public void InvalidNestedBlocksAreRejected()
         {
-            var reporter = new ErrorReporter();
+            var reporter = new MessageReporter();
             var lexer = new Lexer(@"..\..\Parsing\invalid_nested_blocks.txt", reporter);
             var parser = new Parser(lexer, reporter);
 
@@ -1316,22 +1316,22 @@ namespace CodeGenCourseProject.Parsing.Tests
                 node);
 
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[0].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[0].Type);
             Assert.AreEqual(5, reporter.Errors[0].Line);
             Assert.AreEqual(8, reporter.Errors[0].Column);
             Assert.IsTrue(reporter.Errors[0].Message.Contains("Expected token <operator - ';'>"));
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[1].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[1].Type);
             Assert.AreEqual(9, reporter.Errors[1].Line);
             Assert.AreEqual(8, reporter.Errors[1].Column);
             Assert.IsTrue(reporter.Errors[1].Message.Contains("Expected token <operator - ')'>"));
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[2].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[2].Type);
             Assert.AreEqual(12, reporter.Errors[2].Line);
             Assert.AreEqual(25, reporter.Errors[2].Column);
             Assert.IsTrue(reporter.Errors[2].Message.Contains("Expected token <operator - ';'>"));
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[3].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[3].Type);
             Assert.AreEqual(18, reporter.Errors[3].Line);
             Assert.AreEqual(8, reporter.Errors[3].Column);
             Assert.IsTrue(reporter.Errors[3].Message.Contains("Unexpected token <keyword - 'end'> when start of a"));
@@ -1340,7 +1340,7 @@ namespace CodeGenCourseProject.Parsing.Tests
         [TestMethod()]
         public void ValidIfStatementsAreAccepted()
         {
-            var reporter = new ErrorReporter();
+            var reporter = new MessageReporter();
             var lexer = new Lexer(@"..\..\Parsing\valid_if_statements.txt", reporter);
             var parser = new Parser(lexer, reporter);
 
@@ -1490,7 +1490,7 @@ namespace CodeGenCourseProject.Parsing.Tests
         [TestMethod()]
         public void InvalidIfStatementsAreRejected()
         {
-            var reporter = new ErrorReporter();
+            var reporter = new MessageReporter();
             var lexer = new Lexer(@"..\..\Parsing\invalid_if_statements.txt", reporter);
             var parser = new Parser(lexer, reporter);
 
@@ -1536,32 +1536,32 @@ namespace CodeGenCourseProject.Parsing.Tests
                 ),
                 node);
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[0].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[0].Type);
             Assert.AreEqual(2, reporter.Errors[0].Line);
             Assert.AreEqual(29, reporter.Errors[0].Column);
             Assert.IsTrue(reporter.Errors[0].Message.Contains("Unexpected token <keyword - 'then'> when expression"));
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[1].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[1].Type);
             Assert.AreEqual(5, reporter.Errors[1].Line);
             Assert.AreEqual(43, reporter.Errors[1].Column);
             Assert.IsTrue(reporter.Errors[1].Message.Contains("Unexpected token <keyword - 'then'> when expression"));
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[2].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[2].Type);
             Assert.AreEqual(9, reporter.Errors[2].Line);
             Assert.AreEqual(16, reporter.Errors[2].Column);
             Assert.IsTrue(reporter.Errors[2].Message.Contains("Expected token <keyword - 'then'> but was"));
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[3].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[3].Type);
             Assert.AreEqual(12, reporter.Errors[3].Line);
             Assert.AreEqual(8, reporter.Errors[3].Column);
             Assert.IsTrue(reporter.Errors[3].Message.Contains("Unexpected token <keyword - 'else'> when start of a"));
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[4].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[4].Type);
             Assert.AreEqual(17, reporter.Errors[4].Line);
             Assert.AreEqual(8, reporter.Errors[4].Column);
             Assert.IsTrue(reporter.Errors[4].Message.Contains("Unexpected token <keyword - 'else'> when expression"));
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[5].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[5].Type);
             Assert.AreEqual(23, reporter.Errors[5].Line);
             Assert.AreEqual(26, reporter.Errors[5].Column);
             Assert.IsTrue(reporter.Errors[5].Message.Contains("Unexpected token <operator - ';'> when expression"));
@@ -1571,7 +1571,7 @@ namespace CodeGenCourseProject.Parsing.Tests
         public void ValidWhileStatementsAreAccepted()
         {
 
-            var reporter = new ErrorReporter();
+            var reporter = new MessageReporter();
             var lexer = new Lexer(@"..\..\Parsing\valid_while_statements.txt", reporter);
             var parser = new Parser(lexer, reporter);
 
@@ -1649,7 +1649,7 @@ namespace CodeGenCourseProject.Parsing.Tests
         [TestMethod()]
         public void InvalidWhileStatementsAreRejected()
         {
-            var reporter = new ErrorReporter();
+            var reporter = new MessageReporter();
             var lexer = new Lexer(@"..\..\Parsing\invalid_while_statements.txt", reporter);
             var parser = new Parser(lexer, reporter);
 
@@ -1684,22 +1684,22 @@ namespace CodeGenCourseProject.Parsing.Tests
                 ),
                 node);
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[0].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[0].Type);
             Assert.AreEqual(2, reporter.Errors[0].Line);
             Assert.AreEqual(10, reporter.Errors[0].Column);
             Assert.IsTrue(reporter.Errors[0].Message.Contains("Unexpected token <keyword - 'do'> when expression"));
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[1].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[1].Type);
             Assert.AreEqual(6, reporter.Errors[1].Line);
             Assert.AreEqual(16, reporter.Errors[1].Column);
             Assert.IsTrue(reporter.Errors[1].Message.Contains("Expected token <keyword - 'do'> but was"));
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[2].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[2].Type);
             Assert.AreEqual(9, reporter.Errors[2].Line);
             Assert.AreEqual(26, reporter.Errors[2].Column);
             Assert.IsTrue(reporter.Errors[2].Message.Contains("Unexpected token <operator - '-'> when expression"));
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[3].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[3].Type);
             Assert.AreEqual(13, reporter.Errors[3].Line);
             Assert.AreEqual(26, reporter.Errors[3].Column);
             Assert.IsTrue(reporter.Errors[3].Message.Contains("Expected token <operator - ';'> but was"));
@@ -1708,7 +1708,7 @@ namespace CodeGenCourseProject.Parsing.Tests
         [TestMethod()]
         public void ValidVariableDeclarationsAreAccepted()
         {
-            var reporter = new ErrorReporter();
+            var reporter = new MessageReporter();
             var lexer = new Lexer(@"..\..\Parsing\valid_variable_declarations.txt", reporter);
             var parser = new Parser(lexer, reporter);
 
@@ -1800,7 +1800,7 @@ namespace CodeGenCourseProject.Parsing.Tests
         [TestMethod()]
         public void InvalidVariableDeclarationsAreRejected()
         {
-            var reporter = new ErrorReporter();
+            var reporter = new MessageReporter();
             var lexer = new Lexer(@"..\..\Parsing\invalid_variable_declarations.txt", reporter);
             var parser = new Parser(lexer, reporter);
 
@@ -1827,67 +1827,67 @@ namespace CodeGenCourseProject.Parsing.Tests
                 ),
                 node);
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[0].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[0].Type);
             Assert.AreEqual(2, reporter.Errors[0].Line);
             Assert.AreEqual(12, reporter.Errors[0].Column);
             Assert.IsTrue(reporter.Errors[0].Message.Contains("Expected token <identifier> but was"));
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[1].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[1].Type);
             Assert.AreEqual(3, reporter.Errors[1].Line);
             Assert.AreEqual(14, reporter.Errors[1].Column);
             Assert.IsTrue(reporter.Errors[1].Message.Contains("Expected token <operator - ':'> but was"));
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[2].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[2].Type);
             Assert.AreEqual(4, reporter.Errors[2].Line);
             Assert.AreEqual(16, reporter.Errors[2].Column);
             Assert.IsTrue(reporter.Errors[2].Message.Contains("Expected token <identifier> but was"));
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[3].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[3].Type);
             Assert.AreEqual(5, reporter.Errors[3].Line);
             Assert.AreEqual(16, reporter.Errors[3].Column);
             Assert.IsTrue(reporter.Errors[3].Message.Contains("'not_a_valid_type' is not a valid type"));
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[4].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[4].Type);
             Assert.AreEqual(6, reporter.Errors[4].Line);
             Assert.AreEqual(15, reporter.Errors[4].Column);
             Assert.IsTrue(reporter.Errors[4].Message.Contains("Expected token <identifier> but was"));
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[5].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[5].Type);
             Assert.AreEqual(7, reporter.Errors[5].Line);
             Assert.AreEqual(14, reporter.Errors[5].Column);
             Assert.IsTrue(reporter.Errors[5].Message.Contains("Expected token <operator - ':'> but was"));
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[6].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[6].Type);
             Assert.AreEqual(8, reporter.Errors[6].Line);
             Assert.AreEqual(16, reporter.Errors[6].Column);
             Assert.IsTrue(reporter.Errors[6].Message.Contains("'rray' is not a valid"));
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[7].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[7].Type);
             Assert.AreEqual(9, reporter.Errors[7].Line);
             Assert.AreEqual(22, reporter.Errors[7].Column);
             Assert.IsTrue(reporter.Errors[7].Message.Contains("Expected token <operator - '['> but was"));
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[8].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[8].Type);
             Assert.AreEqual(10, reporter.Errors[8].Line);
             Assert.AreEqual(27, reporter.Errors[8].Column);
             Assert.IsTrue(reporter.Errors[8].Message.Contains("Unexpected token <operator - ']'> when expression"));
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[9].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[9].Type);
             Assert.AreEqual(11, reporter.Errors[9].Line);
             Assert.AreEqual(26, reporter.Errors[9].Column);
             Assert.IsTrue(reporter.Errors[9].Message.Contains("Expected token <operator - ']'>"));
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[10].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[10].Type);
             Assert.AreEqual(12, reporter.Errors[10].Line);
             Assert.AreEqual(27, reporter.Errors[10].Column);
             Assert.IsTrue(reporter.Errors[10].Message.Contains("Expected token <keyword - 'of'>"));
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[11].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[11].Type);
             Assert.AreEqual(13, reporter.Errors[11].Line);
             Assert.AreEqual(29, reporter.Errors[11].Column);
             Assert.IsTrue(reporter.Errors[11].Message.Contains("Expected token <identifier>"));
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[12].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[12].Type);
             Assert.AreEqual(14, reporter.Errors[12].Line);
             Assert.AreEqual(30, reporter.Errors[12].Column);
             Assert.IsTrue(reporter.Errors[12].Message.Contains("'foobar' is not a valid"));
@@ -1896,7 +1896,7 @@ namespace CodeGenCourseProject.Parsing.Tests
         [TestMethod()]
         public void ParserAcceptsValidProcedureDeclarations()
         {
-            var reporter = new ErrorReporter();
+            var reporter = new MessageReporter();
             var lexer = new Lexer(@"..\..\Parsing\valid_procedure_declarations.txt", reporter);
             var parser = new Parser(lexer, reporter);
 
@@ -2000,7 +2000,7 @@ namespace CodeGenCourseProject.Parsing.Tests
         [TestMethod()]
         public void ParserRejectsInvalidProcedureDeclarations()
         {
-            var reporter = new ErrorReporter();
+            var reporter = new MessageReporter();
             var lexer = new Lexer(@"..\..\Parsing\invalid_procedure_declarations.txt", reporter);
             var parser = new Parser(lexer, reporter);
 
@@ -2091,23 +2091,23 @@ namespace CodeGenCourseProject.Parsing.Tests
 
             var helper = new TestHelper(reporter);
 
-            helper.AssertErrorMessage(0, Error.SYNTAX_ERROR, 2, 18, "Expected token <identifier>");
-            helper.AssertErrorMessage(1, Error.SYNTAX_ERROR, 8, 24, "Expected token <operator - '('>");
-            helper.AssertErrorMessage(2, Error.SYNTAX_ERROR, 13, 25, "Expected token <identifier>");
-            helper.AssertErrorMessage(3, Error.SYNTAX_ERROR, 18, 25, "Expected token <identifier>");
-            helper.AssertErrorMessage(4, Error.SYNTAX_ERROR, 23, 29, "Expected token <identifier>");
-            helper.AssertErrorMessage(5, Error.SYNTAX_ERROR, 28, 29, "Expected token <operator - ':'>");
-            helper.AssertErrorMessage(6, Error.SYNTAX_ERROR, 33, 31, "'bar' is not a valid type");
-            helper.AssertErrorMessage(7, Error.SYNTAX_ERROR, 38, 31, "Expected token <identifier>");
-            helper.AssertErrorMessage(8, Error.SYNTAX_ERROR, 43, 40, "Expected token <identifier>");
-            helper.AssertErrorMessage(9, Error.SYNTAX_ERROR, 47, 39, "Expected token <operator - ')'> but was actually");
-            helper.AssertErrorMessage(10, Error.SYNTAX_ERROR, 52, 30, "Expected token <operator - ':'> but was actually");
+            helper.AssertErrorMessage(0, MessageKind.SYNTAX_ERROR, 2, 18, "Expected token <identifier>");
+            helper.AssertErrorMessage(1, MessageKind.SYNTAX_ERROR, 8, 24, "Expected token <operator - '('>");
+            helper.AssertErrorMessage(2, MessageKind.SYNTAX_ERROR, 13, 25, "Expected token <identifier>");
+            helper.AssertErrorMessage(3, MessageKind.SYNTAX_ERROR, 18, 25, "Expected token <identifier>");
+            helper.AssertErrorMessage(4, MessageKind.SYNTAX_ERROR, 23, 29, "Expected token <identifier>");
+            helper.AssertErrorMessage(5, MessageKind.SYNTAX_ERROR, 28, 29, "Expected token <operator - ':'>");
+            helper.AssertErrorMessage(6, MessageKind.SYNTAX_ERROR, 33, 31, "'bar' is not a valid type");
+            helper.AssertErrorMessage(7, MessageKind.SYNTAX_ERROR, 38, 31, "Expected token <identifier>");
+            helper.AssertErrorMessage(8, MessageKind.SYNTAX_ERROR, 43, 40, "Expected token <identifier>");
+            helper.AssertErrorMessage(9, MessageKind.SYNTAX_ERROR, 47, 39, "Expected token <operator - ')'> but was actually");
+            helper.AssertErrorMessage(10, MessageKind.SYNTAX_ERROR, 52, 30, "Expected token <operator - ':'> but was actually");
         }
 
         [TestMethod()]
         public void ParserAcceptsValidFunctionDeclarations()
         {
-            var reporter = new ErrorReporter();
+            var reporter = new MessageReporter();
             var lexer = new Lexer(@"..\..\Parsing\valid_function_declarations.txt", reporter);
             var parser = new Parser(lexer, reporter);
 
@@ -2254,7 +2254,7 @@ namespace CodeGenCourseProject.Parsing.Tests
         [TestMethod()]
         public void ParserRejectsInvalidFunctionDeclarations()
         {
-            var reporter = new ErrorReporter();
+            var reporter = new MessageReporter();
             var lexer = new Lexer(@"..\..\Parsing\invalid_function_declarations.txt", reporter);
             var parser = new Parser(lexer, reporter);
 
@@ -2301,17 +2301,17 @@ namespace CodeGenCourseProject.Parsing.Tests
 
             var helper = new TestHelper(reporter);
 
-            helper.AssertErrorMessage(0, Error.SYNTAX_ERROR, 3, 22, "Expected token <identifier>");
-            helper.AssertErrorMessage(1, Error.SYNTAX_ERROR, 8, 23, "Expected token <operator - ':'>");
-            helper.AssertErrorMessage(2, Error.SYNTAX_ERROR, 13, 43, "'abcdef' is not a valid");
-            helper.AssertErrorMessage(3, Error.SYNTAX_ERROR, 18, 25, "Expected token <identifier>");            helper.AssertErrorMessage(0, Error.SYNTAX_ERROR, 3, 22, "");
-            helper.AssertErrorMessage(4, Error.SYNTAX_ERROR, 23, 29, "Expected token <operator - ':'>");
+            helper.AssertErrorMessage(0, MessageKind.SYNTAX_ERROR, 3, 22, "Expected token <identifier>");
+            helper.AssertErrorMessage(1, MessageKind.SYNTAX_ERROR, 8, 23, "Expected token <operator - ':'>");
+            helper.AssertErrorMessage(2, MessageKind.SYNTAX_ERROR, 13, 43, "'abcdef' is not a valid");
+            helper.AssertErrorMessage(3, MessageKind.SYNTAX_ERROR, 18, 25, "Expected token <identifier>");            helper.AssertErrorMessage(0, MessageKind.SYNTAX_ERROR, 3, 22, "");
+            helper.AssertErrorMessage(4, MessageKind.SYNTAX_ERROR, 23, 29, "Expected token <operator - ':'>");
         }
 
         [TestMethod()]
         public void ParserRejectsProgramWithMissingEndDot()
         {
-            var reporter = new ErrorReporter();
+            var reporter = new MessageReporter();
             var lexer = new Lexer(@"..\..\Parsing\invalid_program_with_missing_end_dot.txt", reporter);
             var parser = new Parser(lexer, reporter);
 
@@ -2324,12 +2324,12 @@ namespace CodeGenCourseProject.Parsing.Tests
                 ),
                 node);
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[0].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[0].Type);
             Assert.AreEqual(4, reporter.Errors[0].Line);
             Assert.AreEqual(10, reporter.Errors[0].Column);
             Assert.IsTrue(reporter.Errors[0].Message.Contains("Expected token <keyword - 'end'>"));
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[1].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[1].Type);
             Assert.AreEqual(4, reporter.Errors[1].Line);
             Assert.AreEqual(10, reporter.Errors[1].Column);
             Assert.IsTrue(reporter.Errors[1].Message.Contains("Expected token <operator - '.'>"));
@@ -2338,7 +2338,7 @@ namespace CodeGenCourseProject.Parsing.Tests
         [TestMethod()]
         public void TokensAfterEndOfProgramAreError()
         {
-            var reporter = new ErrorReporter();
+            var reporter = new MessageReporter();
             var lexer = new Lexer(@"..\..\Parsing\invalid_tokens_after_the_end_of_program.txt", reporter);
             var parser = new Parser(lexer, reporter);
 
@@ -2356,7 +2356,7 @@ namespace CodeGenCourseProject.Parsing.Tests
                 ),
                 node);
 
-            Assert.AreEqual(Error.SYNTAX_ERROR, reporter.Errors[0].Type);
+            Assert.AreEqual(MessageKind.SYNTAX_ERROR, reporter.Errors[0].Type);
             Assert.AreEqual(7, reporter.Errors[0].Line);
             Assert.AreEqual(0, reporter.Errors[0].Column);
             Assert.IsTrue(reporter.Errors[0].Message.Contains("Unexpected token <identifier - 'call'> after the end"));
@@ -2372,7 +2372,7 @@ namespace CodeGenCourseProject.Parsing.Tests
         [TestMethod()]
         public void Bug1()
         {
-            var reporter = new ErrorReporter();
+            var reporter = new MessageReporter();
             var lexer = new Lexer(@"..\..\Parsing\bug_1.txt", reporter);
             var parser = new Parser(lexer, reporter);
 
@@ -2415,7 +2415,7 @@ namespace CodeGenCourseProject.Parsing.Tests
         [TestMethod()]
         public void Bug2()
         {
-            var reporter = new ErrorReporter();
+            var reporter = new MessageReporter();
             var lexer = new Lexer(@"..\..\Parsing\bug_2.txt", reporter);
             var parser = new Parser(lexer, reporter);
 
