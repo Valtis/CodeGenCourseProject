@@ -88,23 +88,6 @@ namespace CodeGenCourseProject.CFG.Analysis
             }
         }
 
-        private void UpdateAdjacencyList(CFGraph graph)
-        {
-            // erase adjacency lists that belong to removed blocks
-
-            for (int i = 0; i < graph.AdjacencyList.Count; ++i)
-            {
-                if (unreachableBlocks.Contains(i))
-                {
-                    graph.AdjacencyList[i].Clear();
-                }
-                else
-                {
-                    graph.AdjacencyList[i] = new List<int>(graph.AdjacencyList[i].Where(x => !unreachableBlocks.Contains(x)));
-                }
-            }
-        }
-
         private void AnalyzeVariableUsage(Function function, CFGraph graph)
         {
             HandleVariableInitializations(function, graph);
@@ -129,11 +112,6 @@ namespace CodeGenCourseProject.CFG.Analysis
                 if (function.Name != TACGenerator.ENTRY_POINT &&
                     graph.AdjacencyList[block.ID].Contains(CFGraph.END_BLOCK_ID))
                 {
-                    // Below line violates language semantics (reference parameters must
-                    // be both readable and writable), so let's just remove it for now.
-                    // Code is left for posterity however.             
-
-                    //CheckReferenceAssignments(function, reportedRefParams, block);
 
                     missingReturnReported = CheckFunctionReturnStatements(function, missingReturnReported, block);
                 }
@@ -146,10 +124,15 @@ namespace CodeGenCourseProject.CFG.Analysis
             {
                 FindBlockVariableInitializations(function, block);
             }
-
+                        
+            // initialization data gets propagated only to node children per pass
+            // so we need to repeat this as long as there have been changes
             while (DefiniteVariableAssignment(graph, 0, new HashSet<int>())) ;
         }
 
+        /*
+         Checks for variable initializations in blocks
+        */
         private void FindBlockVariableInitializations(Function function, BasicBlock block)
         {
             for (int i = block.Start; i <= block.End; ++i)
@@ -173,6 +156,15 @@ namespace CodeGenCourseProject.CFG.Analysis
             }
         }
 
+        /*
+         Propagate variable initializations to children, when all parents have the variable 
+         initialized (either directly in block, or by all of their parents)
+
+         This requires multiple calls to propagate all data correctly throughout the graph
+
+         Parent blocks that are after the current block are ignored (mostly caused by while-loops).
+
+         */
         private bool DefiniteVariableAssignment(CFGraph graph, int id, ISet<int> handledBlocks)
         {
             if (handledBlocks.Contains(id))
@@ -236,8 +228,10 @@ namespace CodeGenCourseProject.CFG.Analysis
             return changes;
         }
 
+        // check that variables are initialized before use in a basic block
         private void CheckInitialization(Function function, TACStatement statement, BasicBlock block)
         {
+            // ensure array index is initialized before use
             if (statement.Destination is TACArrayIndex)
             {
                 CheckInitialization(function, statement.Destination, block);
@@ -263,6 +257,7 @@ namespace CodeGenCourseProject.CFG.Analysis
             }
         }
 
+        // ensures tac values in tac values are checked for correct usage
         private void HandleNonIdentifiers(Function function, TACValue value, BasicBlock block)
         {
             if (value is TACCallRead)
@@ -364,48 +359,7 @@ namespace CodeGenCourseProject.CFG.Analysis
                 return;
             }
         }
-
-
-        /* Not used - violates language semantics. Left here for posterity */
-        private void CheckReferenceAssignments(Function function, HashSet<string> reportedRefParams, BasicBlock block)
-        {
-            foreach (var param in function.Parameters)
-            {
-                if (!param.IsReference)
-                {
-                    continue;
-                }
-
-                // create new TACIdentifier with fake line number, as the assignment 
-                // takes line account (assignment must happen before usage; the usage
-                // is decided by the line number, function arguments are always above
-                // usage -> would always report false
-                var ident = new TACIdentifier(
-                    int.MaxValue,
-                    0,
-                    param.Identifier.UnmangledName,
-                    param.Identifier.Type,
-                    param.Identifier.Id);
-
-                var isAssigned = CheckLocalParameterAssignment(ident, block);
-                if (!isAssigned && !reportedRefParams.Contains(param.Identifier.Name))
-                {
-                    reportedRefParams.Add(param.Identifier.Name);
-                    reporter.ReportError(
-                        Error.SEMANTIC_ERROR,
-                        "Parameter '" + param.Identifier.UnmangledName + "' may remain uninitialized at function exit",
-                        param.Identifier.Line,
-                        param.Identifier.Column);
-
-                    reporter.ReportError(
-                        Error.NOTE_GENERIC,
-                        "Reference parameters are considered out-parameters, and a value must be assigned into one",
-                        param.Identifier.Line,
-                        param.Identifier.Column);
-                }
-            }
-        }
-
+        
         private bool CheckFunctionReturnStatements(Function function, bool missingReturnReported, BasicBlock block)
         {
             if (function.ReturnType != SemanticChecker.VOID_TYPE)
@@ -426,12 +380,7 @@ namespace CodeGenCourseProject.CFG.Analysis
 
             return missingReturnReported;
         }
-
-        private void InsertStatement()
-        {
-
-        }
-
+        
         private bool IsDynamicallyAllocated(TACIdentifier identifier)
         {
             return identifier.Type == SemanticChecker.STRING_TYPE || identifier.Type.Contains(SemanticChecker.ARRAY_PREFIX);
