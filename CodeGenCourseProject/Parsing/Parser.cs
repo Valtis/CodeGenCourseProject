@@ -7,17 +7,17 @@ using System.Collections.Generic;
 
 namespace CodeGenCourseProject.Parsing
 {
-    /**
-     * Recursive descent parser
-     * 
-     * */
-
+    /*
+    Recursive descent parser.
+    Nothing too odd going on in here. Follows the language grammar and builds AST.
+    Syntax errors are reported.
+    */
     public class Parser
     {
         private Lexer lexer;
         private ErrorReporter reporter;
 
-        /* Token - AstNode pairs for operators*/
+        /* Token - AstNode pairs for operators */
         private IDictionary<Type, Type> relationalOperators;
         private IDictionary<Type, Type> additionOperators;
         private IDictionary<Type, Type> multiplyOperators;
@@ -378,7 +378,26 @@ namespace CodeGenCourseProject.Parsing
             try
             {
                 var expression = ParseExpression();
-                Expect<ThenToken>();
+
+                // special case handling for better error messages
+                if (lexer.PeekToken() is BeginToken)
+                {
+                    reporter.ReportError(
+                        Error.SYNTAX_ERROR,
+                        "If statement condition must be followed by 'then'",
+                        lexer.PeekToken().Line,
+                        lexer.PeekToken().Column);
+
+                    reporter.ReportError(
+                        Error.NOTE,
+                        "Error occured while parsing if statement",
+                        ifToken.Line,
+                        ifToken.Column);
+                }
+                else
+                {
+                    Expect<ThenToken>();
+                }
                 var body = ParseStatement();
 
                 if (!(body is BlockNode))
@@ -418,7 +437,26 @@ namespace CodeGenCourseProject.Parsing
             try
             {
                 var expression = ParseExpression();
-                Expect<DoToken>();
+
+                // special casing for better error messages
+                if (lexer.PeekToken() is BeginToken)
+                {
+                    reporter.ReportError(
+                        Error.SYNTAX_ERROR,
+                        "While statement condition must be followed by 'do'",
+                        lexer.PeekToken().Line,
+                        lexer.PeekToken().Column);
+
+                    reporter.ReportError(
+                        Error.NOTE,
+                        "Error occured while parsing while statement",
+                        whileToken.Line,
+                        whileToken.Column);
+                }
+                else
+                { 
+                    Expect<DoToken>();
+                }
                 var body = ParseStatement();
 
                 if (!(body is BlockNode))
@@ -543,7 +581,24 @@ namespace CodeGenCourseProject.Parsing
                 Expect<LParenToken>();
                 var arguments = ParseParameters();
                 Expect<RParenToken>();
-                Expect<SemicolonToken>();
+
+                // for better error handling
+                if (lexer.PeekToken() is BeginToken)
+                {
+                    reporter.ReportError(Error.SYNTAX_ERROR,
+                        "Procedure declaration must end in ';'",
+                        lexer.PeekToken().Line,
+                        lexer.PeekToken().Column);
+
+                    reporter.ReportError(Error.NOTE,
+                        "Error occured while parsing procedure declaration",
+                        procedure.Line,
+                        procedure.Column);
+                }
+                else
+                {
+                    Expect<SemicolonToken>();
+                }
 
                 var block = ParseBlock();
                 return new ProcedureNode(procedure.Line, procedure.Column,
@@ -574,7 +629,24 @@ namespace CodeGenCourseProject.Parsing
                 Expect<RParenToken>();
                 Expect<ColonToken>();
                 var type = ParseType();
-                Expect<SemicolonToken>();
+
+                // for better error handling
+                if (lexer.PeekToken() is BeginToken)
+                {
+                    reporter.ReportError(Error.SYNTAX_ERROR,
+                        "Procedure declaration must end in ';'",
+                        lexer.PeekToken().Line,
+                        lexer.PeekToken().Column);
+
+                    reporter.ReportError(Error.NOTE,
+                        "Error occured while parsing function declaration",
+                        function.Line,
+                        function.Column);
+                }
+                else
+                {
+                    Expect<SemicolonToken>();
+                }
 
                 var block = ParseBlock();
                 return new FunctionNode(function.Line, function.Column,
