@@ -37,6 +37,11 @@ namespace CodeGenCourseProject.TAC.Values
             return obj is TACInteger && ((TACInteger)obj).value == value;
         }
 
+        public override int GetHashCode()
+        {
+            return value;
+        }
+
         public override void Accept(TACVisitor visitor)
         {
             visitor.Visit(this);

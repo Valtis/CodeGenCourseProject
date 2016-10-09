@@ -31,6 +31,11 @@
             return obj is TACBoolean && ((TACBoolean)obj).value == value;
         }
 
+        public override int GetHashCode()
+        {
+            return value.GetHashCode();
+        }
+
         public override void Accept(TACVisitor visitor)
         {
             visitor.Visit(this);
