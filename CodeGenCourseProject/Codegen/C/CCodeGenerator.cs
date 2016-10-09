@@ -404,6 +404,9 @@ void assert(char expr, int line)
                     case Operator.CALL_WRITELN:
                         EmitWriteLn(((TACInteger)statement.RightOperand).Value);
                         return;
+                    case Operator.CALL_READ:
+                        EmitRead(((TACInteger)statement.RightOperand).Value);
+                        return;
                     case Operator.CALL:
                         EmitFunctionCall(statement.Destination, statement.RightOperand);
                         return;
@@ -643,68 +646,6 @@ void assert(char expr, int line)
             cValues.Push("assert(" + cValues.Pop() + ", " + (tacAssert.Line + 1) + ")");
         }
 
-        /*  public void Visit(TACCallRead tacCallRead)
-          {
-              var argStrings = new List<string>();
-              string formatString = "";
-
-              foreach (var arg in tacCallRead.Arguments)
-              {
-                  arg.Accept(this);
-                  var addressSymbol = "&";
-                  var type = "";
-                  if (arg is TACIdentifier)
-                  {
-                      var ident = (TACIdentifier)arg;
-                      type = ident.Type;
-                      if (ident.IsReference || capturedVariables.Any(x => x.Identifier.Name == ident.Name))
-                      {
-                          addressSymbol = "";
-                      } 
-                  }
-
-                  if (arg is TACArrayIndex)
-                  {
-                      var index = (TACArrayIndex)arg;
-                      type = index.Type;
-                  }
-
-                  switch (type)
-                  {
-                      case SemanticChecker.INTEGER_TYPE:
-                          formatString += "d";
-                          break;
-                      case SemanticChecker.REAL_TYPE:
-                          formatString += "f";
-                          break;
-                      case SemanticChecker.STRING_TYPE:
-                          formatString += "s";
-                          break;
-                      default:
-                          throw new InternalCompilerError("Invalid type " + type + " when handling types for 'read'");
-                  }
-
-                  string value = cValues.Pop();
-                  // count > 1 ---> it was declared only now (first use)
-                  if (value.Split().Length > 1)
-                  {
-                      Emit(value + ";");
-                      argStrings.Add(addressSymbol + value.Split()[1]);
-                  }
-                  else
-                  {
-                      argStrings.Add(addressSymbol + value);
-                  }
-              }
-
-
-
-              var args = string.Join(", ", argStrings);
-              cValues.Push("read(\"" + formatString + "\" ," + args + ")");
-          }*/
-
-
-
         public void EmitWriteLn(int argCount)
         {
             var formatSpecifiers = new Dictionary<string, string>();
@@ -739,6 +680,72 @@ void assert(char expr, int line)
 
             Emit("printf(\"" + string.Join("", specifierList) + "\\n\", " + string.Join(", ", argumentList) + ");");
         }
+
+        public void EmitRead(int argCount)
+        {
+            var argStrings = new List<string>();
+            string formatString = "";
+
+            var tacValueArguments = new List<TACValue>();
+
+            for (int i = 0; i < argCount; ++i)
+            {
+                tacValueArguments.Add(argStack.Pop());
+            }
+
+            foreach (var arg in tacValueArguments)
+            {
+                arg.Accept(this);
+                var addressSymbol = "&";
+                var type = "";
+                if (arg is TACIdentifier)
+                {
+                    var ident = (TACIdentifier)arg;
+                    type = ident.Type;
+                    if (ident.IsReference || capturedVariables.Any(x => x.Identifier.Name == ident.Name))
+                    {
+                        addressSymbol = "";
+                    }
+                }
+
+                if (arg is TACArrayIndex)
+                {
+                    var index = (TACArrayIndex)arg;
+                    type = index.Type;
+                }
+
+                switch (type)
+                {
+                    case SemanticChecker.INTEGER_TYPE:
+                        formatString += "d";
+                        break;
+                    case SemanticChecker.REAL_TYPE:
+                        formatString += "f";
+                        break;
+                    case SemanticChecker.STRING_TYPE:
+                        formatString += "s";
+                        break;
+                    default:
+                        throw new InternalCompilerError("Invalid type " + type + " when handling types for 'read'");
+                }
+
+                string value = cValues.Pop();
+                // count > 1 ---> it was declared only now (first use)
+                if (value.Split().Length > 1)
+                {
+                    Emit(value + ";");
+                    argStrings.Add(addressSymbol + value.Split()[1]);
+                }
+                else
+                {
+                    argStrings.Add(addressSymbol + value);
+                }
+            }
+            
+            var args = string.Join(", ", argStrings);
+            Emit("read(\"" + formatString + "\", " + args + ");");
+        }
+
 
         public void EmitFunctionCall(TACValue destination, TACValue function)
         {

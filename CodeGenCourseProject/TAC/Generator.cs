@@ -207,7 +207,8 @@ namespace CodeGenCourseProject.TAC
             // inbuilt read function
             if (name == "read" && functionSymbol == null)
             {
-                throw new NotImplementedException("Not implemented, pending CFG analysis rework decisions");
+                Emit(Operator.CALL_READ, null, new TACInteger(arguments.Count), null);
+                return;
             }
 
             
