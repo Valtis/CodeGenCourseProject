@@ -491,7 +491,7 @@ namespace CodeGenCourseProject.TAC.Tests
             var functions = GetFunctions("while_statements.txt", 1);
             var statements = functions[0].Statements;
 
-            Assert.AreEqual(46, statements.Count);
+            Assert.AreEqual(50, statements.Count);
 
             TACEquals(
                 new TACLabel(0),
@@ -556,93 +556,110 @@ namespace CodeGenCourseProject.TAC.Tests
                 new TACIdentifier("a", SemanticChecker.INTEGER_TYPE, 2),
                 statements[14]);
             TACEquals(
-                new TACCallWriteln(new List<TACValue>{
-                    new TACIdentifier("a", SemanticChecker.INTEGER_TYPE, 2)}),
-                statements[15]);
+                Operator.PUSH,
+                new TACIdentifier("a", SemanticChecker.INTEGER_TYPE, 2),
+                null,
+                statements[15]
+                );
             TACEquals(
-                new TACJump(new TACLabel(4)),
+                Operator.CALL_WRITELN,
+                new TACInteger(1),
+                null,
                 statements[16]);
             TACEquals(
-                new TACLabel(5),
+                new TACJump(new TACLabel(4)),
                 statements[17]);
+            TACEquals(
+                new TACLabel(5),
+                statements[18]);
 
             TACEquals(
                 new TACInteger(0),
                 new TACIdentifier("b", SemanticChecker.INTEGER_TYPE, 3),
-                statements[18]);
+                statements[19]);
             TACEquals(
                 new TACLabel(6),
-                statements[19]);
+                statements[20]);
             TACEquals(
                 Operator.LESS_THAN_OR_EQUAL,
                 new TACIdentifier("b", SemanticChecker.INTEGER_TYPE, 3),
                 new TACInteger(5),
                 new TACIdentifier("__t", SemanticChecker.BOOLEAN_TYPE, 2),
-                statements[20]);
+                statements[21]);
             TACEquals(
                 new TACJumpIfFalse(
                     new TACIdentifier("__t", SemanticChecker.BOOLEAN_TYPE, 2),
                     new TACLabel(7)),
-                statements[21]);
+                statements[22]);
             TACEquals(
                 new TACInteger(0),
                 new TACIdentifier("a", SemanticChecker.INTEGER_TYPE, 4),
-                statements[22]);
-            TACEquals(
-                new TACCallWriteln(new List<TACValue> {
-                    new TACInteger(1)
-                }),
                 statements[23]);
             TACEquals(
-                new TACLabel(8),
+                Operator.PUSH,
+                new TACInteger(1),
+                null,
                 statements[24]);
+            TACEquals(
+                Operator.CALL_WRITELN,                
+                new TACInteger(1),
+                null,
+                statements[25]);
+            TACEquals(
+                new TACLabel(8),
+                statements[26]);
             TACEquals(
                 Operator.LESS_THAN,
                 new TACIdentifier("a", SemanticChecker.INTEGER_TYPE, 4),
                 new TACInteger(3),
                 new TACIdentifier("__t", SemanticChecker.BOOLEAN_TYPE, 3),
-                statements[25]);
+                statements[27]);
             TACEquals(
                 new TACJumpIfFalse(new TACIdentifier("__t", SemanticChecker.BOOLEAN_TYPE, 3), new TACLabel(9)),
-                statements[26]);
+                statements[28]);
             TACEquals(
-                new TACCallWriteln(new List<TACValue>{
-                    new TACInteger(2)
-                }),
-                statements[27]);
+               Operator.PUSH,
+               new TACInteger(2),
+               null,
+               statements[29]);
+            TACEquals(
+                Operator.CALL_WRITELN,
+                new TACInteger(1), 
+                null,
+                statements[30]);
             TACEquals(
                 Operator.PLUS,
                 new TACIdentifier("a", SemanticChecker.INTEGER_TYPE, 4),
                 new TACInteger(1),
                 new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 4),
-                statements[28]
+                statements[31]
                 );
             TACEquals(
                 new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 4),
                 new TACIdentifier("a", SemanticChecker.INTEGER_TYPE, 4),
-                statements[29]);
+                statements[32]);
             TACEquals(
                 new TACJump(new TACLabel(8)),
-                statements[30]);
+                statements[33]);
             TACEquals(
                 new TACLabel(9),
-                statements[31]);
+                statements[34]);
             TACEquals(
                 Operator.PLUS,
                 new TACIdentifier("b", SemanticChecker.INTEGER_TYPE, 3),
                 new TACInteger(1),
                 new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 5),
-                statements[32]);
+                statements[35]);
             TACEquals(
                 new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 5),
                 new TACIdentifier("b", SemanticChecker.INTEGER_TYPE, 3),
-                statements[33]);
+                statements[36]);
             TACEquals(
                 new TACJump(new TACLabel(6)),
-                statements[34]);
+                statements[37]);
             TACEquals(
                 new TACLabel(7),
-                statements[35]);
+                statements[38]);
 
             TACEquals(
                 new TACArrayDeclaration(
@@ -650,7 +667,7 @@ namespace CodeGenCourseProject.TAC.Tests
                     SemanticChecker.INTEGER_TYPE,
                     new TACInteger(1),
                     5),
-                statements[36]);
+                statements[39]);
             TACEquals(
                 new TACInteger(0),
                 new TACArrayIndex(
@@ -658,10 +675,10 @@ namespace CodeGenCourseProject.TAC.Tests
                     new TACInteger(0),
                     SemanticChecker.INTEGER_TYPE,
                     5),
-                statements[37]);
+                statements[40]);
             TACEquals(
                 new TACLabel(10),
-                statements[38]);
+                statements[41]);
             TACEquals(
                 Operator.LESS_THAN,
                 new TACArrayIndex(
@@ -671,23 +688,27 @@ namespace CodeGenCourseProject.TAC.Tests
                     5),
                 new TACInteger(5),
                 new TACIdentifier("__t", SemanticChecker.BOOLEAN_TYPE, 6),
-                statements[39]);
+                statements[42]);
             TACEquals(
                 new TACJumpIfFalse(
                     new TACIdentifier("__t", SemanticChecker.BOOLEAN_TYPE, 6),
                     new TACLabel(11)),
-                statements[40]);
+                statements[43]);
             TACEquals(
-                new TACCallWriteln(
-                    new List<TACValue>
-                    {
-                        new TACArrayIndex(
-                            "ia",
-                            new TACInteger(0),
-                            SemanticChecker.INTEGER_TYPE,
-                            5)
-                    }),
-                statements[41]);
+                Operator.PUSH,
+                new TACArrayIndex(
+                    "ia",
+                    new TACInteger(0),
+                    SemanticChecker.INTEGER_TYPE,
+                    5),
+                null,
+                statements[44]
+                );            
+            TACEquals(
+                Operator.CALL_WRITELN,
+                new TACInteger(1),
+                null,
+                statements[45]);
             TACEquals(
                 Operator.PLUS,
                  new TACArrayIndex(
@@ -697,7 +718,7 @@ namespace CodeGenCourseProject.TAC.Tests
                     5),
                 new TACInteger(1),
                 new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 7),
-                statements[42]);
+                statements[46]);
             TACEquals(
                 new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 7),
                 new TACArrayIndex(
@@ -705,13 +726,13 @@ namespace CodeGenCourseProject.TAC.Tests
                     new TACInteger(0),
                     SemanticChecker.INTEGER_TYPE,
                     5),
-                statements[43]);
+                statements[47]);
             TACEquals(
                 new TACJump(new TACLabel(10)),
-                statements[44]);
+                statements[48]);
             TACEquals(
                 new TACLabel(11),
-                statements[45]);
+                statements[49]);
         }
 
         [TestMethod()]
@@ -768,7 +789,7 @@ namespace CodeGenCourseProject.TAC.Tests
         {
             var functions = GetFunctions("functions_and_procedures.txt", 8);
 
-            Assert.AreEqual("__proc_14__", functions[0].Name);
+            Assert.AreEqual(Helper.MangleFunctionName("proc_1", 4), functions[0].Name);
             var statements = functions[0].Statements;
             Assert.AreEqual(6, statements.Count);
 
@@ -802,7 +823,7 @@ namespace CodeGenCourseProject.TAC.Tests
                 new TACReturn(),
                 statements[5]);
 
-            Assert.AreEqual("__func_18__", functions[1].Name);
+            Assert.AreEqual(Helper.MangleFunctionName("func_1", 8), functions[1].Name);
             statements = functions[1].Statements;
             Assert.AreEqual(7, statements.Count);
             TACEquals(
@@ -838,35 +859,35 @@ namespace CodeGenCourseProject.TAC.Tests
                     new TACReal(0.0)),
                 statements[6]);
 
-            Assert.AreEqual("__writeln11__", functions[2].Name);
+            Assert.AreEqual(Helper.MangleFunctionName("writeln", 11), functions[2].Name);
             statements = functions[2].Statements;
             Assert.AreEqual(1, statements.Count);
             TACEquals(
                 new TACReturn(),
                 statements[0]);
 
-            Assert.AreEqual("__read12__", functions[3].Name);
+            Assert.AreEqual(Helper.MangleFunctionName("read", 12), functions[3].Name);
             statements = functions[3].Statements;
             Assert.AreEqual(1, statements.Count);
             TACEquals(
                 new TACReturn(),
                 statements[0]);
 
-            Assert.AreEqual("__func_214__", functions[4].Name);
+            Assert.AreEqual(Helper.MangleFunctionName("func_2", 14), functions[4].Name);
             statements = functions[4].Statements;
             Assert.AreEqual(1, statements.Count);
             TACEquals(
                 new TACReturn(new TACInteger(4)),
                 statements[0]);
 
-            Assert.AreEqual("__func_316__", functions[5].Name);
+            Assert.AreEqual(Helper.MangleFunctionName("func_3", 16), functions[5].Name);
             statements = functions[5].Statements;
             Assert.AreEqual(1, statements.Count);
             TACEquals(
                 new TACReturn(),
                 statements[0]);
 
-            Assert.AreEqual("__func_418__", functions[6].Name);
+            Assert.AreEqual(Helper.MangleFunctionName("func_4", 18), functions[6].Name);
             statements = functions[6].Statements;
             Assert.AreEqual(1, statements.Count);
             TACEquals(
@@ -875,86 +896,181 @@ namespace CodeGenCourseProject.TAC.Tests
 
             Assert.AreEqual("<ENTRY POINT>", functions[7].Name);
             statements = functions[7].Statements;
-            Assert.AreEqual(17, statements.Count);
+            Assert.AreEqual(33, statements.Count);
             TACEquals(
                 Operator.MULTIPLY,
                 new TACInteger(1),
                 new TACInteger(3),
                 new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 0),
                 statements[0]);
-            TACEquals(new TACCallWriteln(
-                new List<TACValue>
-                {
-                    new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 0),
-                    new TACBoolean(true),
-                    new TACString("hello"),
-                    new TACReal(123.45)
-                }),
+
+            TACEquals(
+                Operator.PUSH,
+                new TACReal(123.45),
+                null,
                 statements[1]);
-
-            TACEquals(new TACCallRead(
-                new List<TACValue>
-                {
-                    new TACIdentifier("a", SemanticChecker.INTEGER_TYPE, 0),
-                    new TACIdentifier("c", SemanticChecker.STRING_TYPE, 2),
-                    new TACIdentifier("d", SemanticChecker.REAL_TYPE, 3),
-                }),
+            TACEquals(
+                Operator.PUSH,
+                new TACString("hello"),
+                null,
                 statements[2]);
-
-            TACEquals(new TACCall("__writeln11__",
-                new List<TACValue> { }),
+            TACEquals(
+                Operator.PUSH,
+                new TACBoolean(true),
+                null,
                 statements[3]);
-
-            TACEquals(new TACCall("__read12__",
-                new List<TACValue> { new TACString("hello") }),
+            TACEquals(
+                Operator.PUSH,
+                new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 0),
+                null,
                 statements[4]);
-
-            TACEquals(new TACCall("__func_214__",
-                new List<TACValue> { new TACInteger(23) }),
-                new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 6),
+            TACEquals(
+                Operator.CALL_WRITELN,
+                new TACInteger(4),
+                null,
                 statements[5]);
-            TACEquals(new TACCall("__func_214__",
-                new List<TACValue> { new TACInteger(32) }),
-                new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 7),
+
+            TACEquals(
+                Operator.PUSH,
+                new TACIdentifier("d", SemanticChecker.REAL_TYPE, 3),
+                null,
                 statements[6]);
-            TACEquals(new TACCall("__func_214__",
-                new List<TACValue> { new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 7) }),
-                new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 8),
+            TACEquals(
+                Operator.PUSH,
+                new TACIdentifier("c", SemanticChecker.STRING_TYPE, 2),
+                null,
                 statements[7]);
-            TACEquals(new TACCall("__func_214__",
-                new List<TACValue> { new TACInteger(23) }),
-                new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 9),
-                statements[8]);
             TACEquals(
-                new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 9),
-                new TACIdentifier("a", SemanticChecker.INTEGER_TYPE, 0),
+                 Operator.PUSH,
+                 new TACIdentifier("a", SemanticChecker.INTEGER_TYPE, 0),
+                 null,
+                 statements[8]);
+            TACEquals(
+                Operator.CALL_READ,
+                new TACInteger(3),
+                null,
                 statements[9]);
-            TACEquals(new TACCall("__func_214__",
-                new List<TACValue> { new TACInteger(32) }),
-                new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 10),
-                statements[10]);
-            TACEquals(new TACCall("__func_214__",
-                new List<TACValue> { new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 10) }),
-                new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 11),
-                statements[11]);
+
             TACEquals(
-                new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 11),
-                new TACIdentifier("a", SemanticChecker.INTEGER_TYPE, 0),
+                Operator.CALL,
+                new TACFunctionIdentifier("writeln", 11),
+                null,
+                statements[10]);
+
+            TACEquals(
+                 Operator.PUSH,
+                 new TACString("hello"),
+                 null,
+                 statements[11]);
+            TACEquals(
+                Operator.CALL,
+                new TACFunctionIdentifier("read", 12),
+                null,
                 statements[12]);
             TACEquals(
-                new TACArrayDeclaration("x", SemanticChecker.INTEGER_TYPE, new TACInteger(4), 20),
+                Operator.PUSH,
+                new TACInteger(23),
+                null,
                 statements[13]);
+            TACEquals(
+                Operator.CALL,
+                new TACFunctionIdentifier("func_2", 14),
+                new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 6),
+                statements[14]);
+            TACEquals(
+                Operator.PUSH,
+                new TACInteger(32),
+                null,
+                statements[15]);
+            TACEquals(
+                Operator.CALL,
+                new TACFunctionIdentifier("func_2", 14),
+                new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 7),
+                statements[16]);
+
+            TACEquals(
+                Operator.PUSH,
+                new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 7),
+                null,
+                statements[17]);
+            TACEquals(
+                Operator.CALL,
+                new TACFunctionIdentifier("func_2", 14),
+                new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 8),
+                statements[18]);
+
+
+            TACEquals(
+                Operator.PUSH,
+                new TACInteger(23),
+                null,
+                statements[19]);
+            TACEquals(
+                Operator.CALL,
+                new TACFunctionIdentifier("func_2", 14),
+                new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 9),
+                statements[20]);
+            TACEquals(
+               new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 9),
+               new TACIdentifier("a", SemanticChecker.INTEGER_TYPE, 0),
+               statements[21]);
+
+            TACEquals(
+                Operator.PUSH,
+                new TACInteger(32),
+                null,
+                statements[22]);
+            TACEquals(
+                Operator.CALL,
+                new TACFunctionIdentifier("func_2", 14),
+                new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 10),
+                statements[23]);
+            TACEquals(
+               Operator.PUSH,
+               new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 10),
+               null,
+               statements[24]);
+            TACEquals(
+                Operator.CALL,
+                new TACFunctionIdentifier("func_2", 14),
+                new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 11),
+                statements[25]);
+            TACEquals(
+                new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 11),
+                new TACIdentifier("a", SemanticChecker.INTEGER_TYPE, 0),
+                statements[26]);
+            TACEquals(
+                new TACArrayDeclaration("x", SemanticChecker.INTEGER_TYPE, new TACInteger(4), 20),
+                statements[27]);
             TACEquals(
                 new TACCloneArray(
                     new TACIdentifier("x", SemanticChecker.INTEGER_ARRAY, 20),
                     new TACIdentifier("__t", SemanticChecker.INTEGER_ARRAY, 12)),
-                statements[14]);
-            TACEquals(new TACCall("__func_316__",
-                new List<TACValue> { new TACIdentifier("__t", SemanticChecker.INTEGER_ARRAY, 12) }),
-                statements[15]);
-            TACEquals(new TACCall("__func_418__",
-                 new List<TACValue> { new TACIdentifier("x", SemanticChecker.INTEGER_ARRAY, 20) }),
-                 statements[16]);
+                statements[28]);
+
+            TACEquals(
+                Operator.PUSH,
+                new TACIdentifier("__t", SemanticChecker.INTEGER_ARRAY, 12),
+                null,
+                statements[29]);
+
+            TACEquals(
+                Operator.CALL,
+                new TACFunctionIdentifier("func_3", 16),
+                null,
+                statements[30]);
+
+            TACEquals(
+                Operator.PUSH,
+                new TACIdentifier("x", SemanticChecker.INTEGER_ARRAY, 20),
+                null,
+                statements[31]);
+            
+            TACEquals(
+                Operator.CALL,
+                new TACFunctionIdentifier("func_4", 18),
+                null,
+                statements[32]);
         }
 
         [TestMethod()]
