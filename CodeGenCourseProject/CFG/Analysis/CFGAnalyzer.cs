@@ -26,10 +26,10 @@ namespace CodeGenCourseProject.CFG.Analysis
 
         public void Analyze()
         {
-            foreach (var function in functions)
+          /*  foreach (var function in functions)
             {
                 AnalyzeFunction(function);
-            }
+            }*/
         }
 
         private void AnalyzeFunction(Function function)
@@ -144,7 +144,7 @@ namespace CodeGenCourseProject.CFG.Analysis
                     block.VariableInitializations.Add(new BasicBlock.VariableInitPoint((TACIdentifier)dest, i));
                 }
                 // arguments for read call are always initialized, so treat them as such
-                else if (function.Statements[i].RightOperand is TACCallRead)
+                /*else if (function.Statements[i].RightOperand is TACCallRead)
                 {
                     var readCall = (TACCallRead)function.Statements[i].RightOperand;
                     foreach (var arg in readCall.Arguments)
@@ -154,7 +154,7 @@ namespace CodeGenCourseProject.CFG.Analysis
                             block.VariableInitializations.Add(new BasicBlock.VariableInitPoint((TACIdentifier)arg, i));
                         }
                     }
-                }
+                }*/
             }
         }
 
@@ -272,12 +272,12 @@ namespace CodeGenCourseProject.CFG.Analysis
             TACIdentifier destination, 
             int currentPoint)
         {
-            if (value is TACCallRead)
+          /*  if (value is TACCallRead)
             {
                 // read call initializes variables - skip
                 return;
             }
-
+            */
             if (value is TACArrayIndex)
             {
                 var index = (TACArrayIndex)value;
@@ -312,7 +312,7 @@ namespace CodeGenCourseProject.CFG.Analysis
                 CheckInitialization(function, jump.Condition, block, destination, currentPoint);
                 return;
             }
-            
+           /* 
             if (value is TACCall)
             {
                 var call = (TACCall)value;
@@ -369,7 +369,7 @@ namespace CodeGenCourseProject.CFG.Analysis
                     }
                 }
                 return;
-            }
+            }*/
         }
         
         private bool CheckFunctionReturnStatements(Function function, bool missingReturnReported, BasicBlock block)

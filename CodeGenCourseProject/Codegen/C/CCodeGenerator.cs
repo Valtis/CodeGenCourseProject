@@ -61,6 +61,7 @@ namespace CodeGenCourseProject.Codegen.C
         private ISet<Variable> capturedVariables;
         private ISet<string> declared;
         private Stack<string> cValues;
+        private Stack<TACValue> argStack;
 
         public CCodeGenerator(IList<Function> functions)
         {
@@ -71,6 +72,7 @@ namespace CodeGenCourseProject.Codegen.C
             indentation = new Indentation();
             declared = new HashSet<string>();
             cValues = new Stack<string>();
+            argStack = new Stack<TACValue>();
         }
 
         public void SaveResult(Stream output)
@@ -350,7 +352,7 @@ void assert(char expr, int line)
                 GetCType(x.Type) + " " + (x.IsReference ? "*" : "") + x.Identifier.Name));
 
                 param_list.AddRange(
-                    function.CapturedVariables.Select(x => CAPTURE_NOTIFIER + " " +  GetCType(x.Type) + " *" + x.Identifier.Name));
+                    function.CapturedVariables.Select(x => CAPTURE_NOTIFIER + " " + GetCType(x.Type) + " *" + x.Identifier.Name));
 
                 var param = string.Join(", ", param_list);
                 Emit(GetCType(function.ReturnType) + " " + function.Name + "(" + param + ")");
@@ -370,7 +372,7 @@ void assert(char expr, int line)
 
         private void EmitStatement(Statement statement)
         {
-
+            /* REFACTOR REFACTOR REFACTOR */
             string dest = "";
             string lhs = "";
             string rhs = "";
@@ -391,6 +393,27 @@ void assert(char expr, int line)
 
 
             */
+
+            if (statement.Operator.HasValue)
+            {
+                switch (statement.Operator)
+                {
+                    case Operator.PUSH:
+                        argStack.Push(statement.RightOperand);
+                        return;
+                    case Operator.CALL_WRITELN:
+                        EmitWriteLn(((TACInteger)statement.RightOperand).Value);
+                        return;
+                    case Operator.CALL:
+                        EmitFunctionCall(statement.Destination, statement.RightOperand);
+                        return;
+                    default:
+                        break;
+
+                }
+            }
+
+
             if (statement.Destination != null)
             {
                 statement.Destination.Accept(this);
@@ -541,35 +564,6 @@ void assert(char expr, int line)
 
         }
 
-        public void Visit(TACCallWriteln tacCallWriteln)
-        {
-            var formatSpecifiers = new Dictionary<string, string>();
-            formatSpecifiers.Add(C_INTEGER, "%d");
-            formatSpecifiers.Add(C_REAL, "%f");
-            formatSpecifiers.Add(C_BOOLEAN, "%d"); // treat as integer
-            formatSpecifiers.Add(C_STRING, "%s");
-
-            var arguments = tacCallWriteln.Arguments;
-            if (arguments.Count == 0)
-            {
-                cValues.Push("printf(\"\\n\")");
-                return;
-            }
-
-            var specifierList = new List<string>();
-            var argumentList = new List<string>();
-
-            foreach (var arg in arguments)
-            {
-                arg.Accept(this);
-                var prefix = GetDereferenceOperator(arg);
-                argumentList.Add(prefix + cValues.Pop());
-                specifierList.Add(formatSpecifiers[GetCType(arg)]);
-            }
-
-            cValues.Push("printf(\"" + string.Join("", specifierList) + "\\n\", " + string.Join(", ", argumentList) + ")");
-        }
-
         public void Visit(TACReal tacReal)
         {
             cValues.Push(tacReal.Value.ToString());
@@ -585,7 +579,7 @@ void assert(char expr, int line)
             // we need to convert \n back to the escape sequence form, as line break in C string is not 
             // acceptable without appending \ to the line. Similarily, \" must be replaced by the escape sequence, 
             // as otherwise the string is broken by unexpected '"' characters
-            
+
             // we also need to change \ to \\, as otherwise it is interpreted as start of escape sequence by the C compiler
 
             string value = tacString.Value;
@@ -631,62 +625,6 @@ void assert(char expr, int line)
             cValues.Push("goto ____label_" + tacJump.Label.ID);
         }
 
-        public void Visit(TACCall tacCall)
-        {
-
-            Function func = null;
-            IList<Variable> parameters = null;
-            foreach (var function in functions)
-            {
-                if (function.Name == tacCall.Function)
-                {
-                    parameters = function.Parameters;
-                    func = function;
-                    break;
-                }
-            }
-            var args_string = new List<string>();
-
-            for (int i = 0; i < tacCall.Arguments.Count; ++i)
-            {
-                string arg = "";
-                var argIsRef = parameters[i].IsReference;
-                var paramIsRef = false;
-                if (tacCall.Arguments[i] is TACIdentifier)
-                {
-                    var identifier = (TACIdentifier)tacCall.Arguments[i];
-                    paramIsRef = identifier.IsReference ||
-                    capturedVariables.Any(x => x.Identifier.Name == identifier.Name);
-                }
-
-                if (argIsRef && !paramIsRef)
-                {
-                    arg += "&";
-                }
-                else if (!argIsRef && paramIsRef)
-                {
-                    arg += "*";
-                }
-
-                tacCall.Arguments[i].Accept(this);
-                arg += cValues.Pop();
-                args_string.Add(arg);
-            };
-
-
-            foreach (var captured in func.CapturedVariables)
-            {
-                args_string.Add(CAPTURE_NOTIFIER + " " +
-                    ((capturedVariables.Contains(captured) ||
-                        captured.Identifier.IsReference) ?
-                        "" : "&") +
-                    captured.Identifier.Name);
-            }
-            var args = string.Join(", ", args_string);
-
-            cValues.Push(tacCall.Function + "(" + args + ")");
-        }
-
         public void Visit(TACReturn tacReturn)
         {
             var expr = "";
@@ -705,64 +643,180 @@ void assert(char expr, int line)
             cValues.Push("assert(" + cValues.Pop() + ", " + (tacAssert.Line + 1) + ")");
         }
 
-        public void Visit(TACCallRead tacCallRead)
-        {
-            var argStrings = new List<string>();
-            string formatString = "";
+        /*  public void Visit(TACCallRead tacCallRead)
+          {
+              var argStrings = new List<string>();
+              string formatString = "";
 
-            foreach (var arg in tacCallRead.Arguments)
+              foreach (var arg in tacCallRead.Arguments)
+              {
+                  arg.Accept(this);
+                  var addressSymbol = "&";
+                  var type = "";
+                  if (arg is TACIdentifier)
+                  {
+                      var ident = (TACIdentifier)arg;
+                      type = ident.Type;
+                      if (ident.IsReference || capturedVariables.Any(x => x.Identifier.Name == ident.Name))
+                      {
+                          addressSymbol = "";
+                      } 
+                  }
+
+                  if (arg is TACArrayIndex)
+                  {
+                      var index = (TACArrayIndex)arg;
+                      type = index.Type;
+                  }
+
+                  switch (type)
+                  {
+                      case SemanticChecker.INTEGER_TYPE:
+                          formatString += "d";
+                          break;
+                      case SemanticChecker.REAL_TYPE:
+                          formatString += "f";
+                          break;
+                      case SemanticChecker.STRING_TYPE:
+                          formatString += "s";
+                          break;
+                      default:
+                          throw new InternalCompilerError("Invalid type " + type + " when handling types for 'read'");
+                  }
+
+                  string value = cValues.Pop();
+                  // count > 1 ---> it was declared only now (first use)
+                  if (value.Split().Length > 1)
+                  {
+                      Emit(value + ";");
+                      argStrings.Add(addressSymbol + value.Split()[1]);
+                  }
+                  else
+                  {
+                      argStrings.Add(addressSymbol + value);
+                  }
+              }
+
+
+
+              var args = string.Join(", ", argStrings);
+              cValues.Push("read(\"" + formatString + "\" ," + args + ")");
+          }*/
+
+
+
+        public void EmitWriteLn(int argCount)
+        {
+            var formatSpecifiers = new Dictionary<string, string>();
+            formatSpecifiers.Add(C_INTEGER, "%d");
+            formatSpecifiers.Add(C_REAL, "%f");
+            formatSpecifiers.Add(C_BOOLEAN, "%d"); // treat as integer
+            formatSpecifiers.Add(C_STRING, "%s");
+
+            if (argCount == 0)
+            {
+                Emit("printf(\"\\n\");");
+                return;
+            }
+
+            var tacValueArguments = new List<TACValue>();
+
+            for (int i = 0; i < argCount; ++i)
+            {
+                tacValueArguments.Add(argStack.Pop());
+            }
+
+            var specifierList = new List<string>();
+            var argumentList = new List<string>();
+
+            foreach (var arg in tacValueArguments)
             {
                 arg.Accept(this);
-                var addressSymbol = "&";
-                var type = "";
-                if (arg is TACIdentifier)
-                {
-                    var ident = (TACIdentifier)arg;
-                    type = ident.Type;
-                    if (ident.IsReference || capturedVariables.Any(x => x.Identifier.Name == ident.Name))
-                    {
-                        addressSymbol = "";
-                    } 
-                }
+                var prefix = GetDereferenceOperator(arg);
+                argumentList.Add(prefix + cValues.Pop());
+                specifierList.Add(formatSpecifiers[GetCType(arg)]);
+            }
 
-                if (arg is TACArrayIndex)
-                {
-                    var index = (TACArrayIndex)arg;
-                    type = index.Type;
-                }
+            Emit("printf(\"" + string.Join("", specifierList) + "\\n\", " + string.Join(", ", argumentList) + ");");
+        }
 
-                switch (type)
-                {
-                    case SemanticChecker.INTEGER_TYPE:
-                        formatString += "d";
-                        break;
-                    case SemanticChecker.REAL_TYPE:
-                        formatString += "f";
-                        break;
-                    case SemanticChecker.STRING_TYPE:
-                        formatString += "s";
-                        break;
-                    default:
-                        throw new InternalCompilerError("Invalid type " + type + " when handling types for 'read'");
-                }
+        public void EmitFunctionCall(TACValue destination, TACValue function)
+        {
+            var identifier = (TACFunctionIdentifier)function;
 
-                string value = cValues.Pop();
-                // count > 1 ---> it was declared only now (first use)
-                if (value.Split().Length > 1)
+            Function func = null;
+            IList<Variable> parameters = null;
+
+            // find the function we are calling
+            foreach (var f in functions)
+            {  
+                if (f.Name == identifier.Name)
                 {
-                    Emit(value + ";");
-                    argStrings.Add(addressSymbol + value.Split()[1]);
-                }
-                else
-                {
-                    argStrings.Add(addressSymbol + value);
+                    parameters = f.Parameters;
+                    func = f;
+                    break;
                 }
             }
 
+            if (func == null)
+            {
+                throw new InternalCompilerError("Failed to find function " + identifier.Name + " when generating function call");
+            }
+
+            var args_string = new List<string>();
+            var argList = new List<TACValue>();
+
+            for (int i = 0; i < parameters.Count; ++i)
+            {
+                argList.Add(argStack.Pop());
+            }
 
 
-            var args = string.Join(", ", argStrings);
-            cValues.Push("read(\"" + formatString + "\" ," + args + ")");
+            for (int i = 0; i < argList.Count; ++i)
+            {
+                string arg = "";
+                var argIsRef = parameters[i].IsReference;
+                var paramIsRef = false;
+                if (argList[i] is TACIdentifier)
+                {
+                    var argIdentifier = (TACIdentifier)argList[i];
+                    paramIsRef = argIdentifier.IsReference ||
+                    capturedVariables.Any(x => x.Identifier.Name == argIdentifier.Name);
+                }
+
+                if (argIsRef && !paramIsRef)
+                {
+                    arg += "&";
+                }
+                else if (!argIsRef && paramIsRef)
+                {
+                    arg += "*";
+                }
+
+                argList[i].Accept(this);
+                arg += cValues.Pop();
+                args_string.Add(arg);
+            };
+
+
+            foreach (var captured in func.CapturedVariables)
+            {
+                args_string.Add(CAPTURE_NOTIFIER + " " +
+                    ((capturedVariables.Contains(captured) ||
+                        captured.Identifier.IsReference) ?
+                        "" : "&") +
+                    captured.Identifier.Name);
+            }
+            var args = string.Join(", ", args_string);
+
+            var destStr = "";
+            if (destination != null)
+            {
+                destination.Accept(this);
+                destStr = cValues.Pop() + " = ";
+            }
+
+            Emit(destStr + identifier.Name + "(" + args + ");");
         }
 
         public void Visit(TACCloneArray tacCloneArray)
@@ -811,9 +865,9 @@ void assert(char expr, int line)
             return ("__copy_" + type + "_array(" + sourceRefSymbol + source.Name + ", " + destRefSymbol + destination.Name + ")");
         }
 
-        private string GetCType(string miniPLType)
+        private string GetCType(string minipascalType)
         {
-            switch (miniPLType)
+            switch (minipascalType)
             {
                 case SemanticChecker.INTEGER_TYPE:
                     return C_INTEGER;

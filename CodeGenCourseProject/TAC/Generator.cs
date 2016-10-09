@@ -10,7 +10,8 @@ namespace CodeGenCourseProject.TAC
     public enum Operator
     {
         PLUS, MINUS, MULTIPLY, DIVIDE, MODULO, CONCAT,
-        LESS_THAN, LESS_THAN_OR_EQUAL, EQUAL, GREATER_THAN_OR_EQUAL, GREATER_THAN, NOT_EQUAL, AND, OR, NOT
+        LESS_THAN, LESS_THAN_OR_EQUAL, EQUAL, GREATER_THAN_OR_EQUAL, GREATER_THAN, NOT_EQUAL, AND, OR, NOT,
+        PUSH, CALL, CALL_WRITELN, CALL_READ
     };
 
     public static class OperatorExtension
@@ -49,6 +50,14 @@ namespace CodeGenCourseProject.TAC
                     return "||";
                 case Operator.NOT:
                     return "!";
+                case Operator.PUSH:
+                    return "<push>";
+                case Operator.CALL:
+                    return "<call>";
+                case Operator.CALL_WRITELN:
+                    return "<call_writeln>";
+                case Operator.CALL_READ:
+                    return "<call_read>";
                 default:
                     throw new InternalCompilerError("Default branch taken in Operator.Name()");
             }
@@ -183,25 +192,25 @@ namespace CodeGenCourseProject.TAC
                 arguments.Add(argument);
             }
 
+            // push in reverse order, as this makes code gen slightly easier
+            for (int i = arguments.Count -1; i >= 0; --i)
+            {
+                Emit(Operator.PUSH, null, arguments[i], null);
+            }
+
             // inbuilt writeln function
             if (name == "writeln" && functionSymbol == null)
             {
-                Emit(new TACCallWriteln(callNode.Line, callNode.Column, arguments));
+                Emit(Operator.CALL_WRITELN, null, new TACInteger(arguments.Count), null);
                 return;
             }
             // inbuilt read function
             if (name == "read" && functionSymbol == null)
             {
-                Emit(new TACCallRead(callNode.Line, callNode.Column, arguments));
-                return;
+                throw new NotImplementedException("Not implemented, pending CFG analysis rework decisions");
             }
 
-            var call = new TACCall(
-                    callNode.Line,
-                    callNode.Column,
-                    Helper.MangleFunctionName(name, functionSymbol.Id),
-                    arguments);
-
+            
             /*
                 If the called function has captured variables, which are not locals for the function,
                 we need to capture them as well                   
@@ -236,12 +245,12 @@ namespace CodeGenCourseProject.TAC
 
             if (callNode.NodeType() == SemanticChecker.VOID_TYPE)
             {
-                Emit(call);
+                Emit(Operator.CALL, null, new TACFunctionIdentifier(name, functionSymbol.Id), null);
             }
             else
             {
                 var temp = GetTemporary(callNode);
-                Emit(call, temp);
+                Emit(Operator.CALL, null, new TACFunctionIdentifier(name, functionSymbol.Id), temp);
                 tacValueStack.Push(temp);
             }
         }
