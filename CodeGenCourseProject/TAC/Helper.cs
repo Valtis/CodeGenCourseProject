@@ -10,12 +10,12 @@ namespace CodeGenCourseProject.TAC
     {
         public static string MangleVariableName(string name, int id)
         {
-            return name + id;
+            return name + "__ID__" + id;
         }
 
         public static string MangleFunctionName(string name, int id)
         {
-            return "__" + name + id + "__";
+            return "__" + name + "__ID__" + id + "__";
         }
     }
 }
