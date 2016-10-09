@@ -158,7 +158,7 @@ namespace CodeGenCourseProject.CFG
             return CFGraph.END_BLOCK_ID;
         }
 
-        private bool IsJumpOrReturn(TACStatement statement)
+        private bool IsJumpOrReturn(Statement statement)
         {
             return statement.RightOperand is TACJump 
                 || statement.RightOperand is TACJumpIfFalse

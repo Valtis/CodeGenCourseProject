@@ -23,7 +23,7 @@ namespace CodeGenCourseProject.TAC.Tests
             node.Accept(semanticChecker);
             Assert.AreEqual(0, reporter.Errors.Count);
 
-            var tacGenerator = new TACGenerator();
+            var tacGenerator = new Generator();
             node.Accept(tacGenerator);
 
             Assert.AreEqual(functions, tacGenerator.Functions.Count);
@@ -986,23 +986,23 @@ namespace CodeGenCourseProject.TAC.Tests
                 statements[3]);
         }
 
-        private void TACEquals(TACValue value, TACStatement actual)
+        private void TACEquals(TACValue value, Statement actual)
         {
-            Assert.AreEqual(new TACStatement(null, null, value, null), actual);
+            Assert.AreEqual(new Statement(null, null, value, null), actual);
         }
 
-        private void TACEquals(TACValue value, TACValue dest, TACStatement actual)
+        private void TACEquals(TACValue value, TACValue dest, Statement actual)
         {
-            Assert.AreEqual(new TACStatement(null, null, value, dest), actual);
+            Assert.AreEqual(new Statement(null, null, value, dest), actual);
         }
 
-        private void TACEquals(Operator op, TACValue rhs, TACValue dest, TACStatement actual)
+        private void TACEquals(Operator op, TACValue rhs, TACValue dest, Statement actual)
         {
-            Assert.AreEqual(new TACStatement(op, null, rhs, dest), actual);
+            Assert.AreEqual(new Statement(op, null, rhs, dest), actual);
         }
-        private void TACEquals(Operator op, TACValue lhs, TACValue rhs, TACValue dest, TACStatement actual)
+        private void TACEquals(Operator op, TACValue lhs, TACValue rhs, TACValue dest, Statement actual)
         {
-            Assert.AreEqual(new TACStatement(op, lhs, rhs, dest), actual);
+            Assert.AreEqual(new Statement(op, lhs, rhs, dest), actual);
         }
 
     }

@@ -110,7 +110,7 @@ namespace CodeGenCourseProject.CFG.Analysis
 
                 // check that reference parameters are assigned into by the time we
                 // are exiting the function\procedure
-                if (function.Name != TACGenerator.ENTRY_POINT &&
+                if (function.Name != Generator.ENTRY_POINT &&
                     graph.AdjacencyList[block.ID].Contains(CFGraph.END_BLOCK_ID))
                 {
 
@@ -231,7 +231,7 @@ namespace CodeGenCourseProject.CFG.Analysis
         }
 
         // check that variables are initialized before use in a basic block
-        private void CheckInitialization(Function function, TACStatement statement, int currentPoint, BasicBlock block)
+        private void CheckInitialization(Function function, Statement statement, int currentPoint, BasicBlock block)
         {
             // ensure array index is initialized before use
             if (statement.Destination is TACArrayIndex)

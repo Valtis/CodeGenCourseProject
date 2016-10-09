@@ -340,7 +340,7 @@ void assert(char expr, int line)
 
         private void EmitFunctionPrologue(Function function)
         {
-            if (function.Name == TACGenerator.ENTRY_POINT)
+            if (function.Name == Generator.ENTRY_POINT)
             {
                 Emit("int main()");
             }
@@ -358,7 +358,7 @@ void assert(char expr, int line)
 
             EmitBlockStart();
 
-            if (function.Name == TACGenerator.ENTRY_POINT)
+            if (function.Name == Generator.ENTRY_POINT)
             {
                 Emit("/*** AUTO-GENERATED CODE ***/");
                 Emit("#ifndef GC_DISABLE");
@@ -368,7 +368,7 @@ void assert(char expr, int line)
             }
         }
 
-        private void EmitStatement(TACStatement statement)
+        private void EmitStatement(Statement statement)
         {
 
             string dest = "";
@@ -443,7 +443,7 @@ void assert(char expr, int line)
         private void EmitFunctionEpilogue(Function function)
         {
 
-            if (function.Name == TACGenerator.ENTRY_POINT)
+            if (function.Name == Generator.ENTRY_POINT)
             {
                 Emit("return 0;");
             }

@@ -24,7 +24,7 @@ namespace CodeGenCourseProject.CFG.Tests
             node.Accept(semanticChecker);
             Assert.AreEqual(0, reporter.Errors.Count);
 
-            var tacGenerator = new TACGenerator();
+            var tacGenerator = new Generator();
             node.Accept(tacGenerator);
 
             var cfgGenerator = new CFGGenerator(tacGenerator.Functions);

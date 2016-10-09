@@ -55,7 +55,7 @@ namespace CodeGenCourseProject.TAC
         }
     }
 
-    public class TACGenerator : ASTVisitor
+    public class Generator : ASTVisitor
     {
         private string programName;
         private readonly IList<Function> functions;
@@ -75,7 +75,7 @@ namespace CodeGenCourseProject.TAC
         // used to identify captured variables
         private Stack<SymbolTable> outerSymbolTables;
 
-        public TACGenerator()
+        public Generator()
         {
             functions = new List<Function>();
             functionStack = new Stack<Function>();
@@ -811,22 +811,22 @@ namespace CodeGenCourseProject.TAC
 
         private void Emit(TACValue operand)
         {
-            functionStack.Peek().Statements.Add(new TACStatement(null, null, operand, null));
+            functionStack.Peek().Statements.Add(new Statement(null, null, operand, null));
         }
 
         private void Emit(TACValue operand, TACValue destination)
         {
-            functionStack.Peek().Statements.Add(new TACStatement(null, null, operand, destination));
+            functionStack.Peek().Statements.Add(new Statement(null, null, operand, destination));
         }
 
         private void Emit(Operator op, TACValue operand, TACValue destination)
         {
-            functionStack.Peek().Statements.Add(new TACStatement(op, null, operand, destination));
+            functionStack.Peek().Statements.Add(new Statement(op, null, operand, destination));
         }
 
         private void Emit(Operator op, TACValue lhs, TACValue rhs, TACValue destination)
         {
-            functionStack.Peek().Statements.Add(new TACStatement(op, lhs, rhs, destination));
+            functionStack.Peek().Statements.Add(new Statement(op, lhs, rhs, destination));
         }
 
         void AssertEmptyTacValueStack()

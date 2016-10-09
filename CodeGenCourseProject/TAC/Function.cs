@@ -67,7 +67,7 @@ namespace CodeGenCourseProject.TAC
         private readonly ISet<Variable> locals; // local variables
         // values that function captures from outer context
         private ISet<Variable> capturedVariables;
-        private IList<TACStatement> statements;
+        private IList<Statement> statements;
         private readonly string returnType;
 
         public Function(int line, int column, string name, int id, string returnType)
@@ -75,11 +75,11 @@ namespace CodeGenCourseProject.TAC
             this.line = line;
             this.column = column;
             this.parameters = new List<Variable>();
-            this.statements = new List<TACStatement>();
+            this.statements = new List<Statement>();
             this.CapturedVariables = new HashSet<Variable>();
             this.locals = new HashSet<Variable>();
             this.returnType = returnType;
-            if (name != TACGenerator.ENTRY_POINT)
+            if (name != Generator.ENTRY_POINT)
             {
                 this.name = Helper.MangleFunctionName(name, id);
                 this.unmangledName = name;
@@ -92,7 +92,7 @@ namespace CodeGenCourseProject.TAC
 
         }
 
-        public IList<TACStatement> Statements
+        public IList<Statement> Statements
         {
             get
             {
@@ -179,7 +179,7 @@ namespace CodeGenCourseProject.TAC
             Parameters.Add(new Variable(id, type, isReferenceParameter));
         }
 
-        internal void UpdateStatements(List<TACStatement> liveStatements)
+        internal void UpdateStatements(List<Statement> liveStatements)
         {
             statements = liveStatements;
         }

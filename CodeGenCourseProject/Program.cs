@@ -61,7 +61,7 @@ namespace CodeGenCourseProject
                 return;
             }
 
-            var tacGenerator = new TACGenerator();
+            var tacGenerator = new Generator();
 
             root.Accept(tacGenerator);
 

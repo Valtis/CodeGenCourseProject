@@ -3,7 +3,7 @@ using System;
 
 namespace CodeGenCourseProject.TAC
 {
-    public class TACStatement
+    public class Statement
     {
         private readonly Tuple<Operator?, TACValue, TACValue, TACValue> quad;
 
@@ -76,7 +76,7 @@ namespace CodeGenCourseProject.TAC
             }
         }
 
-        public TACStatement(Operator? op, TACValue lhs, TACValue rhs, TACValue destination)
+        public Statement(Operator? op, TACValue lhs, TACValue rhs, TACValue destination)
         {
             quad = new Tuple<Operator?, TACValue, TACValue, TACValue>(op, lhs, rhs, destination);
         }
@@ -98,14 +98,24 @@ namespace CodeGenCourseProject.TAC
 
         public override bool Equals(object obj)
         {
-            if (!(obj is TACStatement))
+            if (!(obj is Statement))
             {
                 return false;
             }
 
-            var other = (TACStatement)obj;
+            var other = (Statement)obj;
 
             return Quad.Equals(other.Quad);
+        }
+
+        public override int GetHashCode()
+        {
+            int hash = 17;
+            hash = hash * 31 + Quad.Item1.GetHashCode();
+            hash = hash * 31 + Quad.Item2.GetHashCode();
+            hash = hash * 31 + Quad.Item3.GetHashCode();
+            hash = hash * 31 + Quad.Item4.GetHashCode();
+            return hash;
         }
     }
 }
