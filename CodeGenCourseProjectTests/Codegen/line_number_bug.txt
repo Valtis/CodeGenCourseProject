@@ -1,0 +1,4 @@
+program line_number_bug;
+begin
+   var a, b : integer; a := 4; b := 2; a := a * b; writeln(a); var true : integer; true := 2; writeln(true);
+end.

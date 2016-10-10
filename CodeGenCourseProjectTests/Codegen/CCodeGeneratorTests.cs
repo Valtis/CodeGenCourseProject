@@ -740,5 +740,20 @@ namespace CodeGenCourseProject.Codegen.Tests
             Assert.AreEqual("0", output[3]);
             Assert.AreEqual(null, output[4]);
         }
+
+        /* 
+        There was a rather annoying/embarassing bug that caused a null pointer exception 
+        when two or more statements were on the same line, eg a := 4; a := a + 2; ....
+        Considering the language should ignore whitespace, this bug is an unfortunate one...
+        */
+        [TestMethod()]
+        public void LineNumberBug()
+        {
+            var output = CompileAndRun("line_number_bug.txt");
+            Assert.AreEqual(3, output.Count);
+            Assert.AreEqual("8", output[0]);
+            Assert.AreEqual("2", output[1]);
+            Assert.AreEqual(null, output[2]);
+        }
     }
 }

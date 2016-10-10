@@ -445,8 +445,6 @@ namespace CodeGenCourseProject.SemanticChecking.Tests
             helper.AssertErrorMessage(1, MessageKind.SEMANTIC_ERROR, 22, 23, "Argument 2 for 'refargs' is invalid, as the corresponding parameter is reference type");
             helper.AssertErrorMessage(2, MessageKind.SEMANTIC_ERROR, 22, 29, "Argument 3 for 'refargs' is invalid, as the corresponding parameter is reference type");
             helper.AssertErrorMessage(3, MessageKind.SEMANTIC_ERROR, 22, 38, "Argument 4 for 'refargs' is invalid, as the corresponding parameter is reference type");
-
         }
-
     }
 }

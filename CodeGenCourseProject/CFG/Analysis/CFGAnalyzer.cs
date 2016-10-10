@@ -436,7 +436,9 @@ namespace CodeGenCourseProject.CFG.Analysis
                     if (init.Equals(identifier))
                     {
                         // check that assignment actually happens before usage
-                        if (init.Line < identifier.Line || identifier.UnmangledName == "__t")
+                        if ((init.Line < identifier.Line || 
+                                (init.Line == identifier.Line && init.Column < identifier.Column))
+                            || identifier.UnmangledName == "__t")
                         {
                             return true;
                         }

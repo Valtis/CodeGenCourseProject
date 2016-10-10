@@ -81,13 +81,13 @@ namespace CodeGenCourseProject.SemanticChecking
         // return first symbol with the name
         public Symbol GetSymbol(string name)
         {
-            return GetSymbol(name, int.MaxValue);
+            return GetSymbol(name, int.MaxValue, int.MaxValue);
         }
 
-        // return first symbol with the name, that is declared before line
+        // return first symbol with the name, that is declared before line and column
         // prevents returning symbols that have been declared in the same scope
         // after usage of the value (we want the symbol on previous level)
-        public Symbol GetSymbol(string name, int line)
+        public Symbol GetSymbol(string name, int line, int column)
         {
 
             AssertNotEmpty();
@@ -95,7 +95,7 @@ namespace CodeGenCourseProject.SemanticChecking
             foreach (var level in stack)
             {
                 Symbol s = level.GetSymbol(name);
-                if (s != null && s.Line < line)
+                if (s != null && (s.Line < line || (s.Line == line && s.Column < column)))
                 {
                     return s;
                 }

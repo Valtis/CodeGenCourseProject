@@ -118,7 +118,7 @@ namespace CodeGenCourseProject.TAC
 
             var outerSymbol =
                outerSymbolTables.Count > 0 ?
-                   outerSymbolTables.Peek().GetSymbol(name, node.Line)
+                   outerSymbolTables.Peek().GetSymbol(name, node.Line, node.Column)
                    : null;
 
             var exprTAC = tacValueStack.Pop();
@@ -164,7 +164,7 @@ namespace CodeGenCourseProject.TAC
         {
             var name = ((IdentifierNode)callNode.Children[0]).Value;
             var arguments = new List<TACValue>();
-            var functionSymbol = (FunctionSymbol)symbolTable.GetSymbol(name, callNode.Line);
+            var functionSymbol = (FunctionSymbol)symbolTable.GetSymbol(name, callNode.Line, callNode.Column);
 
             for (int i = 1; i < callNode.Children.Count; ++i)
             {
@@ -249,7 +249,7 @@ namespace CodeGenCourseProject.TAC
         private TACValue GenerateCopyIfNeeded(CallNode callNode, FunctionSymbol functionSymbol, int i, TACValue argument)
         {
             var argumentSymbol = symbolTable.GetSymbol(
-                                    ((TACIdentifier)argument).UnmangledName, callNode.Line);
+                                    ((TACIdentifier)argument).UnmangledName, callNode.Line, callNode.Column);
             if (!(argumentSymbol is ArraySymbol))
             {
                 return argument;
@@ -330,7 +330,7 @@ namespace CodeGenCourseProject.TAC
         public void Visit(IdentifierNode identifierNode)
         {
             var name = identifierNode.Value;
-            var symbol = symbolTable.GetSymbol(name, identifierNode.Line);
+            var symbol = symbolTable.GetSymbol(name, identifierNode.Line, identifierNode.Column);
 
             // if symbol is null, it's predeclared identifier and we need to check for true/false
             // if the symbol is "true" or "false", it might still be a predefined identifier, as 
@@ -372,7 +372,7 @@ namespace CodeGenCourseProject.TAC
 
             var outerSymbol =
                 outerSymbolTables.Count > 0 ?
-                    outerSymbolTables.Peek().GetSymbol(name, identifierNode.Line)
+                    outerSymbolTables.Peek().GetSymbol(name, identifierNode.Line, identifierNode.Column)
                     : null;
 
 
@@ -597,7 +597,7 @@ namespace CodeGenCourseProject.TAC
                 for (int i = 1; i < variableDeclarationNode.Children.Count; ++i)
                 {
                     var name = (IdentifierNode)variableDeclarationNode.Children[i];
-                    var symbol = (ArraySymbol)symbolTable.GetSymbol(name.Value, variableDeclarationNode.Line+1);
+                    var symbol = (ArraySymbol)symbolTable.GetSymbol(name.Value, variableDeclarationNode.Line+1, variableDeclarationNode.Column);
                     Emit(new TACArrayDeclaration(
                         variableDeclarationNode.Line, variableDeclarationNode.Column, name.Value, symbol.BaseType, arraySize, symbol.Id));
                     AssertEmptyTacValueStack();
@@ -615,7 +615,7 @@ namespace CodeGenCourseProject.TAC
                 for (int i = 1; i < variableDeclarationNode.Children.Count; ++i)
                 {
                     var name = (IdentifierNode)variableDeclarationNode.Children[i];
-                    var symbol = (VariableSymbol)symbolTable.GetSymbol(name.Value, variableDeclarationNode.Line+1);
+                    var symbol = (VariableSymbol)symbolTable.GetSymbol(name.Value, variableDeclarationNode.Line+1, variableDeclarationNode.Column);
 
                     functionStack.Peek().Locals.Add(
                         new Variable(
