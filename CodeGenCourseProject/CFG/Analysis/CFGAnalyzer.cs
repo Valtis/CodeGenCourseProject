@@ -9,6 +9,7 @@ using System.Linq;
 
 namespace CodeGenCourseProject.CFG.Analysis
 {
+
     public class CFGAnalyzer
     {
         private readonly MessageReporter reporter;
@@ -103,7 +104,7 @@ namespace CodeGenCourseProject.CFG.Analysis
 
                 for (int i = block.Start; i <= block.End; ++i)
                 {
-                    CheckInitialization(function, function.Statements[i], block);
+                    CheckInitialization(function, function.Statements[i], i, block);
                 }
 
 
@@ -127,7 +128,7 @@ namespace CodeGenCourseProject.CFG.Analysis
                         
             // initialization data gets propagated only to node children per pass
             // so we need to repeat this as long as there have been changes
-            while (DefiniteVariableAssignment(graph, 0, new HashSet<int>())) ;
+            while (PropagateVariableAssignment(graph, 0, new HashSet<int>())) ;
         }
 
         /*
@@ -140,8 +141,9 @@ namespace CodeGenCourseProject.CFG.Analysis
                 var dest = function.Statements[i].Destination;
                 if (dest != null && dest is TACIdentifier)
                 {
-                    block.VariableInitializations.Add((TACIdentifier)dest);
+                    block.VariableInitializations.Add(new BasicBlock.VariableInitPoint((TACIdentifier)dest, i));
                 }
+                // arguments for read call are always initialized, so treat them as such
                 else if (function.Statements[i].RightOperand is TACCallRead)
                 {
                     var readCall = (TACCallRead)function.Statements[i].RightOperand;
@@ -149,7 +151,7 @@ namespace CodeGenCourseProject.CFG.Analysis
                     {
                         if (arg is TACIdentifier)
                         {
-                            block.VariableInitializations.Add((TACIdentifier)arg);
+                            block.VariableInitializations.Add(new BasicBlock.VariableInitPoint((TACIdentifier)arg, i));
                         }
                     }
                 }
@@ -165,7 +167,7 @@ namespace CodeGenCourseProject.CFG.Analysis
          Parent blocks that are after the current block are ignored (mostly caused by while-loops).
 
          */
-        private bool DefiniteVariableAssignment(CFGraph graph, int id, ISet<int> handledBlocks)
+        private bool PropagateVariableAssignment(CFGraph graph, int id, ISet<int> handledBlocks)
         {
             if (handledBlocks.Contains(id))
             {
@@ -181,12 +183,12 @@ namespace CodeGenCourseProject.CFG.Analysis
                 {
                     // ignore parents that are after this block, as this indicates a cycle; this parent
                     // may actually depend on this block for definite initializations -> handle later
-                    changes = changes || DefiniteVariableAssignment(graph, child, handledBlocks);
+                    changes = changes || PropagateVariableAssignment(graph, child, handledBlocks);
                 }
             }
 
             var parents = GetParentBlocks(graph, id);
-            ISet<TACIdentifier> definiteInitializations = null;
+            ISet<BasicBlock.VariableInitPoint> definiteInitializations = null;
             foreach (var parent in parents)
             {
                 // ignore parents that are after this block, as this indicates a cycle
@@ -202,7 +204,7 @@ namespace CodeGenCourseProject.CFG.Analysis
                     continue;
                 }
 
-                var definiteParentInitializations = new HashSet<TACIdentifier>();
+                var definiteParentInitializations = new HashSet<BasicBlock.VariableInitPoint>();
 
                 definiteParentInitializations.UnionWith(graph.Blocks[parent].ParentInitializations);
                 definiteParentInitializations.UnionWith(graph.Blocks[parent].VariableInitializations);
@@ -229,25 +231,30 @@ namespace CodeGenCourseProject.CFG.Analysis
         }
 
         // check that variables are initialized before use in a basic block
-        private void CheckInitialization(Function function, TACStatement statement, BasicBlock block)
+        private void CheckInitialization(Function function, TACStatement statement, int currentPoint, BasicBlock block)
         {
             // ensure array index is initialized before use
             if (statement.Destination is TACArrayIndex)
             {
-                CheckInitialization(function, statement.Destination, block);
+                CheckInitialization(function, statement.Destination, block, null, currentPoint);
             }
-            CheckInitialization(function, statement.LeftOperand, block);
-            CheckInitialization(function, statement.RightOperand, block);
+            CheckInitialization(function, statement.LeftOperand, block, statement.Destination as TACIdentifier, currentPoint);
+            CheckInitialization(function, statement.RightOperand, block, statement.Destination as TACIdentifier, currentPoint);
         }
 
-        private void CheckInitialization(Function function, TACValue value, BasicBlock block)
+        private void CheckInitialization(
+            Function function, 
+            TACValue value, 
+            BasicBlock block, 
+            TACIdentifier destination, 
+            int currentPoint)
         {
-            HandleNonIdentifiers(function, value, block);
+            HandleNonIdentifiers(function, value, block, destination, currentPoint);
 
             if (value is TACIdentifier)
             {
                 var identifier = (TACIdentifier)value;
-                var isAssigned = CheckAssignment(function, identifier, block);
+                var isAssigned = CheckAssignment(function, identifier, block, destination, currentPoint);
                 if (isAssigned)
                 {
                     return;
@@ -258,7 +265,12 @@ namespace CodeGenCourseProject.CFG.Analysis
         }
 
         // ensures tac values in tac values are checked for correct usage
-        private void HandleNonIdentifiers(Function function, TACValue value, BasicBlock block)
+        private void HandleNonIdentifiers(
+            Function function,
+            TACValue value, 
+            BasicBlock block, 
+            TACIdentifier destination, 
+            int currentPoint)
         {
             if (value is TACCallRead)
             {
@@ -269,35 +281,35 @@ namespace CodeGenCourseProject.CFG.Analysis
             if (value is TACArrayIndex)
             {
                 var index = (TACArrayIndex)value;
-                CheckInitialization(function, index.Index, block);
+                CheckInitialization(function, index.Index, block, destination, currentPoint);
                 return;
             }
 
             if (value is TACArrayDeclaration)
             {
                 var decl = (TACArrayDeclaration)value;
-                CheckInitialization(function, decl.Expression, block);
+                CheckInitialization(function, decl.Expression, block, destination, currentPoint);
                 return;
             }
 
             if (value is TACReturn)
             {
                 var decl = (TACReturn)value;
-                CheckInitialization(function, decl.Expression, block);
+                CheckInitialization(function, decl.Expression, block, destination, currentPoint);
                 return;
             }
 
             if (value is TACAssert)
             {
                 var assert = (TACAssert)value;
-                CheckInitialization(function, assert.Expression, block);
+                CheckInitialization(function, assert.Expression, block, destination, currentPoint);
                 return;
             }
 
             if (value is TACJumpIfFalse)
             {
                 var jump = (TACJumpIfFalse)value;
-                CheckInitialization(function, jump.Condition, block);
+                CheckInitialization(function, jump.Condition, block, destination, currentPoint);
                 return;
             }
             
@@ -307,7 +319,7 @@ namespace CodeGenCourseProject.CFG.Analysis
                 // check that the function arguments are initialized
                 foreach (var arg in call.Arguments)
                 {
-                    CheckInitialization(function, arg, block);
+                    CheckInitialization(function, arg, block, destination, currentPoint);
                 }
 
                 // check that captured parameters are initialized at this point
@@ -339,7 +351,7 @@ namespace CodeGenCourseProject.CFG.Analysis
                                 captured.Identifier.Type,
                                 captured.Identifier.Id);
 
-                            if (!CheckLocalParameterAssignment(id, block))
+                            if (!CheckLocalParameterAssignment(id, block, destination, currentPoint))
                             {
                                 reporter.ReportError(
                                     MessageKind.SEMANTIC_ERROR,
@@ -386,11 +398,17 @@ namespace CodeGenCourseProject.CFG.Analysis
             return identifier.Type == SemanticChecker.STRING_TYPE || identifier.Type.Contains(SemanticChecker.ARRAY_PREFIX);
         }
 
-        private bool CheckAssignment(Function function, TACIdentifier identifier, BasicBlock block, bool arraysAreAlwaysValid = true)
+        private bool CheckAssignment(
+            Function function, 
+            TACIdentifier identifier, 
+            BasicBlock block, 
+            TACIdentifier destination, 
+            int currentPoint,
+            bool arraysAreAlwaysValid = true)
         {
             // check if value is function parameter or captured variable
             //, as these are always considered to be valid
-            var isAssigned = CheckLocalParameterAssignment(identifier, block, arraysAreAlwaysValid);
+            var isAssigned = CheckLocalParameterAssignment(identifier, block, destination, currentPoint, arraysAreAlwaysValid);
 
             
             if (isAssigned)
@@ -417,7 +435,12 @@ namespace CodeGenCourseProject.CFG.Analysis
             return false;
         }
 
-        private bool CheckLocalParameterAssignment(TACIdentifier identifier, BasicBlock block, bool checkArray = true)
+        private bool CheckLocalParameterAssignment(
+            TACIdentifier identifier, 
+            BasicBlock block, 
+            TACIdentifier destination, 
+            int currentPoint, 
+            bool checkArray = true)
         {
 
             if (checkArray && identifier.Type.Contains(SemanticChecker.ARRAY_PREFIX))
@@ -425,24 +448,31 @@ namespace CodeGenCourseProject.CFG.Analysis
                 return true;
             }
 
-            if (block.ParentInitializations.Contains(identifier))
+            if (block.ParentInitializations.Any(i => i.identifier.Equals(identifier)))
             {
                 return true;
             }
-            else if (block.VariableInitializations.Contains(identifier))
+            else if (block.VariableInitializations.Any(i => i.identifier.Equals(identifier)))
             {
                 foreach (var init in block.VariableInitializations)
                 {
-                    if (init.Equals(identifier))
+                    if (init.identifier.Equals(identifier))
                     {
-                        // check that assignment actually happens before usage
-                        if ((init.Line < identifier.Line || 
-                                (init.Line == identifier.Line && init.Column < identifier.Column))
-                            || identifier.UnmangledName == "__t")
+                        // if init location is the assignment location in this particular statement, 
+                        // and we are using the same variable, the variable isn't actually initialized yet 
+                        if (destination != null &&
+                            init.initPoint == currentPoint &&
+                            destination.Equals(identifier))
                         {
-                            return true;
+                            break;
                         }
-                        break;
+
+                        // check that assignment actually happens before usage
+                        if (identifier.UnmangledName != "__t" && init.initPoint >= currentPoint)
+                        {
+                            break;
+                        }
+                        return true;
                     }
                 }
             }

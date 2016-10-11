@@ -7,13 +7,42 @@ using CodeGenCourseProject.TAC.Values;
 
 namespace CodeGenCourseProject.CFG
 {
+
     public class BasicBlock
     {
+        public class VariableInitPoint
+        {
+            public readonly TACIdentifier identifier;
+            public readonly int initPoint;
+
+            public VariableInitPoint(TACIdentifier identifier, int initPoint)
+            {
+                this.identifier = identifier;
+                this.initPoint = initPoint;
+            }
+
+            public override bool Equals(object obj)
+            {
+                if (!(obj is VariableInitPoint) || obj == null)
+                {
+                    return false;
+                }
+
+                var other = obj as VariableInitPoint;
+                return other.identifier.Equals(identifier);
+            }
+
+            public override int GetHashCode()
+            {
+                return identifier.GetHashCode();
+            }
+        }
+        
         private readonly int id;
         private int start;
         private int end;
-        private ISet<TACIdentifier> variableInitializations;
-        private ISet<TACIdentifier> parentInitializations;
+        private ISet<VariableInitPoint> variableInitializations;
+        private ISet<VariableInitPoint> parentInitializations;
 
         public int ID
         {
@@ -39,7 +68,7 @@ namespace CodeGenCourseProject.CFG
             }
         }
 
-        public ISet<TACIdentifier> VariableInitializations
+        public ISet<VariableInitPoint> VariableInitializations
         {
             get
             {
@@ -52,7 +81,7 @@ namespace CodeGenCourseProject.CFG
             }
         }
 
-        public ISet<TACIdentifier> ParentInitializations
+        public ISet<VariableInitPoint> ParentInitializations
         {
             get
             {
@@ -71,8 +100,8 @@ namespace CodeGenCourseProject.CFG
             this.end = end;
             this.id = id;
 
-            VariableInitializations = new HashSet<TACIdentifier>();
-            ParentInitializations = new HashSet<TACIdentifier>();
+            VariableInitializations = new HashSet<VariableInitPoint>();
+            ParentInitializations = new HashSet<VariableInitPoint>();
         }
 
         internal void MoveUpwards(int length)
