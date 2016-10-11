@@ -931,17 +931,17 @@ namespace CodeGenCourseProject.TAC.Tests
                 statements[5]);
 
             TACEquals(
-                Operator.PUSH,
+                Operator.PUSH_INITIALIZED,
                 new TACIdentifier("d", SemanticChecker.REAL_TYPE, 3),
                 null,
                 statements[6]);
             TACEquals(
-                Operator.PUSH,
+                Operator.PUSH_INITIALIZED,
                 new TACIdentifier("c", SemanticChecker.STRING_TYPE, 2),
                 null,
                 statements[7]);
             TACEquals(
-                 Operator.PUSH,
+                 Operator.PUSH_INITIALIZED,
                  new TACIdentifier("a", SemanticChecker.INTEGER_TYPE, 0),
                  null,
                  statements[8]);

@@ -11,7 +11,7 @@ namespace CodeGenCourseProject.TAC
     {
         PLUS, MINUS, MULTIPLY, DIVIDE, MODULO, CONCAT,
         LESS_THAN, LESS_THAN_OR_EQUAL, EQUAL, GREATER_THAN_OR_EQUAL, GREATER_THAN, NOT_EQUAL, AND, OR, NOT,
-        PUSH, CALL, CALL_WRITELN, CALL_READ
+        PUSH, PUSH_INITIALIZED, CALL, CALL_WRITELN, CALL_READ
     };
 
     public static class OperatorExtension
@@ -52,6 +52,8 @@ namespace CodeGenCourseProject.TAC
                     return "!";
                 case Operator.PUSH:
                     return "<push>";
+                case Operator.PUSH_INITIALIZED:
+                    return "<push_initialized>";
                 case Operator.CALL:
                     return "<call>";
                 case Operator.CALL_WRITELN:
@@ -192,6 +194,21 @@ namespace CodeGenCourseProject.TAC
                 arguments.Add(argument);
             }
 
+
+            // inbuilt read function
+            if (name == "read" && functionSymbol == null)
+            {   // push in reverse order, as this makes code gen slightly easier
+                for (int i = arguments.Count - 1; i >= 0; --i)
+                {
+                    // PUSH_INITIALIZED means that the values in question are always initialized - 
+                    // this is used by the control flow analyser
+                    Emit(Operator.PUSH_INITIALIZED, null, arguments[i], null);
+                }
+
+                Emit(Operator.CALL_READ, null, new TACInteger(arguments.Count), null);
+                return;
+            }
+
             // push in reverse order, as this makes code gen slightly easier
             for (int i = arguments.Count -1; i >= 0; --i)
             {
@@ -204,12 +221,7 @@ namespace CodeGenCourseProject.TAC
                 Emit(Operator.CALL_WRITELN, null, new TACInteger(arguments.Count), null);
                 return;
             }
-            // inbuilt read function
-            if (name == "read" && functionSymbol == null)
-            {
-                Emit(Operator.CALL_READ, null, new TACInteger(arguments.Count), null);
-                return;
-            }
+  
 
             
             /*
@@ -246,12 +258,12 @@ namespace CodeGenCourseProject.TAC
 
             if (callNode.NodeType() == SemanticChecker.VOID_TYPE)
             {
-                Emit(Operator.CALL, null, new TACFunctionIdentifier(name, functionSymbol.Id), null);
+                Emit(Operator.CALL, null, new TACFunctionIdentifier(callNode.Line, callNode.Column, name, functionSymbol.Id), null);
             }
             else
             {
                 var temp = GetTemporary(callNode);
-                Emit(Operator.CALL, null, new TACFunctionIdentifier(name, functionSymbol.Id), temp);
+                Emit(Operator.CALL, null, new TACFunctionIdentifier(callNode.Line, callNode.Column, name, functionSymbol.Id), temp);
                 tacValueStack.Push(temp);
             }
         }

@@ -399,6 +399,7 @@ void assert(char expr, int line)
                 switch (statement.Operator)
                 {
                     case Operator.PUSH:
+                    case Operator.PUSH_INITIALIZED:
                         argStack.Push(statement.RightOperand);
                         return;
                     case Operator.CALL_WRITELN:

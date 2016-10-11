@@ -26,10 +26,10 @@ namespace CodeGenCourseProject.CFG.Analysis
 
         public void Analyze()
         {
-          /*  foreach (var function in functions)
+            foreach (var function in functions)
             {
                 AnalyzeFunction(function);
-            }*/
+            }
         }
 
         private void AnalyzeFunction(Function function)
@@ -144,17 +144,12 @@ namespace CodeGenCourseProject.CFG.Analysis
                     block.VariableInitializations.Add(new BasicBlock.VariableInitPoint((TACIdentifier)dest, i));
                 }
                 // arguments for read call are always initialized, so treat them as such
-                /*else if (function.Statements[i].RightOperand is TACCallRead)
+                else if (function.Statements[i].Operator == Operator.PUSH_INITIALIZED && 
+                    function.Statements[i].RightOperand is TACIdentifier)
                 {
-                    var readCall = (TACCallRead)function.Statements[i].RightOperand;
-                    foreach (var arg in readCall.Arguments)
-                    {
-                        if (arg is TACIdentifier)
-                        {
-                            block.VariableInitializations.Add(new BasicBlock.VariableInitPoint((TACIdentifier)arg, i));
-                        }
-                    }
-                }*/
+                    block.VariableInitializations.Add(
+                        new BasicBlock.VariableInitPoint((TACIdentifier)function.Statements[i].RightOperand, i));
+                }
             }
         }
 
@@ -240,6 +235,11 @@ namespace CodeGenCourseProject.CFG.Analysis
             }
             CheckInitialization(function, statement.LeftOperand, block, statement.Destination as TACIdentifier, currentPoint);
             CheckInitialization(function, statement.RightOperand, block, statement.Destination as TACIdentifier, currentPoint);
+            // check that captured variables are initialized
+            if (statement.Operator.HasValue && statement.Operator.Value == Operator.CALL)
+            {
+                CheckCapturedVariableInitialization(function, block, statement, currentPoint);
+            }
         }
 
         private void CheckInitialization(
@@ -272,12 +272,6 @@ namespace CodeGenCourseProject.CFG.Analysis
             TACIdentifier destination, 
             int currentPoint)
         {
-          /*  if (value is TACCallRead)
-            {
-                // read call initializes variables - skip
-                return;
-            }
-            */
             if (value is TACArrayIndex)
             {
                 var index = (TACArrayIndex)value;
@@ -312,64 +306,59 @@ namespace CodeGenCourseProject.CFG.Analysis
                 CheckInitialization(function, jump.Condition, block, destination, currentPoint);
                 return;
             }
-           /* 
-            if (value is TACCall)
+        }
+
+        void CheckCapturedVariableInitialization(
+            Function currentFunction, 
+            BasicBlock block, 
+            Statement functionCallStatement,
+            int currentPoint)
+        {
+            foreach (var f in functions)
             {
-                var call = (TACCall)value;
-                // check that the function arguments are initialized
-                foreach (var arg in call.Arguments)
+                if (f.Name == ((TACFunctionIdentifier)functionCallStatement.RightOperand).Name)
                 {
-                    CheckInitialization(function, arg, block, destination, currentPoint);
-                }
-
-                // check that captured parameters are initialized at this point
-                foreach (var f in functions)
-                {
-                    if (f.Name == call.Function)
+                    foreach (var captured in f.CapturedVariables)
                     {
-                        foreach (var captured in f.CapturedVariables)
+                        // Assume that any variables this function has captured are 
+                        // initialized (will be checked in different call site)
+                        if (currentFunction.CapturedVariables.Contains(captured))
                         {
-                            // Assume that any variables this function has captured are 
-                            // initialized (will be checked in different call site)
-                            if (function.CapturedVariables.Contains(captured))
-                            {
-                                continue;
-                            }
+                            continue;
+                        }
 
-                            // function parameters are always initialized
-                            if (function.Parameters.Contains(captured))
-                            {
-                                continue;
-                            }
+                        // function parameters are always initialized
+                        if (currentFunction.Parameters.Contains(captured))
+                        {
+                            continue;
+                        }
 
-                            // we need to use the line number of the call, not the 
-                            // point where it is used
-                            var id = new TACIdentifier(
-                                call.Line,
-                                call.Column,
-                                captured.Identifier.UnmangledName,
-                                captured.Identifier.Type,
-                                captured.Identifier.Id);
+                        // we need to use the line number of the call, not the 
+                        // point where it is used
+                        var id = new TACIdentifier(
+                            functionCallStatement.Line,
+                            functionCallStatement.Column,
+                            captured.Identifier.UnmangledName,
+                            captured.Identifier.Type,
+                            captured.Identifier.Id);
 
-                            if (!CheckLocalParameterAssignment(id, block, destination, currentPoint))
-                            {
-                                reporter.ReportError(
-                                    MessageKind.SEMANTIC_ERROR,
-                                    "Captured variable '" + captured.Identifier.UnmangledName + "' might be uninitialized at this point",
-                                    call.Line,
-                                    call.Column);
+                        if (!CheckLocalParameterAssignment(id, block, null, currentPoint))
+                        {
+                            reporter.ReportError(
+                                MessageKind.SEMANTIC_ERROR,
+                                "Captured variable '" + captured.Identifier.UnmangledName + "' might be uninitialized at this point",
+                                functionCallStatement.Line,
+                                functionCallStatement.Column);
 
-                                reporter.ReportError(
-                                    MessageKind.NOTE,
-                                    "Variable is used here",
-                                    captured.Identifier.Line,
-                                    captured.Identifier.Column);
-                            }
+                            reporter.ReportError(
+                                MessageKind.NOTE,
+                                "Variable is used here",
+                                captured.Identifier.Line,
+                                captured.Identifier.Column);
                         }
                     }
                 }
-                return;
-            }*/
+            }
         }
         
         private bool CheckFunctionReturnStatements(Function function, bool missingReturnReported, BasicBlock block)
@@ -406,16 +395,15 @@ namespace CodeGenCourseProject.CFG.Analysis
             int currentPoint,
             bool arraysAreAlwaysValid = true)
         {
-            // check if value is function parameter or captured variable
-            //, as these are always considered to be valid
+            // check if value is function parameter or captured variable,
+            // as these are always considered to be valid
             var isAssigned = CheckLocalParameterAssignment(identifier, block, destination, currentPoint, arraysAreAlwaysValid);
-
-            
+                        
             if (isAssigned)
             {
                 return true;
             }
-                
+            
             foreach (var param in function.Parameters)
             {
                 if (param.Identifier.Equals(identifier))
@@ -423,7 +411,7 @@ namespace CodeGenCourseProject.CFG.Analysis
                     return true;
                 }
             }
-
+            
             foreach (var param in function.CapturedVariables)
             {
                 if (param.Identifier.Equals(identifier))
@@ -431,7 +419,7 @@ namespace CodeGenCourseProject.CFG.Analysis
                     return true;
                 }
             }
-            
+
             return false;
         }
 
@@ -468,7 +456,7 @@ namespace CodeGenCourseProject.CFG.Analysis
                         }
 
                         // check that assignment actually happens before usage
-                        if (identifier.UnmangledName != "__t" && init.initPoint >= currentPoint)
+                        if (identifier.UnmangledName != "__t" && init.initPoint > currentPoint)
                         {
                             break;
                         }

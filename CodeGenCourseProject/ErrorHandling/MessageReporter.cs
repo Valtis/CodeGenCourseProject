@@ -60,9 +60,13 @@ namespace CodeGenCourseProject.ErrorHandling
         }
 
         public void ReportError(MessageKind type, string msg, int line, int column)
-        {
+        { 
             messages.Add(new MessageData(Lines, type, msg, line, column));
-        }   
+            // errors might get reported out-of-order as far as line/column numbers are considered
+            // so sort the error messages after adding a new one.
+            messages = messages.OrderBy(m => m.Column).ToList();
+            messages = messages.OrderBy(m => m.Line).ToList();
+        }
 
         public void PrintMessages()
         {

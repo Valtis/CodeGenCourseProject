@@ -40,7 +40,7 @@ namespace CodeGenCourseProject.CFG.Tests
             Assert.AreEqual(1, cfg.Blocks.Count);
             Assert.AreEqual(1, cfg.AdjacencyList.Count);
 
-            AssertBlock(cfg, 0, 0, 5, new List<int> { CFGraph.END_BLOCK_ID });
+            AssertBlock(cfg, 0, 0, 7, new List<int> { CFGraph.END_BLOCK_ID });
         }
 
         [TestMethod()]
@@ -53,11 +53,10 @@ namespace CodeGenCourseProject.CFG.Tests
             Assert.AreEqual(3, cfg.AdjacencyList.Count);
 
             AssertBlock(cfg, 0, 0, 2, new List<int> { 1, 2 });
-            AssertBlock(cfg, 1, 3, 5, new List<int> { 2 });
-            AssertBlock(cfg, 2, 6, 6, new List<int> { CFGraph.END_BLOCK_ID });
+            AssertBlock(cfg, 1, 3, 6, new List<int> { 2 });
+            AssertBlock(cfg, 2, 7, 7, new List<int> { CFGraph.END_BLOCK_ID });
         }
-
-
+        
         [TestMethod()]
         public void IfElseStatementGeneratesCorrectControlFlowGraph()
         {
@@ -69,8 +68,8 @@ namespace CodeGenCourseProject.CFG.Tests
 
             AssertBlock(cfg, 0, 0, 2, new List<int> { 1, 2 });
             AssertBlock(cfg, 1, 3, 4, new List<int> { 3 });
-            AssertBlock(cfg, 2, 5, 8, new List<int> { 3 });
-            AssertBlock(cfg, 3, 9, 10, new List<int> { CFGraph.END_BLOCK_ID });
+            AssertBlock(cfg, 2, 5, 9, new List<int> { 3 });
+            AssertBlock(cfg, 3, 10, 12, new List<int> { CFGraph.END_BLOCK_ID });
         }
 
         [TestMethod()]
@@ -135,8 +134,8 @@ namespace CodeGenCourseProject.CFG.Tests
 
             AssertBlock(cfg, 0, 0, 0, new List<int> { 1});
             AssertBlock(cfg, 1, 1, 3, new List<int> { 2,3 });
-            AssertBlock(cfg, 2, 4, 7, new List<int> { 1 });
-            AssertBlock(cfg, 3, 8, 8, new List<int> { CFGraph.END_BLOCK_ID });
+            AssertBlock(cfg, 2, 4, 8, new List<int> { 1 });
+            AssertBlock(cfg, 3, 9, 9, new List<int> { CFGraph.END_BLOCK_ID });
         }
 
         [TestMethod()]
@@ -150,8 +149,8 @@ namespace CodeGenCourseProject.CFG.Tests
 
             AssertBlock(cfg, 0, 0, 0, new List<int> { 1 });
             AssertBlock(cfg, 1, 1, 2, new List<int> { 2 });
-            AssertBlock(cfg, 2, 3, 6, new List<int> { 1 });
-            AssertBlock(cfg, 3, 7, 8, new List<int> { CFGraph.END_BLOCK_ID });
+            AssertBlock(cfg, 2, 3, 7, new List<int> { 1 });
+            AssertBlock(cfg, 3, 8, 9, new List<int> { CFGraph.END_BLOCK_ID });
         }
 
         [TestMethod()]
@@ -165,8 +164,8 @@ namespace CodeGenCourseProject.CFG.Tests
 
             AssertBlock(cfg, 0, 0, 0, new List<int> { 1 });
             AssertBlock(cfg, 1, 1, 2, new List<int> { 3 });
-            AssertBlock(cfg, 2, 3, 6, new List<int> { 1 });
-            AssertBlock(cfg, 3, 7, 8, new List<int> { CFGraph.END_BLOCK_ID });
+            AssertBlock(cfg, 2, 3, 7, new List<int> { 1 });
+            AssertBlock(cfg, 3, 8, 9, new List<int> { CFGraph.END_BLOCK_ID });
         }
 
         [TestMethod()]
@@ -181,13 +180,13 @@ namespace CodeGenCourseProject.CFG.Tests
             AssertBlock(cfg, 0, 0, 1, new List<int> { 1 });
             AssertBlock(cfg, 1, 2, 4, new List<int> { 2, 9 });
             AssertBlock(cfg, 2, 5, 10, new List<int> { 3, 4 });
-            AssertBlock(cfg, 3, 11, 12, new List<int> { 8 });
-            AssertBlock(cfg, 4, 13, 13, new List<int> { 5 });
-            AssertBlock(cfg, 5, 14, 16, new List<int> { 6, 7 });
-            AssertBlock(cfg, 6, 17, 19, new List<int> { 5, });
-            AssertBlock(cfg, 7, 20, 20, new List<int> { 8 });
-            AssertBlock(cfg, 8, 21, 23, new List<int> { 1 });
-            AssertBlock(cfg, 9, 24, 24, new List<int> { CFGraph.END_BLOCK_ID });
+            AssertBlock(cfg, 3, 11, 13, new List<int> { 8 });
+            AssertBlock(cfg, 4, 14, 14, new List<int> { 5 });
+            AssertBlock(cfg, 5, 15, 17, new List<int> { 6, 7 });
+            AssertBlock(cfg, 6, 18, 20, new List<int> { 5, });
+            AssertBlock(cfg, 7, 21, 21, new List<int> { 8 });
+            AssertBlock(cfg, 8, 22, 25, new List<int> { 1 });
+            AssertBlock(cfg, 9, 26, 26, new List<int> { CFGraph.END_BLOCK_ID });
         }
 
         [TestMethod()]
@@ -199,14 +198,14 @@ namespace CodeGenCourseProject.CFG.Tests
             Assert.AreEqual(0, cfg.Blocks.Count);
             Assert.AreEqual(0, cfg.AdjacencyList.Count);
 
-            cfg = graphs["__a0__"];
+            cfg = graphs[Helper.MangleFunctionName("a", 0)];
             Assert.AreEqual(1, cfg.Blocks.Count);
             Assert.AreEqual(1, cfg.AdjacencyList.Count);
 
             AssertBlock(cfg, 0, 0, 2, new List<int> { CFGraph.END_BLOCK_ID });
 
 
-            cfg = graphs["__b2__"];
+            cfg = graphs[Helper.MangleFunctionName("b", 2)];
             Assert.AreEqual(5, cfg.Blocks.Count);
             Assert.AreEqual(5, cfg.AdjacencyList.Count);
 
@@ -226,7 +225,7 @@ namespace CodeGenCourseProject.CFG.Tests
             Assert.AreEqual(0, cfg.Blocks.Count);
             Assert.AreEqual(0, cfg.AdjacencyList.Count);
 
-            cfg = graphs["__a0__"];
+            cfg = graphs[Helper.MangleFunctionName("a", 0)];
             Assert.AreEqual(3, cfg.Blocks.Count);
             Assert.AreEqual(3, cfg.AdjacencyList.Count);
 
@@ -244,7 +243,7 @@ namespace CodeGenCourseProject.CFG.Tests
             Assert.AreEqual(0, cfg.Blocks.Count);
             Assert.AreEqual(0, cfg.AdjacencyList.Count);
 
-            cfg = graphs["__foo0__"];
+            cfg = graphs[Helper.MangleFunctionName("foo", 0)];
             Assert.AreEqual(3, cfg.Blocks.Count);
             Assert.AreEqual(3, cfg.AdjacencyList.Count);
 

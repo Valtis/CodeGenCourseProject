@@ -36,13 +36,16 @@ namespace CodeGenCourseProject.TAC.Values
             }
         }
 
-        public TACFunctionIdentifier(string name, int id) : base(0, 0)
+        public TACFunctionIdentifier(string name, int id) : this(0, 0, name, id)
+        {
+        }
+
+        public TACFunctionIdentifier(int line, int column, string name, int id) : base(line, column)
         {
             this.name = Helper.MangleFunctionName(name, id);
             this.unmangledName = name;
             this.id = id;
         }
-
         public override string ToString()
         {
             return Name;

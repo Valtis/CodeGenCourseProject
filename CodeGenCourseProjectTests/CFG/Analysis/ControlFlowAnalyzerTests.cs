@@ -311,8 +311,8 @@ namespace CodeGenCourseProject.CFG.Analysis.Tests
             Assert.AreEqual(3, reporter.Errors.Count);
             var testHelper = new TestHelper(reporter);
             testHelper.AssertErrorMessage(0, MessageKind.SEMANTIC_ERROR, 2, 8, "Not all control paths return a value in function 'a'");
-            testHelper.AssertErrorMessage(1, MessageKind.SEMANTIC_ERROR, 32, 29, "Usage of uninitialized variable 'c'");
-            testHelper.AssertErrorMessage(2, MessageKind.SEMANTIC_ERROR, 19, 8, "Not all control paths return a value in function 'b'");
+            testHelper.AssertErrorMessage(1, MessageKind.SEMANTIC_ERROR, 19, 8, "Not all control paths return a value in function 'b'");
+            testHelper.AssertErrorMessage(2, MessageKind.SEMANTIC_ERROR, 32, 29, "Usage of uninitialized variable 'c'");
         }
 
         [TestMethod()]
@@ -424,9 +424,8 @@ namespace CodeGenCourseProject.CFG.Analysis.Tests
 
             var testHelper = new TestHelper(reporter);
             testHelper.AssertErrorMessage(0, MessageKind.SEMANTIC_ERROR, 6, 23, "Usage of uninitialized variable 'a'");
-            testHelper.AssertErrorMessage(1, MessageKind.SEMANTIC_ERROR, 21, 23, "Usage of uninitialized variable 'c'");
-            testHelper.AssertErrorMessage(2, MessageKind.SEMANTIC_ERROR, 16, 8, "Captured variable 'b' might be uninitialized at this point");
-
+            testHelper.AssertErrorMessage(1, MessageKind.SEMANTIC_ERROR, 16, 8, "Captured variable 'b' might be uninitialized at this point");
+            testHelper.AssertErrorMessage(2, MessageKind.SEMANTIC_ERROR, 21, 23, "Usage of uninitialized variable 'c'");
         }
 
         [TestMethod()]
