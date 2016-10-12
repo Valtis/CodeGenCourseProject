@@ -11,7 +11,7 @@ namespace CodeGenCourseProject.TAC
     {
         PLUS, MINUS, MULTIPLY, DIVIDE, MODULO, CONCAT,
         LESS_THAN, LESS_THAN_OR_EQUAL, EQUAL, GREATER_THAN_OR_EQUAL, GREATER_THAN, NOT_EQUAL, AND, OR, NOT,
-        PUSH, PUSH_INITIALIZED, CALL, CALL_WRITELN, CALL_READ
+        PUSH, PUSH_INITIALIZED, CALL, CALL_WRITELN, CALL_READ, LABEL, JUMP, JUMP_IF_FALSE
     };
 
     public static class OperatorExtension
@@ -51,15 +51,21 @@ namespace CodeGenCourseProject.TAC
                 case Operator.NOT:
                     return "!";
                 case Operator.PUSH:
-                    return "<push>";
+                    return "push";
                 case Operator.PUSH_INITIALIZED:
-                    return "<push_initialized>";
+                    return "push_initialized";
                 case Operator.CALL:
-                    return "<call>";
+                    return "call";
                 case Operator.CALL_WRITELN:
-                    return "<call_writeln>";
+                    return "call_writeln";
                 case Operator.CALL_READ:
-                    return "<call_read>";
+                    return "call_read";
+                case Operator.LABEL:
+                    return "label";
+                case Operator.JUMP:
+                    return "jump";
+                case Operator.JUMP_IF_FALSE:
+                    return "jump_if_false";
                 default:
                     throw new InternalCompilerError("Default branch taken in Operator.Name()");
             }
@@ -455,38 +461,33 @@ namespace CodeGenCourseProject.TAC
             var ifBlock = ifNode.Children[1];
             var hasElseBlock = ifNode.Children.Count == 3;
 
-            TACLabel endIfBlock = null;
-            TACLabel endElseBlock = null;
+            TACInteger endIfBlock = null;
+            TACInteger endElseBlock = null;
 
+            endIfBlock = new TACInteger(GetLabelId());
             if (hasElseBlock)
             {
-                endIfBlock = GetLabel(ifNode.Children[2].Line, ifNode.Children[2].Column);
-                endElseBlock = GetLabel(0, 0);
-            }
-            else
-            {
-                endIfBlock = GetLabel(0, 0);
+                endElseBlock = new TACInteger(GetLabelId());
             }
 
             expression.Accept(this);
             var condition = tacValueStack.Pop();
 
-
-            Emit(new TACJumpIfFalse(ifBlock.Line, ifBlock.Column, condition, endIfBlock));
+            Emit(Operator.JUMP_IF_FALSE, condition, endIfBlock, null);
             ifBlock.Accept(this);
 
             if (hasElseBlock)
             {
-                Emit(new TACJump(ifBlock.Line, ifBlock.Column, endElseBlock));
+                Emit(Operator.JUMP, null, endElseBlock, null);
             }
 
-            Emit(endIfBlock);
+            Emit(Operator.LABEL, null, endIfBlock, null);
 
             if (hasElseBlock)
             {
                 var elseBlock = ifNode.Children[2];
                 elseBlock.Accept(this);
-                Emit(endElseBlock);
+                Emit(Operator.LABEL, null, endElseBlock, null);
             }
             AssertEmptyTacValueStack();
         }
@@ -658,20 +659,22 @@ namespace CodeGenCourseProject.TAC
         public void Visit(WhileNode whileNode)
         {
             AssertEmptyTacValueStack();
-            var beginLabel = GetLabel(whileNode.Children[1].Line, whileNode.Children[1].Column);
+
+            var beginLabel = GetLabelId();
 
 
-            var endLabel = GetLabel(0, 0);
-            Emit(beginLabel);
+            var endLabel = GetLabelId();
+            Emit(Operator.LABEL, null, new TACInteger(beginLabel), null);
+           
 
             whileNode.Children[0].Accept(this);
             var condition = tacValueStack.Pop();
-            Emit(new TACJumpIfFalse(whileNode.Line, whileNode.Column, condition, endLabel));
+
+            Emit(Operator.JUMP_IF_FALSE, condition, new TACInteger(endLabel), null);
             whileNode.Children[1].Accept(this);
 
-
-            Emit(new TACJump(whileNode.Line, whileNode.Column, beginLabel));
-            Emit(endLabel);
+            Emit(Operator.JUMP, null, new TACInteger(beginLabel), null);
+            Emit(Operator.LABEL, null, new TACInteger(endLabel), null);
 
             AssertEmptyTacValueStack();
         }
@@ -746,9 +749,9 @@ namespace CodeGenCourseProject.TAC
             return new TACIdentifier(node.Line, node.Column, "__t", node.NodeType(), curId);
         }
 
-        private TACLabel GetLabel(int line, int column)
+        private int GetLabelId()
         {
-            return new TACLabel(line, column, labelID++);
+            return labelID++;
         }
 
         private void HandleBinaryOperator(ASTNode node, Operator op)

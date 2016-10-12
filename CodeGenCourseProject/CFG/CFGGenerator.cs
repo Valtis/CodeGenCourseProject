@@ -53,7 +53,7 @@ namespace CodeGenCourseProject.CFG
                     blocks.Add(block);
                     start = startPos;
                 }
-                else if (statement.RightOperand is TACLabel)
+                else if (statement.Operator == Operator.LABEL)
                 {
                     var endPos = pos - 1;
                     if (start <= endPos)
@@ -84,21 +84,23 @@ namespace CodeGenCourseProject.CFG
             int pos = 0;
             foreach (var block in blocks)
             {
+                var op = function.Statements[block.End].Operator;
+                var leftOperand = function.Statements[block.End].LeftOperand;
                 var rightOperand = function.Statements[block.End].RightOperand;
                 // undconditional jump, only edge to the jump target
-                if (rightOperand is TACJump)
+                if (op == Operator.JUMP)
                 {
-                    var jumpTarget = ((TACJump)rightOperand).Label;
+                    var jumpTarget = ((TACInteger)rightOperand).Value;
                     var destBlock = GetJumpTarget(function, jumpTarget);
                     adjacencyList[pos].Add(GetDestinationBlockID(blocks, destBlock));
                 }
                 // conditional jump, may have edges to the jump target and next block
-                else if (rightOperand is TACJumpIfFalse)
+                else if (op == Operator.JUMP_IF_FALSE)
                 {
                     // if condition is true/false, only one edge will be present
-                    var jump = (TACJumpIfFalse)rightOperand;
-                    var condition = jump.Condition;
-                    var destBlock = GetJumpTarget(function, jump.Label);
+                    var jumpTarget = ((TACInteger)rightOperand).Value;
+                    var condition = leftOperand;
+                    var destBlock = GetJumpTarget(function, jumpTarget);
 
                     var boolean = condition as TACBoolean;
 
@@ -131,19 +133,19 @@ namespace CodeGenCourseProject.CFG
             return adjacencyList;
         }
 
-        private int GetJumpTarget(Function function, TACLabel label)
+        private int GetJumpTarget(Function function, int labelId)
         {
             int pos = 0;
             foreach (var statement in function.Statements)
             {
-                if (label.Equals(statement.RightOperand))
+                if (statement.Operator == Operator.LABEL && new TACInteger(labelId).Equals(statement.RightOperand))
                 {
                     return pos;
                 }
                 pos++;
             }
 
-            throw new InternalCompilerError("Invalid TAC label " + label);
+            throw new InternalCompilerError("Invalid TAC label " + labelId);
         }
 
         private int GetDestinationBlockID(IList<BasicBlock> blocks, int blockStart)
@@ -160,8 +162,8 @@ namespace CodeGenCourseProject.CFG
 
         private bool IsJumpOrReturn(Statement statement)
         {
-            return statement.RightOperand is TACJump 
-                || statement.RightOperand is TACJumpIfFalse
+            return statement.Operator == Operator.JUMP
+                || statement.Operator == Operator.JUMP_IF_FALSE
                 || statement.RightOperand is TACReturn;
         }
 

@@ -484,7 +484,7 @@ namespace CodeGenCourseProject.TAC.Tests
                 statements[76]);
 
         }
-
+        
         [TestMethod()]
         public void WhileStatementsGenerateValidTAC()
         {
@@ -494,46 +494,60 @@ namespace CodeGenCourseProject.TAC.Tests
             Assert.AreEqual(50, statements.Count);
 
             TACEquals(
-                new TACLabel(0),
+                Operator.LABEL,
+                new TACInteger(0),
+                null,
                 statements[0]);
             TACEquals(
-                new TACJumpIfFalse(
-                    new TACBoolean(true),
-                    new TACLabel(1)),
+                Operator.JUMP_IF_FALSE,
+                new TACBoolean(true),
+                new TACInteger(1),
+                null,
                 statements[1]);
             TACEquals(
                 new TACInteger(4),
                 new TACIdentifier("a", SemanticChecker.INTEGER_TYPE, 0),
                 statements[2]);
             TACEquals(
-                new TACJump(new TACLabel(0)),
+                Operator.JUMP,
+                new TACInteger(0),
+                null,               
                 statements[3]);
             TACEquals(
-                new TACLabel(1),
+                Operator.LABEL,
+                new TACInteger(1),
+                null,
                 statements[4]);
-
             TACEquals(
-                new TACLabel(2),
+                Operator.LABEL,
+                new TACInteger(2),
+                null,
                 statements[5]);
             TACEquals(
-                new TACJumpIfFalse(
-                    new TACBoolean(false),
-                    new TACLabel(3)),
+                Operator.JUMP_IF_FALSE,
+                new TACBoolean(false),
+                new TACInteger(3),
+                null,
                 statements[6]);
             TACEquals(
-                new TACJump(new TACLabel(2)),
+                Operator.JUMP,
+                new TACInteger(2),
+                null,
                 statements[7]);
             TACEquals(
-                new TACLabel(3),
-                statements[8]);
-
+                Operator.LABEL,
+                new TACInteger(3),
+                null,
+                statements[8]);            
             TACEquals(
                 new TACInteger(0),
                 new TACIdentifier("a", SemanticChecker.INTEGER_TYPE, 2),
                 statements[9]);
             TACEquals(
-                new TACLabel(4),
-                statements[10]);
+                Operator.LABEL,
+                new TACInteger(4),
+                null,
+                statements[10]);            
             TACEquals(
                 Operator.LESS_THAN,
                 new TACIdentifier("a", SemanticChecker.INTEGER_TYPE, 2),
@@ -541,9 +555,10 @@ namespace CodeGenCourseProject.TAC.Tests
                 new TACIdentifier("__t", SemanticChecker.BOOLEAN_TYPE, 0),
                 statements[11]);
             TACEquals(
-                new TACJumpIfFalse(
-                    new TACIdentifier("__t", SemanticChecker.BOOLEAN_TYPE, 0),
-                    new TACLabel(5)),
+                Operator.JUMP_IF_FALSE,
+                new TACIdentifier("__t", SemanticChecker.BOOLEAN_TYPE, 0),
+                new TACInteger(5),
+                null,
                 statements[12]);
             TACEquals(
                 Operator.PLUS,
@@ -567,19 +582,24 @@ namespace CodeGenCourseProject.TAC.Tests
                 null,
                 statements[16]);
             TACEquals(
-                new TACJump(new TACLabel(4)),
+                Operator.JUMP,
+                new TACInteger(4),
+                null,
                 statements[17]);
             TACEquals(
-                new TACLabel(5),
-                statements[18]);
-
+                Operator.LABEL,
+                new TACInteger(5),
+                null,
+                statements[18]);            
             TACEquals(
                 new TACInteger(0),
                 new TACIdentifier("b", SemanticChecker.INTEGER_TYPE, 3),
                 statements[19]);
             TACEquals(
-                new TACLabel(6),
-                statements[20]);
+               Operator.LABEL,
+               new TACInteger(6),
+               null,
+               statements[20]);
             TACEquals(
                 Operator.LESS_THAN_OR_EQUAL,
                 new TACIdentifier("b", SemanticChecker.INTEGER_TYPE, 3),
@@ -587,9 +607,10 @@ namespace CodeGenCourseProject.TAC.Tests
                 new TACIdentifier("__t", SemanticChecker.BOOLEAN_TYPE, 2),
                 statements[21]);
             TACEquals(
-                new TACJumpIfFalse(
-                    new TACIdentifier("__t", SemanticChecker.BOOLEAN_TYPE, 2),
-                    new TACLabel(7)),
+                Operator.JUMP_IF_FALSE,
+                new TACIdentifier("__t", SemanticChecker.BOOLEAN_TYPE, 2),
+                new TACInteger(7),
+                null,
                 statements[22]);
             TACEquals(
                 new TACInteger(0),
@@ -606,8 +627,10 @@ namespace CodeGenCourseProject.TAC.Tests
                 null,
                 statements[25]);
             TACEquals(
-                new TACLabel(8),
-                statements[26]);
+               Operator.LABEL,
+               new TACInteger(8),
+               null,
+               statements[26]);
             TACEquals(
                 Operator.LESS_THAN,
                 new TACIdentifier("a", SemanticChecker.INTEGER_TYPE, 4),
@@ -615,13 +638,16 @@ namespace CodeGenCourseProject.TAC.Tests
                 new TACIdentifier("__t", SemanticChecker.BOOLEAN_TYPE, 3),
                 statements[27]);
             TACEquals(
-                new TACJumpIfFalse(new TACIdentifier("__t", SemanticChecker.BOOLEAN_TYPE, 3), new TACLabel(9)),
+                Operator.JUMP_IF_FALSE,
+                new TACIdentifier("__t", SemanticChecker.BOOLEAN_TYPE, 3),
+                new TACInteger(9),
+                null,
                 statements[28]);
             TACEquals(
-               Operator.PUSH,
-               new TACInteger(2),
-               null,
-               statements[29]);
+                Operator.PUSH,
+                new TACInteger(2),
+                null,
+                statements[29]);
             TACEquals(
                 Operator.CALL_WRITELN,
                 new TACInteger(1), 
@@ -639,11 +665,15 @@ namespace CodeGenCourseProject.TAC.Tests
                 new TACIdentifier("a", SemanticChecker.INTEGER_TYPE, 4),
                 statements[32]);
             TACEquals(
-                new TACJump(new TACLabel(8)),
+                Operator.JUMP,
+                new TACInteger(8),
+                null,
                 statements[33]);
             TACEquals(
-                new TACLabel(9),
-                statements[34]);
+               Operator.LABEL,
+               new TACInteger(9),
+               null,
+               statements[34]);
             TACEquals(
                 Operator.PLUS,
                 new TACIdentifier("b", SemanticChecker.INTEGER_TYPE, 3),
@@ -655,12 +685,15 @@ namespace CodeGenCourseProject.TAC.Tests
                 new TACIdentifier("b", SemanticChecker.INTEGER_TYPE, 3),
                 statements[36]);
             TACEquals(
-                new TACJump(new TACLabel(6)),
+                Operator.JUMP,
+                new TACInteger(6),
+                null,
                 statements[37]);
             TACEquals(
-                new TACLabel(7),
-                statements[38]);
-
+               Operator.LABEL,
+               new TACInteger(7),
+               null,
+               statements[38]);
             TACEquals(
                 new TACArrayDeclaration(
                     "ia",
@@ -677,8 +710,10 @@ namespace CodeGenCourseProject.TAC.Tests
                     5),
                 statements[40]);
             TACEquals(
-                new TACLabel(10),
-                statements[41]);
+              Operator.LABEL,
+              new TACInteger(10),
+              null,
+              statements[41]);
             TACEquals(
                 Operator.LESS_THAN,
                 new TACArrayIndex(
@@ -690,10 +725,11 @@ namespace CodeGenCourseProject.TAC.Tests
                 new TACIdentifier("__t", SemanticChecker.BOOLEAN_TYPE, 6),
                 statements[42]);
             TACEquals(
-                new TACJumpIfFalse(
-                    new TACIdentifier("__t", SemanticChecker.BOOLEAN_TYPE, 6),
-                    new TACLabel(11)),
-                statements[43]);
+                Operator.JUMP_IF_FALSE,
+                new TACIdentifier("__t", SemanticChecker.BOOLEAN_TYPE, 6),
+                new TACInteger(11),
+                null,
+                statements[43]);         
             TACEquals(
                 Operator.PUSH,
                 new TACArrayIndex(
@@ -711,7 +747,7 @@ namespace CodeGenCourseProject.TAC.Tests
                 statements[45]);
             TACEquals(
                 Operator.PLUS,
-                 new TACArrayIndex(
+                    new TACArrayIndex(
                     "ia",
                     new TACInteger(0),
                     SemanticChecker.INTEGER_TYPE,
@@ -728,13 +764,17 @@ namespace CodeGenCourseProject.TAC.Tests
                     5),
                 statements[47]);
             TACEquals(
-                new TACJump(new TACLabel(10)),
+                Operator.JUMP,
+                new TACInteger(10),
+                null,
                 statements[48]);
             TACEquals(
-                new TACLabel(11),
-                statements[49]);
+               Operator.LABEL,
+               new TACInteger(11),
+               null,
+               statements[49]);
         }
-
+        
         [TestMethod()]
         public void IfStatementsGenerateValidTAC()
         {
@@ -743,18 +783,20 @@ namespace CodeGenCourseProject.TAC.Tests
 
             Assert.AreEqual(10, statements.Count);
             TACEquals(
-                new TACJumpIfFalse(
-                    new TACBoolean(true),
-                    new TACLabel(0)),
+                Operator.JUMP_IF_FALSE,
+                new TACBoolean(true),
+                new TACInteger(0),
+                null,
                 statements[0]);
             TACEquals(
                 new TACInteger(4),
                 new TACIdentifier("a", SemanticChecker.INTEGER_TYPE, 0),
                 statements[1]);
             TACEquals(
-                new TACLabel(0),
-                statements[2]);
-
+               Operator.LABEL,
+               new TACInteger(0),
+               null,
+               statements[2]);
             TACEquals(
                 Operator.LESS_THAN,
                 new TACIdentifier("a", SemanticChecker.INTEGER_TYPE, 0),
@@ -762,28 +804,36 @@ namespace CodeGenCourseProject.TAC.Tests
                 new TACIdentifier("__t", SemanticChecker.BOOLEAN_TYPE, 0),
                 statements[3]);
             TACEquals(
-                new TACJumpIfFalse(
-                    new TACIdentifier("__t", SemanticChecker.BOOLEAN_TYPE, 0),
-                    new TACLabel(1)),
-                statements[4]);
+                Operator.JUMP_IF_FALSE,
+                new TACIdentifier("__t", SemanticChecker.BOOLEAN_TYPE, 0),
+                new TACInteger(1),
+                null,
+                statements[4]);            
             TACEquals(
                 new TACInteger(6),
                 new TACIdentifier("a", SemanticChecker.INTEGER_TYPE, 0),
                 statements[5]);
             TACEquals(
-                new TACJump(new TACLabel(2)),
+                Operator.JUMP,
+                new TACInteger(2),
+                null,
                 statements[6]);
             TACEquals(
-                new TACLabel(1),
-                statements[7]);
+               Operator.LABEL,
+               new TACInteger(1),
+               null,
+               statements[7]);
             TACEquals(
                 new TACInteger(2),
                 new TACIdentifier("a", SemanticChecker.INTEGER_TYPE, 0),
                 statements[8]);
-            TACEquals(new TACLabel(2),
-                statements[9]);
+            TACEquals(
+               Operator.LABEL,
+               new TACInteger(2),
+               null,
+               statements[9]);
         }
-
+        
         [TestMethod()]
         public void ProceduresFunctionsAndFunctionCallsGenerateValidTAC()
         {
@@ -843,17 +893,20 @@ namespace CodeGenCourseProject.TAC.Tests
                  new TACIdentifier("__t", SemanticChecker.BOOLEAN_TYPE, 5),
                  statements[2]);
             TACEquals(
-                new TACJumpIfFalse(
-                    new TACIdentifier("__t", SemanticChecker.BOOLEAN_TYPE, 5),
-                    new TACLabel(0)),
+                Operator.JUMP_IF_FALSE,
+                new TACIdentifier("__t", SemanticChecker.BOOLEAN_TYPE, 5),
+                new TACInteger(0),
+                null,
                 statements[3]);
             TACEquals(
                 new TACReturn(
                     new TACReal(23.12)),
                 statements[4]);
             TACEquals(
-                new TACLabel(0),
-                statements[5]);
+               Operator.LABEL,
+               new TACInteger(0),
+               null,
+               statements[5]);
             TACEquals(
                 new TACReturn(
                     new TACReal(0.0)),
@@ -998,8 +1051,6 @@ namespace CodeGenCourseProject.TAC.Tests
                 new TACFunctionIdentifier("func_2", 14),
                 new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 8),
                 statements[18]);
-
-
             TACEquals(
                 Operator.PUSH,
                 new TACInteger(23),
@@ -1072,7 +1123,7 @@ namespace CodeGenCourseProject.TAC.Tests
                 null,
                 statements[32]);
         }
-
+        
         [TestMethod()]
         public void AssertsGenerateCorrectTAC()
         {

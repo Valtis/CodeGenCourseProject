@@ -110,7 +110,6 @@
     <Compile Include="TAC\Values\TACAssert.cs" />
     <Compile Include="TAC\Values\TACCloneArray.cs" />
     <Compile Include="TAC\Values\TACFunctionIdentifier.cs" />
-    <Compile Include="TAC\Values\TACJump.cs" />
     <Compile Include="TAC\Values\TACArrayDeclaration.cs" />
     <Compile Include="TAC\Values\TACArrayIndex.cs" />
     <Compile Include="TAC\Values\TACArraySize.cs" />
@@ -118,8 +117,6 @@
     <Compile Include="TAC\Values\TACIdentifier.cs" />
     <Compile Include="TAC\Values\TACInteger.cs" />
     <Compile Include="TAC\Statement.cs" />
-    <Compile Include="TAC\Values\TACJumpIfFalse.cs" />
-    <Compile Include="TAC\Values\TACLabel.cs" />
     <Compile Include="TAC\Values\TACReal.cs" />
     <Compile Include="TAC\Values\TACReturn.cs" />
     <Compile Include="TAC\Values\TACString.cs" />

@@ -24,6 +24,8 @@ namespace CodeGenCourseProject.Codegen.C
         private const string C_BOOLEAN_ARRAY = C_BOOLEAN + "_array";
         private const string C_STRING_ARRAY = C_STRING + "_array";
 
+        private const string C_LABEL_PREFIX = "____label_";
+
         private const string CAPTURE_NOTIFIER = "CAPTURED";
 
         private class Indentation
@@ -411,6 +413,15 @@ void assert(char expr, int line)
                     case Operator.CALL:
                         EmitFunctionCall(statement.Destination, statement.RightOperand);
                         return;
+                    case Operator.LABEL:
+                        EmitLabel(statement);
+                        return;
+                    case Operator.JUMP:
+                        EmitJump(statement);
+                        return;
+                    case Operator.JUMP_IF_FALSE:
+                        EmitConditionalJump(statement);
+                        return;
                     default:
                         break;
 
@@ -612,22 +623,6 @@ void assert(char expr, int line)
             cValues.Push(cValues.Pop() + memberOp + "size");
         }
 
-        public void Visit(TACLabel tacLabel)
-        {
-            cValues.Push("____label_" + tacLabel.ID + ":");
-        }
-
-        public void Visit(TACJumpIfFalse tacJumpIfTrue)
-        {
-            tacJumpIfTrue.Condition.Accept(this);
-            Emit("if (!" + cValues.Pop() + ")");
-            cValues.Push("goto ____label_" + tacJumpIfTrue.Label.ID);
-        }
-
-        public void Visit(TACJump tacJump)
-        {
-            cValues.Push("goto ____label_" + tacJump.Label.ID);
-        }
 
         public void Visit(TACReturn tacReturn)
         {
@@ -680,6 +675,34 @@ void assert(char expr, int line)
             }
 
             Emit("printf(\"" + string.Join("", specifierList) + "\\n\", " + string.Join(", ", argumentList) + ");");
+        }
+
+        void EmitLabel(Statement statement)
+        {
+            int id = ((TACInteger)statement.RightOperand).Value;
+            Emit(getLabel(id) + ":;");
+        }
+
+        void EmitJump(Statement statement)
+        {
+            int id = ((TACInteger)statement.RightOperand).Value;
+            Emit("goto " + getLabel(id) + ";");
+        }
+
+        void EmitConditionalJump(Statement statement)
+        {
+            statement.LeftOperand.Accept(this);
+            int id = ((TACInteger)statement.RightOperand).Value;
+            Emit("if (!" + cValues.Pop() + ")");
+            indentation.Increase();
+            Emit("goto " + getLabel(id) + ";");
+            indentation.Decrease();
+        }
+
+
+        string getLabel(int labelId)
+        {
+            return C_LABEL_PREFIX + labelId;
         }
 
         public void EmitRead(int argCount)
