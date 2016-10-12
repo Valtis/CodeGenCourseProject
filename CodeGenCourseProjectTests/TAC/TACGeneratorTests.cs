@@ -870,7 +870,10 @@ namespace CodeGenCourseProject.TAC.Tests
                 new TACIdentifier("c", SemanticChecker.BOOLEAN_TYPE, 7),
                 statements[4]);
             TACEquals(
-                new TACReturn(),
+                Operator.RETURN,
+                null,
+                null, 
+                null,
                 statements[5]);
 
             Assert.AreEqual(Helper.MangleFunctionName("func_1", 8), functions[1].Name);
@@ -899,52 +902,71 @@ namespace CodeGenCourseProject.TAC.Tests
                 null,
                 statements[3]);
             TACEquals(
-                new TACReturn(
-                    new TACReal(23.12)),
-                statements[4]);
+                Operator.RETURN,
+                null,
+                new TACReal(23.12),
+                null,
+                statements[4]);   
             TACEquals(
                Operator.LABEL,
                new TACInteger(0),
                null,
                statements[5]);
             TACEquals(
-                new TACReturn(
-                    new TACReal(0.0)),
+                Operator.RETURN,
+                null,
+                new TACReal(0.0),
+                null,
                 statements[6]);
 
             Assert.AreEqual(Helper.MangleFunctionName("writeln", 11), functions[2].Name);
             statements = functions[2].Statements;
             Assert.AreEqual(1, statements.Count);
             TACEquals(
-                new TACReturn(),
+                Operator.RETURN,
+                null,
+                null,
+                null,
                 statements[0]);
 
             Assert.AreEqual(Helper.MangleFunctionName("read", 12), functions[3].Name);
             statements = functions[3].Statements;
             Assert.AreEqual(1, statements.Count);
             TACEquals(
-                new TACReturn(),
+                Operator.RETURN,
+                null,
+                null,
+                null,
                 statements[0]);
 
             Assert.AreEqual(Helper.MangleFunctionName("func_2", 14), functions[4].Name);
             statements = functions[4].Statements;
             Assert.AreEqual(1, statements.Count);
             TACEquals(
-                new TACReturn(new TACInteger(4)),
+                Operator.RETURN,
+                null,
+                new TACInteger(4),
+                null,
                 statements[0]);
 
             Assert.AreEqual(Helper.MangleFunctionName("func_3", 16), functions[5].Name);
             statements = functions[5].Statements;
             Assert.AreEqual(1, statements.Count);
             TACEquals(
-                new TACReturn(),
+                Operator.RETURN,
+                null,
+                null,
+                null,
                 statements[0]);
 
             Assert.AreEqual(Helper.MangleFunctionName("func_4", 18), functions[6].Name);
             statements = functions[6].Statements;
             Assert.AreEqual(1, statements.Count);
             TACEquals(
-                new TACReturn(),
+                Operator.RETURN,
+                null,
+                null,
+                null,
                 statements[0]);
 
             Assert.AreEqual("<ENTRY POINT>", functions[7].Name);

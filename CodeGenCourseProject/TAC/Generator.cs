@@ -11,7 +11,7 @@ namespace CodeGenCourseProject.TAC
     {
         PLUS, MINUS, MULTIPLY, DIVIDE, MODULO, CONCAT,
         LESS_THAN, LESS_THAN_OR_EQUAL, EQUAL, GREATER_THAN_OR_EQUAL, GREATER_THAN, NOT_EQUAL, AND, OR, NOT,
-        PUSH, PUSH_INITIALIZED, CALL, CALL_WRITELN, CALL_READ, LABEL, JUMP, JUMP_IF_FALSE
+        PUSH, PUSH_INITIALIZED, CALL, CALL_WRITELN, CALL_READ, LABEL, JUMP, JUMP_IF_FALSE, RETURN
     };
 
     public static class OperatorExtension
@@ -66,6 +66,8 @@ namespace CodeGenCourseProject.TAC
                     return "jump";
                 case Operator.JUMP_IF_FALSE:
                     return "jump_if_false";
+                case Operator.RETURN:
+                    return "return";
                 default:
                     throw new InternalCompilerError("Default branch taken in Operator.Name()");
             }
@@ -306,11 +308,11 @@ namespace CodeGenCourseProject.TAC
             AssertEmptyTacValueStack();
             if (returnNode.Children.Count == 0)
             {
-                Emit(new TACReturn(returnNode.Line, returnNode.Column));
+                Emit(Operator.RETURN, null, null, null);
                 return;
             }
             returnNode.Children[0].Accept(this);
-            Emit(new TACReturn(returnNode.Line, returnNode.Column, tacValueStack.Pop()));
+            Emit(Operator.RETURN, null, tacValueStack.Pop(), null);
             AssertEmptyTacValueStack();
         }
 

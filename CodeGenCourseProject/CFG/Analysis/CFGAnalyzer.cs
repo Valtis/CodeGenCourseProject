@@ -288,26 +288,12 @@ namespace CodeGenCourseProject.CFG.Analysis
                 return;
             }
 
-            if (value is TACReturn)
-            {
-                var decl = (TACReturn)value;
-                CheckInitialization(function, decl.Expression, block, destination, currentPoint);
-                return;
-            }
-
             if (value is TACAssert)
             {
                 var assert = (TACAssert)value;
                 CheckInitialization(function, assert.Expression, block, destination, currentPoint);
                 return;
             }
-
-        /*    if (value is TACJumpIfFalse)
-            {
-                var jump = (TACJumpIfFalse)value;
-                CheckInitialization(function, jump.Condition, block, destination, currentPoint);
-                return;
-            }*/
         }
 
         void CheckCapturedVariableInitialization(
@@ -367,7 +353,7 @@ namespace CodeGenCourseProject.CFG.Analysis
         {
             if (function.ReturnType != SemanticChecker.VOID_TYPE)
             {
-                if (!(function.Statements[block.End].RightOperand is TACReturn) &&
+                if (!(function.Statements[block.End].Operator == Operator.RETURN) &&
                     !missingReturnReported)
                 {
                     missingReturnReported = true;

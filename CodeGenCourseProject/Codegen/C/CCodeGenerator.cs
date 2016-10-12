@@ -422,6 +422,9 @@ void assert(char expr, int line)
                     case Operator.JUMP_IF_FALSE:
                         EmitConditionalJump(statement);
                         return;
+                    case Operator.RETURN:
+                        EmitReturn(statement);
+                        return;
                     default:
                         break;
 
@@ -623,19 +626,6 @@ void assert(char expr, int line)
             cValues.Push(cValues.Pop() + memberOp + "size");
         }
 
-
-        public void Visit(TACReturn tacReturn)
-        {
-            var expr = "";
-            if (tacReturn.Expression != null)
-            {
-                tacReturn.Expression.Accept(this);
-                expr = cValues.Pop();
-            }
-
-            cValues.Push("return " + GetDereferenceOperator(tacReturn.Expression) + expr);
-        }
-
         public void Visit(TACAssert tacAssert)
         {
             tacAssert.Expression.Accept(this);
@@ -699,10 +689,16 @@ void assert(char expr, int line)
             indentation.Decrease();
         }
 
-
-        string getLabel(int labelId)
+        public void EmitReturn(Statement statement)
         {
-            return C_LABEL_PREFIX + labelId;
+            var expr = "";
+            if (statement.RightOperand != null)
+            {
+                statement.RightOperand.Accept(this);
+                expr = cValues.Pop();
+            }
+
+            Emit("return " + GetDereferenceOperator(statement.RightOperand) + expr + ";");
         }
 
         public void EmitRead(int argCount)
@@ -848,6 +844,11 @@ void assert(char expr, int line)
             }
 
             Emit(destStr + identifier.Name + "(" + args + ");");
+        }
+
+        string getLabel(int labelId)
+        {
+            return C_LABEL_PREFIX + labelId;
         }
 
         public void Visit(TACCloneArray tacCloneArray)

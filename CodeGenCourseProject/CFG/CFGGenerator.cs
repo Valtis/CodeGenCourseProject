@@ -118,7 +118,7 @@ namespace CodeGenCourseProject.CFG
 
                 }
                 // edge to end block
-                else if (rightOperand is TACReturn)
+                else if (op == Operator.RETURN)
                 {
                     adjacencyList[pos].Add(GetDestinationBlockID(blocks, CFGraph.END_BLOCK_ID));
                 }
@@ -164,7 +164,7 @@ namespace CodeGenCourseProject.CFG
         {
             return statement.Operator == Operator.JUMP
                 || statement.Operator == Operator.JUMP_IF_FALSE
-                || statement.RightOperand is TACReturn;
+                || statement.Operator == Operator.RETURN;
         }
 
 

@@ -14,7 +14,6 @@ namespace CodeGenCourseProject.TAC.Values
         void Visit(TACArrayIndex tacArrayIndex);
         void Visit(TACAssert tacAssert);
         void Visit(TACArrayDeclaration tacArrayDeclaration);
-        void Visit(TACReturn tacReturn);
         void Visit(TACReal tacReal);
         void Visit(TACCloneArray tacCloneArray);
         void Visit(TACBoolean tacBoolean);

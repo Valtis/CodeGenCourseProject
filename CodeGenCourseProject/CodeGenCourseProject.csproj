@@ -118,7 +118,6 @@
     <Compile Include="TAC\Values\TACInteger.cs" />
     <Compile Include="TAC\Statement.cs" />
     <Compile Include="TAC\Values\TACReal.cs" />
-    <Compile Include="TAC\Values\TACReturn.cs" />
     <Compile Include="TAC\Values\TACString.cs" />
     <Compile Include="TAC\Values\TACValue.cs" />
     <Compile Include="TAC\Values\TACVisitor.cs" />
