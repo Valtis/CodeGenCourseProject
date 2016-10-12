@@ -410,6 +410,9 @@ void assert(char expr, int line)
                     case Operator.CALL_READ:
                         EmitRead(((TACInteger)statement.RightOperand).Value);
                         return;
+                    case Operator.CALL_ASSERT:
+                        EmitAssert(statement);
+                        return;
                     case Operator.CALL:
                         EmitFunctionCall(statement.Destination, statement.RightOperand);
                         return;
@@ -626,10 +629,11 @@ void assert(char expr, int line)
             cValues.Push(cValues.Pop() + memberOp + "size");
         }
 
-        public void Visit(TACAssert tacAssert)
+        public void EmitAssert(Statement statement)
         {
-            tacAssert.Expression.Accept(this);
-            cValues.Push("assert(" + cValues.Pop() + ", " + (tacAssert.Line + 1) + ")");
+            statement.RightOperand.Accept(this);
+            var line = (TACInteger)statement.LeftOperand;
+            Emit("assert(" + cValues.Pop() + ", " + (line.Value + 1) + ");");
         }
 
         public void EmitWriteLn(int argCount)

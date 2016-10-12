@@ -287,13 +287,6 @@ namespace CodeGenCourseProject.CFG.Analysis
                 CheckInitialization(function, decl.Expression, block, destination, currentPoint);
                 return;
             }
-
-            if (value is TACAssert)
-            {
-                var assert = (TACAssert)value;
-                CheckInitialization(function, assert.Expression, block, destination, currentPoint);
-                return;
-            }
         }
 
         void CheckCapturedVariableInitialization(

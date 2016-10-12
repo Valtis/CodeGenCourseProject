@@ -11,7 +11,7 @@ namespace CodeGenCourseProject.TAC
     {
         PLUS, MINUS, MULTIPLY, DIVIDE, MODULO, CONCAT,
         LESS_THAN, LESS_THAN_OR_EQUAL, EQUAL, GREATER_THAN_OR_EQUAL, GREATER_THAN, NOT_EQUAL, AND, OR, NOT,
-        PUSH, PUSH_INITIALIZED, CALL, CALL_WRITELN, CALL_READ, LABEL, JUMP, JUMP_IF_FALSE, RETURN
+        PUSH, PUSH_INITIALIZED, CALL, CALL_WRITELN, CALL_READ, CALL_ASSERT, LABEL, JUMP, JUMP_IF_FALSE, RETURN, 
     };
 
     public static class OperatorExtension
@@ -60,6 +60,8 @@ namespace CodeGenCourseProject.TAC
                     return "call_writeln";
                 case Operator.CALL_READ:
                     return "call_read";
+                case Operator.CALL_ASSERT:
+                    return "call_assert";
                 case Operator.LABEL:
                     return "label";
                 case Operator.JUMP:
@@ -701,9 +703,7 @@ namespace CodeGenCourseProject.TAC
             AssertEmptyTacValueStack();
 
             assertNode.Children[0].Accept(this);
-
-            Emit(new TACAssert(assertNode.Line, assertNode.Column, tacValueStack.Pop()));
-
+            Emit(Operator.CALL_ASSERT, new TACInteger(assertNode.Line), tacValueStack.Pop(), null);
             AssertEmptyTacValueStack();
         }
 

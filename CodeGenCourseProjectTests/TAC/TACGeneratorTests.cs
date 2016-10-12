@@ -1162,17 +1162,23 @@ namespace CodeGenCourseProject.TAC.Tests
                 new TACIdentifier("__t", SemanticChecker.BOOLEAN_TYPE, 0),
                 statements[0]);
             TACEquals(
-                new TACAssert(
-                    new TACIdentifier("__t", SemanticChecker.BOOLEAN_TYPE, 0)),
+                Operator.CALL_ASSERT,
+                new TACInteger(3),
+                new TACIdentifier("__t", SemanticChecker.BOOLEAN_TYPE, 0),
+                null,
                 statements[1]);
             TACEquals(
-                new TACAssert(
-                    new TACBoolean(true)),
-                statements[2]);
+               Operator.CALL_ASSERT,
+               new TACInteger(4),
+               new TACBoolean(true),
+               null,
+               statements[2]);
             TACEquals(
-                new TACAssert(
-                    new TACBoolean(false)),
-                statements[3]);
+               Operator.CALL_ASSERT,
+               new TACInteger(5),
+               new TACBoolean(false),
+               null,
+               statements[3]);
         }
 
         private void TACEquals(TACValue value, Statement actual)
