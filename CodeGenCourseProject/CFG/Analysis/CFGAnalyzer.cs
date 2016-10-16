@@ -248,11 +248,17 @@ namespace CodeGenCourseProject.CFG.Analysis
         {
             // VALIDATE_INDEX is generated when array is indexed; if we do not ignore this, 
             // uninitialized variables will be reported twice (once for VALIDATE_INDEX statement, once for actual usage)
+           
             if (statement.Operator.HasValue && statement.Operator == Operator.VALIDATE_INDEX)
             {
                 return;
             }
-            CheckInitialization(function, statement.LeftOperand, block, statement.Destination as TACIdentifier, currentPoint);
+            // DECLARE_ARRAY uses the lhs operand to store the array we are declaring; as such we do not need (or want)
+            // to check if it is declared
+            if (statement.Operator.HasValue && statement.Operator != Operator.DECLARE_ARRAY)
+            {
+                CheckInitialization(function, statement.LeftOperand, block, statement.Destination as TACIdentifier, currentPoint);
+            }
             CheckInitialization(function, statement.RightOperand, block, statement.Destination as TACIdentifier, currentPoint);
             // check that captured variables are initialized
             if (statement.Operator.HasValue && statement.Operator.Value == Operator.CALL)
@@ -268,8 +274,6 @@ namespace CodeGenCourseProject.CFG.Analysis
             TACIdentifier destination, 
             int currentPoint)
         {
-            HandleNonIdentifiers(function, value, block, destination, currentPoint);
-
             if (value is TACIdentifier)
             {
                 var identifier = (TACIdentifier)value;
@@ -280,22 +284,6 @@ namespace CodeGenCourseProject.CFG.Analysis
                 }
 
                 ReportUninitializedVariable(identifier);
-            }
-        }
-
-        // ensures tac values in tac values are checked for correct usage
-        private void HandleNonIdentifiers(
-            Function function,
-            TACValue value, 
-            BasicBlock block, 
-            TACIdentifier destination, 
-            int currentPoint)
-        {
-            if (value is TACArrayDeclaration)
-            {
-                var decl = (TACArrayDeclaration)value;
-                CheckInitialization(function, decl.Expression, block, destination, currentPoint);
-                return;
             }
         }
 

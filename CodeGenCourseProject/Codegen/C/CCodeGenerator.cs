@@ -448,6 +448,9 @@ void assert(char expr, int line)
                     case Operator.CLONE_ARRAY:
                         EmitArrayClone(statement);
                         return;
+                    case Operator.DECLARE_ARRAY:
+                        EmitArrayDeclaration(statement);
+                        return;
                     default:
                         break;
 
@@ -590,14 +593,16 @@ void assert(char expr, int line)
             return type;
         }
 
-        public void Visit(TACArrayDeclaration tacArrayDeclaration)
+        public void EmitArrayDeclaration(Statement statement)
         {
-            var type = GetCType(tacArrayDeclaration.Type);
-            var name = tacArrayDeclaration.Name;
-            var size = tacArrayDeclaration.Expression;
+            var array = (TACIdentifier)statement.LeftOperand;
+            statement.RightOperand.Accept(this);
 
-            cValues.Push(ArrayCreation(name, type, size.ToString(), (tacArrayDeclaration.Line + 1).ToString()));
+            var type = GetCType(array.Type);
+            var name = array.Name;
+            var sizeExpr = GetDereferenceOperator(statement.LeftOperand) + cValues.Pop();
 
+            Emit(ArrayCreation(name, type, sizeExpr, (array.Line + 1).ToString()) + ";");
         }
 
         public void Visit(TACReal tacReal)

@@ -12,7 +12,7 @@ namespace CodeGenCourseProject.TAC
         PLUS, MINUS, MULTIPLY, DIVIDE, MODULO, CONCAT,
         LESS_THAN, LESS_THAN_OR_EQUAL, EQUAL, GREATER_THAN_OR_EQUAL, GREATER_THAN, NOT_EQUAL, AND, OR, NOT,
         PUSH, PUSH_INITIALIZED, CALL, CALL_WRITELN, CALL_READ, CALL_ASSERT, LABEL, JUMP, JUMP_IF_FALSE, RETURN,
-        VALIDATE_INDEX, ARRAY_SIZE, CLONE_ARRAY
+        VALIDATE_INDEX, ARRAY_SIZE, CLONE_ARRAY, DECLARE_ARRAY,
     };
 
     public static class OperatorExtension
@@ -628,8 +628,12 @@ namespace CodeGenCourseProject.TAC
                 {
                     var name = (IdentifierNode)variableDeclarationNode.Children[i];
                     var symbol = (ArraySymbol)symbolTable.GetSymbol(name.Value, variableDeclarationNode.Line+1, variableDeclarationNode.Column);
-                    Emit(new TACArrayDeclaration(
-                        variableDeclarationNode.Line, variableDeclarationNode.Column, name.Value, symbol.BaseType, arraySize, symbol.Id));
+                    Emit(
+                      Operator.DECLARE_ARRAY,
+                      new TACIdentifier(name.Line, name.Column, name.Value, symbol.BaseType, symbol.Id),
+                      arraySize,
+                      null);
+
                     AssertEmptyTacValueStack();
 
                     functionStack.Peek().Locals.Add(

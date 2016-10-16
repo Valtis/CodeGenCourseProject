@@ -29,7 +29,7 @@ namespace CodeGenCourseProject.TAC.Tests
             Assert.AreEqual(functions, tacGenerator.Functions.Count);
             return tacGenerator.Functions;
         }
-
+        
         [TestMethod()]
         public void ExpressionsGenerateValidTAC()
         {
@@ -103,12 +103,10 @@ namespace CodeGenCourseProject.TAC.Tests
                 new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 5),
                 new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 6),
                 statements[12]);
-
             TACEquals(
                 new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 6),
                 new TACIdentifier("j", SemanticChecker.INTEGER_TYPE, 1),
                 statements[13]);
-
             TACEquals(
                 Operator.MODULO,
                 new TACIdentifier("j", SemanticChecker.INTEGER_TYPE, 1),
@@ -125,22 +123,18 @@ namespace CodeGenCourseProject.TAC.Tests
                 new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 8),
                 new TACIdentifier("i", SemanticChecker.INTEGER_TYPE, 0),
                 statements[16]);
-
             TACEquals(
                Operator.MULTIPLY,
                new TACInteger(23),
                new TACInteger(20),
                new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 9),
                statements[17]);
-
             TACEquals(
-               new TACArrayDeclaration(
-                   "ia",
-                   SemanticChecker.INTEGER_TYPE,
-                   new TACIdentifier("__t",
-                   SemanticChecker.INTEGER_TYPE, 9), 2),
+               Operator.DECLARE_ARRAY,
+               new TACIdentifier("ia", SemanticChecker.INTEGER_TYPE, 2),
+               new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 9),
+               null,
                statements[18]);
-
             TACEquals(
                 Operator.MULTIPLY,
                 new TACInteger(7),
@@ -273,14 +267,13 @@ namespace CodeGenCourseProject.TAC.Tests
             TACEquals(
                 new TACIdentifier("__t", SemanticChecker.REAL_TYPE, 22),
                 new TACIdentifier("k", SemanticChecker.REAL_TYPE, 3),
-                statements[43]);            
+                statements[43]);
             TACEquals(
-                new TACArrayDeclaration(
-                    "ir",
-                    SemanticChecker.REAL_TYPE,
-                    new TACInteger(0),
-                    5),
-                statements[44]);
+               Operator.DECLARE_ARRAY,
+               new TACIdentifier("ir", SemanticChecker.REAL_TYPE, 5),
+               new TACInteger(0),
+               null,
+               statements[44]);
             TACEquals(
                 Operator.VALIDATE_INDEX,
                 new TACIdentifier("ir", SemanticChecker.REAL_TYPE, 5),
@@ -387,13 +380,11 @@ namespace CodeGenCourseProject.TAC.Tests
                 new TACIdentifier("__t", SemanticChecker.BOOLEAN_TYPE, 32),
                 new TACIdentifier("m", SemanticChecker.BOOLEAN_TYPE, 6),
                 statements[65]);
-
             TACEquals(
                 Operator.NOT,
                 new TACIdentifier("m", SemanticChecker.BOOLEAN_TYPE, 6),
                 new TACIdentifier("__t", SemanticChecker.BOOLEAN_TYPE, 33),
                 statements[66]);
-
             TACEquals(
                 new TACIdentifier("__t", SemanticChecker.BOOLEAN_TYPE, 33),
                 new TACIdentifier("m", SemanticChecker.BOOLEAN_TYPE, 6),
@@ -405,14 +396,13 @@ namespace CodeGenCourseProject.TAC.Tests
             TACEquals(
                 new TACIdentifier("false", SemanticChecker.BOOLEAN_TYPE, 9),
                 new TACIdentifier("n", SemanticChecker.BOOLEAN_TYPE, 7),
-                statements[69]);            
+                statements[69]);
             TACEquals(
-                new TACArrayDeclaration(
-                    "ib",
-                    SemanticChecker.BOOLEAN_TYPE,
-                    new TACInteger(99),
-                    10),
-                statements[70]);
+               Operator.DECLARE_ARRAY,
+               new TACIdentifier("ib", SemanticChecker.BOOLEAN_TYPE, 10),
+               new TACInteger(99),
+               null,
+               statements[70]);
             TACEquals(
                 Operator.VALIDATE_INDEX,
                 new TACIdentifier("ib", SemanticChecker.BOOLEAN_TYPE, 10),
@@ -448,12 +438,11 @@ namespace CodeGenCourseProject.TAC.Tests
                 new TACIdentifier("o", SemanticChecker.STRING_TYPE, 11),
                 statements[77]);
             TACEquals(
-                new TACArrayDeclaration(
-                    "is",
-                    SemanticChecker.STRING_TYPE,
-                    new TACIdentifier("i", SemanticChecker.INTEGER_TYPE, 0),
-                    13),
-                statements[78]);
+               Operator.DECLARE_ARRAY,
+               new TACIdentifier("is", SemanticChecker.STRING_TYPE, 13),
+               new TACIdentifier("i", SemanticChecker.INTEGER_TYPE, 0),
+               null,
+               statements[78]);
             TACEquals(
                 Operator.VALIDATE_INDEX,
                 new TACIdentifier("is", SemanticChecker.STRING_TYPE, 13),
@@ -471,12 +460,11 @@ namespace CodeGenCourseProject.TAC.Tests
                 new TACIdentifier("__t", SemanticChecker.STRING_TYPE, 36),
                 statements[81]);
             TACEquals(
-                new TACArrayDeclaration(
-                    "ia2",
-                    SemanticChecker.INTEGER_TYPE,
-                    new TACInteger(0),
-                    14),
-                statements[82]);
+               Operator.DECLARE_ARRAY,
+               new TACIdentifier("ia2", SemanticChecker.INTEGER_TYPE, 14),
+               new TACInteger(0),
+               null,
+               statements[82]);
             TACEquals(
                 new TACIdentifier("ia2", "Array<" + SemanticChecker.INTEGER_TYPE + ">", 14),
                 new TACIdentifier("ia", "Array<" + SemanticChecker.INTEGER_TYPE + ">", 2),
@@ -731,12 +719,11 @@ namespace CodeGenCourseProject.TAC.Tests
                null,
                statements[38]);
             TACEquals(
-                new TACArrayDeclaration(
-                    "ia",
-                    SemanticChecker.INTEGER_TYPE,
-                    new TACInteger(1),
-                    5),
-                statements[39]);
+               Operator.DECLARE_ARRAY,
+               new TACIdentifier("ia", SemanticChecker.INTEGER_TYPE, 5),
+               new TACInteger(1),
+               null,
+               statements[39]);
             TACEquals(
                 Operator.VALIDATE_INDEX,
                 new TACIdentifier("ia", SemanticChecker.INTEGER_TYPE, 5),
@@ -1189,8 +1176,11 @@ namespace CodeGenCourseProject.TAC.Tests
                 new TACIdentifier("a", SemanticChecker.INTEGER_TYPE, 0),
                 statements[26]);
             TACEquals(
-                new TACArrayDeclaration("x", SemanticChecker.INTEGER_TYPE, new TACInteger(4), 20),
-                statements[27]);
+               Operator.DECLARE_ARRAY,
+               new TACIdentifier("x", SemanticChecker.INTEGER_TYPE, 20),
+               new TACInteger(4),
+               null,
+               statements[27]);
             TACEquals(
                 Operator.CLONE_ARRAY,
                 null,
@@ -1222,7 +1212,7 @@ namespace CodeGenCourseProject.TAC.Tests
                 null,
                 statements[32]);
         }
-        
+       
         [TestMethod()]
         public void AssertsGenerateCorrectTAC()
         {
