@@ -140,17 +140,33 @@ namespace CodeGenCourseProject.CFG.Analysis
         {
             for (int i = block.Start; i <= block.End; ++i)
             {
-                var dest = function.Statements[i].Destination;
-                if (dest != null && dest is TACIdentifier)
+
+                var dest = function.Statements[i].Destination as TACIdentifier;
+                var lhs = function.Statements[i].LeftOperand as TACIdentifier;
+                var rhs = function.Statements[i].RightOperand as TACIdentifier;
+
+                if (dest != null)
                 {
                     block.VariableInitializations.Add(new BasicBlock.VariableInitPoint((TACIdentifier)dest, i));
                 }
                 // arguments for read call are always initialized, so treat them as such
-                else if (function.Statements[i].Operator == Operator.PUSH_INITIALIZED && 
+
+                if (function.Statements[i].Operator == Operator.PUSH_INITIALIZED && 
                     function.Statements[i].RightOperand is TACIdentifier)
                 {
                     block.VariableInitializations.Add(
                         new BasicBlock.VariableInitPoint((TACIdentifier)function.Statements[i].RightOperand, i));
+                }
+
+                // consider array variables to be initialized, as they get zero-initialised
+                if (lhs != null && lhs.IsArray)
+                {
+                    block.VariableInitializations.Add(new BasicBlock.VariableInitPoint(lhs, i));
+                }
+
+                if (rhs != null && rhs.IsArray)
+                {
+                    block.VariableInitializations.Add(new BasicBlock.VariableInitPoint(rhs, i));
                 }
             }
         }
@@ -230,10 +246,11 @@ namespace CodeGenCourseProject.CFG.Analysis
         // check that variables are initialized before use in a basic block
         private void CheckInitialization(Function function, Statement statement, int currentPoint, BasicBlock block)
         {
-            // ensure array index is initialized before use
-            if (statement.Destination is TACArrayIndex)
+            // VALIDATE_INDEX is generated when array is indexed; if we do not ignore this, 
+            // uninitialized variables will be reported twice (once for VALIDATE_INDEX statement, once for actual usage)
+            if (statement.Operator.HasValue && statement.Operator == Operator.VALIDATE_INDEX)
             {
-                CheckInitialization(function, statement.Destination, block, null, currentPoint);
+                return;
             }
             CheckInitialization(function, statement.LeftOperand, block, statement.Destination as TACIdentifier, currentPoint);
             CheckInitialization(function, statement.RightOperand, block, statement.Destination as TACIdentifier, currentPoint);
@@ -274,13 +291,6 @@ namespace CodeGenCourseProject.CFG.Analysis
             TACIdentifier destination, 
             int currentPoint)
         {
-            if (value is TACArrayIndex)
-            {
-                var index = (TACArrayIndex)value;
-                CheckInitialization(function, index.Index, block, destination, currentPoint);
-                return;
-            }
-
             if (value is TACArrayDeclaration)
             {
                 var decl = (TACArrayDeclaration)value;

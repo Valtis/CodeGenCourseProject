@@ -12,7 +12,8 @@ namespace CodeGenCourseProject.TAC.Values
         private readonly string unmangledName;
         private readonly int id;
         private readonly string type;
-        private readonly bool isReference;
+        private bool isReference;
+        private bool isArray;
 
         public string Type
         {
@@ -51,6 +52,24 @@ namespace CodeGenCourseProject.TAC.Values
             get
             {
                 return isReference;
+            }
+
+            set
+            {
+                isReference = value;
+            }
+        }
+
+        public bool IsArray
+        {
+            get
+            {
+                return isArray;
+            }
+
+            set
+            {
+                isArray = value;
             }
         }
 

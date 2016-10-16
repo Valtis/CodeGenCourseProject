@@ -11,7 +11,7 @@ namespace CodeGenCourseProject.TAC
     {
         PLUS, MINUS, MULTIPLY, DIVIDE, MODULO, CONCAT,
         LESS_THAN, LESS_THAN_OR_EQUAL, EQUAL, GREATER_THAN_OR_EQUAL, GREATER_THAN, NOT_EQUAL, AND, OR, NOT,
-        PUSH, PUSH_INITIALIZED, CALL, CALL_WRITELN, CALL_READ, CALL_ASSERT, LABEL, JUMP, JUMP_IF_FALSE, RETURN, 
+        PUSH, PUSH_INITIALIZED, CALL, CALL_WRITELN, CALL_READ, CALL_ASSERT, LABEL, JUMP, JUMP_IF_FALSE, RETURN, VALIDATE_INDEX,
     };
 
     public static class OperatorExtension
@@ -70,6 +70,8 @@ namespace CodeGenCourseProject.TAC
                     return "jump_if_false";
                 case Operator.RETURN:
                     return "return";
+                case Operator.VALIDATE_INDEX:
+                    return "validate_index";
                 default:
                     throw new InternalCompilerError("Default branch taken in Operator.Name()");
             }
@@ -126,27 +128,26 @@ namespace CodeGenCourseProject.TAC
         }
 
         public void Visit(ArrayIndexNode node)
-        {
+        {            
             var nameNode = (IdentifierNode)node.Children[0];
+            
             nameNode.Accept(this);
             tacValueStack.Pop();
+
             var name = nameNode.Value;
             var expr = node.Children[1];
-
             expr.Accept(this);
-
+            var exprTAC = tacValueStack.Pop();
             var symbol = (ArraySymbol)symbolTable.GetSymbol(name);
 
-            var outerSymbol =
-               outerSymbolTables.Count > 0 ?
-                   outerSymbolTables.Peek().GetSymbol(name, node.Line, node.Column)
-                   : null;
+            var arrayName = new TACIdentifier(nameNode.Line, nameNode.Column, name, symbol.BaseType, symbol.Id, symbol.IsReference);
+            arrayName.IsArray = true;
 
-            var exprTAC = tacValueStack.Pop();
-            var index = new TACArrayIndex(node.Line, node.Column,
-                    nameNode.Value, exprTAC, symbol.BaseType, symbol.Id, symbol.IsReference);
-
-            tacValueStack.Push(index);
+            var destination = GetTemporary(node);
+            destination.IsReference = true;
+            Emit(Operator.VALIDATE_INDEX, arrayName, exprTAC, null);
+            Emit(Operator.PLUS, arrayName, exprTAC, destination);
+            tacValueStack.Push(destination);
         }
 
         public void Visit(ArrayTypeNode arrayTypeNode)

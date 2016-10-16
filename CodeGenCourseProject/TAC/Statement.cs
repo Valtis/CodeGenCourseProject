@@ -83,9 +83,9 @@ namespace CodeGenCourseProject.TAC
 
         public override string ToString()
         {
-            var lhs = Quad.Item2 == null ? "" : Quad.Item2.ToString() + " ";
+            var lhs = Quad.Item2 == null ? "" : Quad.Item2.ToString();
             var op = Quad.Item1.HasValue ? Quad.Item1.Value.Name() : "";
-            var rhs = Quad.Item2 == null ? Quad.Item3.ToString() : " " + Quad.Item3.ToString();
+            var rhs = Quad.Item3 == null ? "" : Quad.Item3.ToString();
             var assign = Quad.Item4?.ToString();
 
             var ret = "";
@@ -93,7 +93,7 @@ namespace CodeGenCourseProject.TAC
             {
                 ret = assign + " = ";
             }
-            return ret + lhs + op + rhs;
+            return ret + lhs + " " + op + (op == null ? "" : " ") + rhs;
         }
 
         public override bool Equals(object obj)

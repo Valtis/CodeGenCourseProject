@@ -531,27 +531,27 @@ namespace CodeGenCourseProject.Codegen.Tests
         public void GC2()
         {
             var output = CompileAndRun("gc2.txt", "-DGC_DEBUG -DMAX_HEAP_SIZE=100");
-            Assert.AreEqual(37, output.Count);
+            Assert.AreEqual(41, output.Count);
             // Skipping uninteresting lines
             Assert.AreEqual("Initializing GC", output[0]);
             Assert.AreEqual("MAX_HEAP_SIZE: 100", output[1]);
             Assert.AreEqual("Collecting dead objects", output[5]);
             Assert.AreEqual("Memory in use: 64 bytes", output[6]);
             Assert.AreEqual("String array - scanning", output[11]);
-            Assert.AreEqual("GC finished", output[14]);
-            Assert.AreEqual("Memory in use: 24 bytes", output[15]);
-            Assert.AreEqual("Collecting dead objects", output[19]);
-            Assert.AreEqual("Memory in use: 94 bytes", output[20]);
-            Assert.AreEqual("String array - scanning", output[25]);
-            Assert.AreEqual("GC finished", output[30]);
-            Assert.AreEqual("Memory in use: 54 bytes", output[31]);
-            Assert.AreEqual("hello---------", output[33]);
-            Assert.AreEqual("world---------", output[34]);
-            Assert.AreEqual("test----------", output[35]);
-            Assert.AreEqual(null, output[36]);
+            Assert.AreEqual("GC finished", output[15]);
+            Assert.AreEqual("Memory in use: 24 bytes", output[16]);
+            Assert.AreEqual("Collecting dead objects", output[20]);
+            Assert.AreEqual("Memory in use: 94 bytes", output[21]);
+            Assert.AreEqual("String array - scanning", output[26]);
+            Assert.AreEqual("GC finished", output[34]);
+            Assert.AreEqual("Memory in use: 54 bytes", output[35]);
+            Assert.AreEqual("hello---------", output[37]);
+            Assert.AreEqual("world---------", output[38]);
+            Assert.AreEqual("test----------", output[39]);
+            Assert.AreEqual(null, output[40]);
         }
 
-        [TestMethod()]
+[TestMethod()]
         public void Read()
         {
             var output = CompileAndRun("read.txt", "",

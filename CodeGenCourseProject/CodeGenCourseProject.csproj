@@ -107,7 +107,6 @@
     <Compile Include="TAC\Function.cs" />
     <Compile Include="TAC\Helper.cs" />
     <Compile Include="TAC\Generator.cs" />
-    <Compile Include="TAC\Values\TACArrayIndex.cs" />
     <Compile Include="TAC\Values\TACCloneArray.cs" />
     <Compile Include="TAC\Values\TACFunctionIdentifier.cs" />
     <Compile Include="TAC\Values\TACArrayDeclaration.cs" />

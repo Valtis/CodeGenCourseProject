@@ -375,7 +375,7 @@ void assert(char expr, int line)
         private void EmitStatement(Statement statement)
         {
             /* REFACTOR REFACTOR REFACTOR */
-            string dest = "";
+           
             string lhs = "";
             string rhs = "";
             string operation = "";
@@ -402,6 +402,17 @@ void assert(char expr, int line)
                 {
                     case Operator.PUSH:
                     case Operator.PUSH_INITIALIZED:
+                        // PUSH_INITIALIZED may push variables that have not been used elsewhere yet, 
+                        // so ensure they are declared
+                        if (statement.RightOperand is TACIdentifier)
+                        {
+                            var type = GetTypeIfNotDeclared((TACIdentifier)statement.RightOperand);
+                            if (type != String.Empty)
+                            {
+                                Emit(type + ((TACIdentifier)statement.RightOperand).Name + ";");
+                            }
+                        }
+
                         argStack.Push(statement.RightOperand);
                         return;
                     case Operator.CALL_WRITELN:
@@ -414,7 +425,7 @@ void assert(char expr, int line)
                         EmitAssert(statement);
                         return;
                     case Operator.CALL:
-                        EmitFunctionCall(statement.Destination, statement.RightOperand);
+                        EmitFunctionCall(statement);
                         return;
                     case Operator.LABEL:
                         EmitLabel(statement);
@@ -428,21 +439,16 @@ void assert(char expr, int line)
                     case Operator.RETURN:
                         EmitReturn(statement);
                         return;
+                    case Operator.VALIDATE_INDEX:
+                        EmitValidateArrayIndex(statement);
+                        return;
                     default:
                         break;
 
                 }
             }
 
-
-            if (statement.Destination != null)
-            {
-                statement.Destination.Accept(this);
-
-                dest +=
-                    GetDereferenceOperator(statement.Destination) +
-                    cValues.Pop() + " = ";
-            }
+            string dest = GenerateDestination(statement);
 
             if (statement.LeftOperand != null)
             {
@@ -461,6 +467,34 @@ void assert(char expr, int line)
 
             cStatement = dest + operation + ";";
             Emit(cStatement);
+        }
+
+        private string GenerateDestination(Statement statement)
+        {
+            string dest = string.Empty;
+            if (statement.Destination != null)
+            {
+
+                statement.Destination.Accept(this);
+                string type = String.Empty;
+                if (statement.Destination is TACIdentifier)
+                {
+                    type = GetTypeIfNotDeclared((TACIdentifier)statement.Destination);
+                }
+
+                if (type != String.Empty)
+                {
+                    dest += type;
+                }
+                else
+                {
+                    dest += GetDereferenceOperator(statement.Destination);
+                }
+
+                dest += cValues.Pop() + " = ";
+            }
+
+            return dest;
         }
 
         string HandleOperator(string lhs, string rhs, Operator? op, string type)
@@ -520,8 +554,15 @@ void assert(char expr, int line)
         public void Visit(TACIdentifier tacIdentifier)
         {
 
-            // arrays are alwayws pre-declared, non-arrays are declared on demand 
-            cValues.Push(GetTypeIfNotDeclared(tacIdentifier) + tacIdentifier.Name);
+            // arrays are alwayws pre-declared, non-arrays are declared on demand
+            if (tacIdentifier.IsArray)
+            {
+                cValues.Push(tacIdentifier.Name + (tacIdentifier.IsReference || capturedVariables.Any(x => x.Identifier.Name == tacIdentifier.Name) ? "->" : ".") + "arr");
+            } 
+            else
+            {
+                cValues.Push(tacIdentifier.Name);
+            }
         }
 
         private string GetTypeIfNotDeclared(TACIdentifier tacIdentifier)
@@ -534,45 +575,13 @@ void assert(char expr, int line)
             {
                 declared.Add(tacIdentifier.Name);
                 type = GetCType(tacIdentifier.Type) + " ";
+                if (tacIdentifier.IsReference)
+                {
+                    type += "*";
+                }
             }
 
             return type;
-        }
-
-        public void Visit(TACArrayIndex tacArrayIndex)
-        {
-            tacArrayIndex.Index.Accept(this);
-            var index = cValues.Pop();
-            var type = GetCType(tacArrayIndex.Type);
-
-            var addressOperator = "";
-            var memberOperator = ".";
-            // captured variables are always references
-            if (tacArrayIndex.IsReference ||
-                capturedVariables.Any(x => x.Identifier.Name == tacArrayIndex.Name))
-            {
-                memberOperator = "->";
-            }
-            else
-            {
-                addressOperator = "&";
-            }
-
-            string indexDeref = "";
-
-            if (tacArrayIndex.Index is TACIdentifier)
-            {
-                var ident = (TACIdentifier)tacArrayIndex.Index;
-                if (ident.IsReference || capturedVariables.Any(x => x.Identifier.Name == ident.Name))
-                {
-                    indexDeref = "*";
-                }
-
-            }
-
-            index = indexDeref + index;
-            Emit("__validate_" + type + "_array_index(" + addressOperator + "" + tacArrayIndex.Name + ", " + index + ", " + (tacArrayIndex.Line + 1) + ");");
-            cValues.Push(tacArrayIndex.Name + memberOperator + "arr[" + index + "]");
         }
 
         public void Visit(TACArrayDeclaration tacArrayDeclaration)
@@ -732,12 +741,6 @@ void assert(char expr, int line)
                     }
                 }
 
-                if (arg is TACArrayIndex)
-                {
-                    var index = (TACArrayIndex)arg;
-                    type = index.Type;
-                }
-
                 switch (type)
                 {
                     case SemanticChecker.INTEGER_TYPE:
@@ -771,9 +774,9 @@ void assert(char expr, int line)
         }
 
 
-        public void EmitFunctionCall(TACValue destination, TACValue function)
+        public void EmitFunctionCall(Statement statement)
         {
-            var identifier = (TACFunctionIdentifier)function;
+            var identifier = (TACFunctionIdentifier)statement.RightOperand;
 
             Function func = null;
             IList<Variable> parameters = null;
@@ -840,14 +843,44 @@ void assert(char expr, int line)
             }
             var args = string.Join(", ", args_string);
 
-            var destStr = "";
-            if (destination != null)
-            {
-                destination.Accept(this);
-                destStr = cValues.Pop() + " = ";
-            }
+            var destStr = GenerateDestination(statement);
+            
 
             Emit(destStr + identifier.Name + "(" + args + ");");
+        }
+
+        void EmitValidateArrayIndex(Statement statement)
+        {
+            var identifier = (TACIdentifier)statement.LeftOperand;
+            statement.RightOperand.Accept(this);
+            var indexExpr = cValues.Pop();
+
+            var type = GetCType(identifier.Type);
+
+            var addressOperator = "";
+            // captured variables are always references
+            if (!(identifier.IsReference ||
+                capturedVariables.Any(x => x.Identifier.Name == identifier.Name)))
+            {
+                addressOperator = "&";
+            }
+
+            string indexDeref = "";
+
+            if (statement.RightOperand is TACIdentifier)
+            {
+                var ident = (TACIdentifier)statement.RightOperand;
+                if (ident.IsReference || capturedVariables.Any(x => x.Identifier.Name == ident.Name))
+                {
+                    indexDeref = "*";
+                }
+
+            }
+
+            indexExpr = indexDeref + indexExpr;
+            Emit("__validate_" + type + "_array_index(" + 
+                addressOperator + "" + identifier.Name + ", " + indexExpr + ", " + (identifier.Line + 1) + ");");
+
         }
 
         string getLabel(int labelId)
@@ -956,11 +989,6 @@ void assert(char expr, int line)
                 return GetCType(((TACIdentifier)v).Type);
             }
 
-            if (v is TACArrayIndex)
-            {
-                return GetCType(((TACArrayIndex)v).Type);
-            }
-
             return C_VOID;
         }
 
@@ -987,8 +1015,8 @@ void assert(char expr, int line)
             if (value is TACIdentifier)
             {
                 var ident = (TACIdentifier)value;
-                if (ident.IsReference ||
-                    capturedVariables.Any(x => x.Identifier.Name == ident.Name))
+                if (!ident.IsArray && (ident.IsReference ||
+                    capturedVariables.Any(x => x.Identifier.Name == ident.Name)))
                 {
                     return "*";
                 }
