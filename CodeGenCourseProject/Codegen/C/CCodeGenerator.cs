@@ -445,6 +445,9 @@ void assert(char expr, int line)
                     case Operator.ARRAY_SIZE:
                         EmitArraySize(statement);
                         return;
+                    case Operator.CLONE_ARRAY:
+                        EmitArrayClone(statement);
+                        return;
                     default:
                         break;
 
@@ -895,10 +898,10 @@ void assert(char expr, int line)
             return C_LABEL_PREFIX + labelId;
         }
 
-        public void Visit(TACCloneArray tacCloneArray)
+        public void EmitArrayClone(Statement statement)
         {
-            var source = tacCloneArray.Source;
-            var destination = tacCloneArray.Destination;
+            var source = (TACIdentifier)statement.RightOperand;
+            var destination = (TACIdentifier)statement.Destination;
             var sizeExpr = source.Name;
 
             if (source.IsReference)
@@ -913,7 +916,7 @@ void assert(char expr, int line)
 
             Emit(GetBaseCType(source.Type) + "_array " + destination.Name + ";");
             declared.Add(destination.Name);
-            cValues.Push(ArrayCopy(source, destination, GetBaseCType(source.Type)));
+            Emit(ArrayCopy(source, destination, GetBaseCType(source.Type)) + ";");
         }
 
 

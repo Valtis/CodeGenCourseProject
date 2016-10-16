@@ -1192,9 +1192,10 @@ namespace CodeGenCourseProject.TAC.Tests
                 new TACArrayDeclaration("x", SemanticChecker.INTEGER_TYPE, new TACInteger(4), 20),
                 statements[27]);
             TACEquals(
-                new TACCloneArray(
-                    new TACIdentifier("x", SemanticChecker.INTEGER_ARRAY, 20),
-                    new TACIdentifier("__t", SemanticChecker.INTEGER_ARRAY, 12)),
+                Operator.CLONE_ARRAY,
+                null,
+                new TACIdentifier("x", SemanticChecker.INTEGER_ARRAY, 20),
+                new TACIdentifier("__t", SemanticChecker.INTEGER_ARRAY, 12),
                 statements[28]);
 
             TACEquals(

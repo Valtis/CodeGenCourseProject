@@ -12,7 +12,7 @@ namespace CodeGenCourseProject.TAC
         PLUS, MINUS, MULTIPLY, DIVIDE, MODULO, CONCAT,
         LESS_THAN, LESS_THAN_OR_EQUAL, EQUAL, GREATER_THAN_OR_EQUAL, GREATER_THAN, NOT_EQUAL, AND, OR, NOT,
         PUSH, PUSH_INITIALIZED, CALL, CALL_WRITELN, CALL_READ, CALL_ASSERT, LABEL, JUMP, JUMP_IF_FALSE, RETURN,
-        VALIDATE_INDEX, ARRAY_SIZE
+        VALIDATE_INDEX, ARRAY_SIZE, CLONE_ARRAY
     };
 
     public static class OperatorExtension
@@ -297,8 +297,7 @@ namespace CodeGenCourseProject.TAC
                 return argument;
             }
             var temporary = GetTemporary(callNode.Children[i]);
-            Emit(new TACCloneArray((TACIdentifier)argument, temporary));
-
+            Emit(Operator.CLONE_ARRAY, null, argument, temporary);
             argument = temporary;
             return argument;
         }
