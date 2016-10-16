@@ -755,5 +755,20 @@ namespace CodeGenCourseProject.Codegen.Tests
             Assert.AreEqual("2", output[1]);
             Assert.AreEqual(null, output[2]);
         }
+
+
+        /* 
+        Array pointer was not dereferenced correctly in if-statement, so the address was used instead of 
+        the proper value
+        */
+        [TestMethod()]
+        public void IFStatementArrayDereferencingBug()
+        {
+            var output = CompileAndRun("array_dereferencing_bug.txt");
+            Assert.AreEqual(3, output.Count);
+            Assert.AreEqual("True", output[0]);
+            Assert.AreEqual("False", output[1]);
+            Assert.AreEqual(null, output[2]);
+        }
     }
 }

@@ -1,0 +1,17 @@
+program array_bug;
+begin
+  var b : array[3] of boolean;
+  b[0] := true;
+
+  if b[0] then
+    writeln("True")
+  else
+    writeln("False");
+
+  b[0] := false;
+  
+  if b[0] then
+    writeln("True")
+  else
+    writeln("False");
+end.

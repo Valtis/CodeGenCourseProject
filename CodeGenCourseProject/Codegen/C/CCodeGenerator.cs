@@ -696,7 +696,9 @@ void assert(char expr, int line)
         {
             statement.LeftOperand.Accept(this);
             int id = ((TACInteger)statement.RightOperand).Value;
-            Emit("if (!" + cValues.Pop() + ")");
+            var derefOp = GetDereferenceOperator(statement.LeftOperand);
+
+            Emit("if (!" + derefOp + cValues.Pop() + ")");
             indentation.Increase();
             Emit("goto " + getLabel(id) + ";");
             indentation.Decrease();
