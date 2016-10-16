@@ -110,7 +110,6 @@
     <Compile Include="TAC\Values\TACCloneArray.cs" />
     <Compile Include="TAC\Values\TACFunctionIdentifier.cs" />
     <Compile Include="TAC\Values\TACArrayDeclaration.cs" />
-    <Compile Include="TAC\Values\TACArraySize.cs" />
     <Compile Include="TAC\Values\TACBoolean.cs" />
     <Compile Include="TAC\Values\TACIdentifier.cs" />
     <Compile Include="TAC\Values\TACInteger.cs" />

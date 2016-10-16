@@ -35,7 +35,7 @@ namespace CodeGenCourseProject.TAC.Tests
         {
 
             var functions = GetFunctions("expressions.txt", 1);
-            Assert.AreEqual(91, functions[0].Statements.Count);
+            Assert.AreEqual(92, functions[0].Statements.Count);
             var statements = functions[0].Statements;
 
             TACEquals(
@@ -482,37 +482,43 @@ namespace CodeGenCourseProject.TAC.Tests
                 new TACIdentifier("ia", "Array<" + SemanticChecker.INTEGER_TYPE + ">", 2),
                 statements[83]);
             TACEquals(
-                Operator.PLUS,
-                new TACInteger(2),
-                new TACArraySize(new TACIdentifier("ia", "Array<" + SemanticChecker.INTEGER_TYPE + ">", 2)),
+                Operator.ARRAY_SIZE,
+                null,
+                new TACIdentifier("ia", "Array<" + SemanticChecker.INTEGER_TYPE + ">", 2),
                 new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 37),
                 statements[84]);
             TACEquals(
+                Operator.PLUS,
+                new TACInteger(2),
                 new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 37),
-                new TACIdentifier("i", SemanticChecker.INTEGER_TYPE, 0),
+                new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 38),
                 statements[85]);
+            TACEquals(
+                new TACIdentifier("__t", SemanticChecker.INTEGER_TYPE, 38),
+                new TACIdentifier("i", SemanticChecker.INTEGER_TYPE, 0),
+                statements[86]);
             TACEquals(
                 Operator.NOT_EQUAL,
                 new TACIdentifier("i", SemanticChecker.INTEGER_TYPE, 0),
                 new TACIdentifier("j", SemanticChecker.INTEGER_TYPE, 1),
-                new TACIdentifier("__t", SemanticChecker.BOOLEAN_TYPE, 38),
-                statements[86]); 
+                new TACIdentifier("__t", SemanticChecker.BOOLEAN_TYPE, 39),
+                statements[87]); 
             TACEquals(
-                new TACIdentifier("__t", SemanticChecker.BOOLEAN_TYPE, 38),
+                new TACIdentifier("__t", SemanticChecker.BOOLEAN_TYPE, 39),
                 new TACIdentifier("m", SemanticChecker.BOOLEAN_TYPE, 6),
-                statements[87]);
+                statements[88]);
             TACEquals(
                 new TACInteger(4),
                 new TACIdentifier("i", SemanticChecker.INTEGER_TYPE, 0),
-                statements[88]);
+                statements[89]);
             TACEquals(
                 new TACString("hello"),
                 new TACIdentifier("i", SemanticChecker.STRING_TYPE, 15),
-                statements[89]);
+                statements[90]);
             TACEquals(
                 new TACIdentifier("i", SemanticChecker.INTEGER_TYPE, 0),
                 new TACIdentifier("i", SemanticChecker.INTEGER_TYPE, 0),
-                statements[90]);
+                statements[91]);
         }
         
         [TestMethod()]

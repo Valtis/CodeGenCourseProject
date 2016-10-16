@@ -442,6 +442,9 @@ void assert(char expr, int line)
                     case Operator.VALIDATE_INDEX:
                         EmitValidateArrayIndex(statement);
                         return;
+                    case Operator.ARRAY_SIZE:
+                        EmitArraySize(statement);
+                        return;
                     default:
                         break;
 
@@ -622,20 +625,22 @@ void assert(char expr, int line)
             cValues.Push("\"" + value + "\"");
         }
 
-        public void Visit(TACArraySize tacArraySize)
+        public void EmitArraySize(Statement statement)
         {
-            tacArraySize.Array.Accept(this);
+            statement.RightOperand.Accept(this);
             var memberOp = ".";
-            if (tacArraySize.Array is TACIdentifier)
+            if (statement.RightOperand is TACIdentifier)
             {
-                var ident = (TACIdentifier)tacArraySize.Array;
+                var ident = (TACIdentifier)statement.RightOperand;
                 if (ident.IsReference ||
                     capturedVariables.Any(x => x.Identifier.Name == ident.Name))
                 {
                     memberOp = "->";
                 }
             }
-            cValues.Push(cValues.Pop() + memberOp + "size");
+            var destination = GenerateDestination(statement);
+            Emit(destination + cValues.Pop() + memberOp + "size;");
+
         }
 
         public void EmitAssert(Statement statement)
@@ -966,7 +971,7 @@ void assert(char expr, int line)
 
         private string GetCType(TACValue v)
         {
-            if (v is TACInteger || v is TACArraySize)
+            if (v is TACInteger)
             {
                 return C_INTEGER;
             }

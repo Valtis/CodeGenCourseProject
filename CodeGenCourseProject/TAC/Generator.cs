@@ -11,7 +11,8 @@ namespace CodeGenCourseProject.TAC
     {
         PLUS, MINUS, MULTIPLY, DIVIDE, MODULO, CONCAT,
         LESS_THAN, LESS_THAN_OR_EQUAL, EQUAL, GREATER_THAN_OR_EQUAL, GREATER_THAN, NOT_EQUAL, AND, OR, NOT,
-        PUSH, PUSH_INITIALIZED, CALL, CALL_WRITELN, CALL_READ, CALL_ASSERT, LABEL, JUMP, JUMP_IF_FALSE, RETURN, VALIDATE_INDEX,
+        PUSH, PUSH_INITIALIZED, CALL, CALL_WRITELN, CALL_READ, CALL_ASSERT, LABEL, JUMP, JUMP_IF_FALSE, RETURN,
+        VALIDATE_INDEX, ARRAY_SIZE
     };
 
     public static class OperatorExtension
@@ -72,6 +73,8 @@ namespace CodeGenCourseProject.TAC
                     return "return";
                 case Operator.VALIDATE_INDEX:
                     return "validate_index";
+                case Operator.ARRAY_SIZE:
+                    return "array_size";
                 default:
                     throw new InternalCompilerError("Default branch taken in Operator.Name()");
             }
@@ -711,8 +714,9 @@ namespace CodeGenCourseProject.TAC
         public void Visit(ArraySizeNode node)
         {
             node.Children[0].Accept(this);
-            tacValueStack.Push(
-                new TACArraySize(node.Line, node.Column, tacValueStack.Pop()));
+            var temp = GetTemporary(node);
+            Emit(Operator.ARRAY_SIZE, null, tacValueStack.Pop(), temp);
+            tacValueStack.Push(temp);
         }
 
         public void Visit(AndNode node)
