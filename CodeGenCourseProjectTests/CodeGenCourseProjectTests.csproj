@@ -94,6 +94,7 @@
     <Content Include="Codegen\escape_sequences.txt" />
     <Compile Include="Lexing\LexerTests.cs" />
     <Compile Include="Lexing\StringTokenTests.cs" />
+    <Compile Include="MessageReporter\MessageReporterTests.cs" />
     <Compile Include="Parsing\ParserTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SemanticChecking\SemanticCheckerTests.cs" />

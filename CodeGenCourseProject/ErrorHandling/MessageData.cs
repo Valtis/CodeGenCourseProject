@@ -197,5 +197,27 @@ namespace CodeGenCourseProject.ErrorHandling
 
             }
         }
+
+
+        public override bool Equals(object obj)
+        {
+            MessageData other = obj as MessageData;
+            if (other == null)
+            {
+                return false;
+            }
+
+            return line == other.line && column == other.column && msg.Equals(other.Message) && type == other.type;
+        }
+
+        public override int GetHashCode()
+        {
+            int hash = 17;
+            hash = hash * 31 + msg.GetHashCode();
+            hash = hash * 31 + line;
+            hash = hash * 31 + column;
+            hash = hash * 31 + type.GetHashCode();
+            return hash;
+        }
     }
 }
