@@ -5,14 +5,18 @@
     */
     public abstract class TACValue
     {
-        private readonly int line;
-        private readonly int column;
+        private int line;
+        private int column;
 
         public int Line
         {
             get
             {
                 return line;
+            }
+            set
+            {
+                line = value;
             }
         }
 
@@ -21,6 +25,10 @@
             get
             {
                 return column;
+            }
+            set
+            {
+                column = value;
             }
         }
 

@@ -150,14 +150,13 @@ namespace CodeGenCourseProject.CFG.Analysis
                     block.VariableInitializations.Add(new BasicBlock.VariableInitPoint((TACIdentifier)dest, i));
                 }
                 // arguments for read call are always initialized, so treat them as such
-
                 if (function.Statements[i].Operator == Operator.PUSH_INITIALIZED && 
                     function.Statements[i].RightOperand is TACIdentifier)
                 {
                     block.VariableInitializations.Add(
                         new BasicBlock.VariableInitPoint((TACIdentifier)function.Statements[i].RightOperand, i));
                 }
-
+                
                 // consider array variables to be initialized, as they get zero-initialised
                 if (lhs != null && lhs.IsArray)
                 {
@@ -260,11 +259,6 @@ namespace CodeGenCourseProject.CFG.Analysis
                 CheckInitialization(function, statement.LeftOperand, block, statement.Destination as TACIdentifier, currentPoint);
             }
             CheckInitialization(function, statement.RightOperand, block, statement.Destination as TACIdentifier, currentPoint);
-            // check that captured variables are initialized
-            if (statement.Operator.HasValue && statement.Operator.Value == Operator.CALL)
-            {
-                CheckCapturedVariableInitialization(function, block, statement, currentPoint);
-            }
         }
 
         private void CheckInitialization(
@@ -284,59 +278,6 @@ namespace CodeGenCourseProject.CFG.Analysis
                 }
 
                 ReportUninitializedVariable(identifier);
-            }
-        }
-
-        void CheckCapturedVariableInitialization(
-            Function currentFunction, 
-            BasicBlock block, 
-            Statement functionCallStatement,
-            int currentPoint)
-        {
-            foreach (var f in functions)
-            {
-                if (f.Name == ((TACFunctionIdentifier)functionCallStatement.RightOperand).Name)
-                {
-                    foreach (var captured in f.CapturedVariables)
-                    {
-                        // Assume that any variables this function has captured are 
-                        // initialized (will be checked in different call site)
-                        if (currentFunction.CapturedVariables.Contains(captured))
-                        {
-                            continue;
-                        }
-
-                        // function parameters are always initialized
-                        if (currentFunction.Parameters.Contains(captured))
-                        {
-                            continue;
-                        }
-
-                        // we need to use the line number of the call, not the 
-                        // point where it is used
-                        var id = new TACIdentifier(
-                            functionCallStatement.Line,
-                            functionCallStatement.Column,
-                            captured.Identifier.UnmangledName,
-                            captured.Identifier.Type,
-                            captured.Identifier.Id);
-
-                        if (!CheckLocalParameterAssignment(id, block, null, currentPoint))
-                        {
-                            reporter.ReportError(
-                                MessageKind.SEMANTIC_ERROR,
-                                "Captured variable '" + captured.Identifier.UnmangledName + "' might be uninitialized at this point",
-                                functionCallStatement.Line,
-                                functionCallStatement.Column);
-
-                            reporter.ReportError(
-                                MessageKind.NOTE,
-                                "Variable is used here",
-                                captured.Identifier.Line,
-                                captured.Identifier.Column);
-                        }
-                    }
-                }
             }
         }
         
@@ -361,11 +302,6 @@ namespace CodeGenCourseProject.CFG.Analysis
             return missingReturnReported;
         }
         
-        private bool IsDynamicallyAllocated(TACIdentifier identifier)
-        {
-            return identifier.Type == SemanticChecker.STRING_TYPE || identifier.Type.Contains(SemanticChecker.ARRAY_PREFIX);
-        }
-
         private bool CheckAssignment(
             Function function, 
             TACIdentifier identifier, 
@@ -460,6 +396,14 @@ namespace CodeGenCourseProject.CFG.Analysis
                 "At least one control flow path exists where this variable remains uninitialized",
                 identifier.Line,
                 identifier.Column);
+            if (identifier.IsCaptured)
+            {
+                reporter.ReportError(
+                    MessageKind.NOTE_GENERIC,
+                    "The variable has been captured from the outer context by the function and must be initialized before the function call",
+                    identifier.Line,
+                    identifier.Column);
+            }
         }
 
         private IList<int> GetParentBlocks(CFGraph graph, int id)

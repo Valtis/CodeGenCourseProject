@@ -12,13 +12,14 @@ using System.Collections.Generic;
 using CodeGenCourseProject.Codegen.C;
 using System;
 using System.Threading;
+using System.Linq;
 
 namespace CodeGenCourseProject.Codegen.Tests
 {
     [TestClass()]
     public class CCodeGeneratorTests
     {
-        private List<string> Run(string program, string args, IList<string> stdin)
+        private List<string> Run(string program, string args, IList<string> stdin, IList<string> expectedStdErr)
         {
             ProcessStartInfo startInfo = new ProcessStartInfo();
             startInfo.CreateNoWindow = true;
@@ -28,9 +29,11 @@ namespace CodeGenCourseProject.Codegen.Tests
             startInfo.Arguments = args;
             startInfo.RedirectStandardOutput = true;
             startInfo.RedirectStandardInput = true;
+            startInfo.RedirectStandardError = true;
 
 
-            var output = new List<string>();
+            var stdout = new List<string>();
+            var stderr = new List<string>();
             try
             {
 
@@ -38,9 +41,11 @@ namespace CodeGenCourseProject.Codegen.Tests
                 {
                     process.StartInfo = startInfo;
                     process.OutputDataReceived +=
-                        (sender, arg) => output.Add(arg.Data);
+                        (sender, arg) => stdout.Add(arg.Data);
+                    process.ErrorDataReceived += (sender, arg) => stderr.Add(arg.Data);
                     process.Start();
                     process.BeginOutputReadLine();
+                    process.BeginErrorReadLine();
 
                     if (stdin != null)
                     {
@@ -54,7 +59,18 @@ namespace CodeGenCourseProject.Codegen.Tests
                     process.WaitForExit();
                 }
 
-                return output;
+                if ((expectedStdErr != null && !Enumerable.SequenceEqual(expectedStdErr, stderr)) || 
+                    (expectedStdErr == null && stderr.Count > 1))
+                {
+                    var errLine = string.Empty;
+                    foreach (var line in stderr)
+                    {
+                        errLine += line + "\n";
+                    }
+                    Assert.Fail("Non-empty stderr:\n" + errLine);
+                }
+
+                return stdout;
 
             }
             catch (Exception e)
@@ -63,7 +79,7 @@ namespace CodeGenCourseProject.Codegen.Tests
             }
             return null;
         }
-        private List<string> CompileAndRun(string file, string extraArgs = "", IList<string> stdin = null)
+        private List<string> CompileAndRun(string file, string extraArgs = "", IList<string> stdin = null, IList<string> stderr = null)
         {
             var reporter = new MessageReporter();
             var lexer = new Lexer(@"..\..\Codegen\" + file, reporter);
@@ -99,10 +115,13 @@ namespace CodeGenCourseProject.Codegen.Tests
                 generator.SaveResult(stream);
             }
 
+            var gcc_flags = "-std=gnu99 -Wall -Werror -Wextra -Wno-unused-variable -Wno-unused-parameter -Wno-unused-but-set-parameter";
+
             var output_exe = name + ".exe";
             File.Delete(output_exe);
-            Run("gcc", c_file + " -o " + output_exe + " " + extraArgs, stdin);
-            var output = Run(name + ".exe", "", stdin);
+            Run("gcc ", c_file + " " + gcc_flags + " -o " + output_exe + " " + extraArgs, stdin, null);
+            
+            var output = Run(name + ".exe", "", stdin, stderr);
             return output;
 
         }
@@ -505,9 +524,31 @@ namespace CodeGenCourseProject.Codegen.Tests
         }
 
         [TestMethod()]
+        public void AssertRef()
+        {
+            var output = CompileAndRun("assert_ref.txt");
+            Assert.AreEqual(2, output.Count);
+            Assert.AreEqual("Assert failed at line 8", output[0]);
+            Assert.AreEqual(null, output[1]);
+        }
+
+        [TestMethod()]
+        public void AssertCapture()
+        {
+            var output = CompileAndRun("assert_capture.txt");
+            Assert.AreEqual(2, output.Count);
+            Assert.AreEqual("Assert failed at line 8", output[0]);
+            Assert.AreEqual(null, output[1]);
+        }
+
+        [TestMethod()]
         public void GC1()
         {
-            var output = CompileAndRun("gc.txt", "-DGC_DEBUG -DMAX_HEAP_SIZE=100");
+            var output = CompileAndRun(
+                "gc.txt", 
+                "-DGC_DEBUG -DMAX_HEAP_SIZE=100",
+                null,
+                new List<string>(){ "Out of memory", null });
             Assert.AreEqual(37, output.Count);
             // Skipping uninteresting lines
             Assert.AreEqual("Initializing GC", output[0]);

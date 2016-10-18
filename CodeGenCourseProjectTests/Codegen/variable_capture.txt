@@ -11,11 +11,16 @@ begin
 	begin
 		var b : real;
 		b := 2.3;
+		begin
+		b := 2.3;
+		end;
 
 		procedure shadows(a : string, b : integer);
 		begin
 			writeln(a, " ", b, " ", ai[0], " ", c);
-			c := 19;
+			begin
+				c := 19;
+			end;
 			ai[1] := 1234567;
 		end;
 
@@ -34,7 +39,9 @@ begin
 
 	procedure proc2(var x : integer);
 	begin
-		x := 22;
+		begin
+			x := 22;
+		end;
 		procedure inner();
 		begin
 			x := 76;

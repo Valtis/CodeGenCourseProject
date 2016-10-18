@@ -331,10 +331,10 @@ namespace CodeGenCourseProject.CFG.Analysis.Tests
             Assert.AreEqual(5, reporter.Errors.Count);
 
             var testHelper = new TestHelper(reporter);
-            testHelper.AssertErrorMessage(0, MessageKind.SEMANTIC_ERROR, 22, 16, "Captured variable 'c' might be uninitialized at this point");
+            testHelper.AssertErrorMessage(0, MessageKind.SEMANTIC_ERROR, 22, 16, "Usage of uninitialized variable 'c'");
             testHelper.AssertErrorMessage(1, MessageKind.SEMANTIC_ERROR, 24, 21, "Usage of uninitialized variable 'c'");
-            testHelper.AssertErrorMessage(2, MessageKind.SEMANTIC_ERROR, 27, 8, "Captured variable 'a' might be uninitialized");
-            testHelper.AssertErrorMessage(3, MessageKind.SEMANTIC_ERROR, 27, 8, "Captured variable 'q' might be uninitialized");
+            testHelper.AssertErrorMessage(2, MessageKind.SEMANTIC_ERROR, 27, 8, "Usage of uninitialized variable 'q'");
+            testHelper.AssertErrorMessage(3, MessageKind.SEMANTIC_ERROR, 27, 8, "Usage of uninitialized variable 'a'");
             testHelper.AssertErrorMessage(4, MessageKind.SEMANTIC_ERROR, 30, 13, "Usage of uninitialized variable 'a'");
         }
 
@@ -424,7 +424,7 @@ namespace CodeGenCourseProject.CFG.Analysis.Tests
 
             var testHelper = new TestHelper(reporter);
             testHelper.AssertErrorMessage(0, MessageKind.SEMANTIC_ERROR, 6, 23, "Usage of uninitialized variable 'a'");
-            testHelper.AssertErrorMessage(1, MessageKind.SEMANTIC_ERROR, 16, 8, "Captured variable 'b' might be uninitialized at this point");
+            testHelper.AssertErrorMessage(1, MessageKind.SEMANTIC_ERROR, 16, 8, "Usage of uninitialized variable 'b'");
             testHelper.AssertErrorMessage(2, MessageKind.SEMANTIC_ERROR, 21, 23, "Usage of uninitialized variable 'c'");
         }
 
@@ -437,7 +437,7 @@ namespace CodeGenCourseProject.CFG.Analysis.Tests
 
             var testHelper = new TestHelper(reporter);
             testHelper.AssertErrorMessage(0, MessageKind.SEMANTIC_ERROR, 3, 15, "Usage of uninitialized variable 'a'");
-            testHelper.AssertErrorMessage(1, MessageKind.SEMANTIC_ERROR, 11, 8, "Captured variable 'a' might be uninitialized at this point");
+            testHelper.AssertErrorMessage(1, MessageKind.SEMANTIC_ERROR, 11, 8, "Usage of uninitialized variable 'a'");
             testHelper.AssertErrorMessage(2, MessageKind.SEMANTIC_ERROR, 14, 15, "Usage of uninitialized variable 'b'");
         }
 

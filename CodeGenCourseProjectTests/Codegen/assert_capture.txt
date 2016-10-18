@@ -1,0 +1,13 @@
+program assert_ref;
+begin
+var a : boolean;
+a := false;
+
+procedure f();
+begin
+	assert(a);
+end;
+
+f();
+
+end.

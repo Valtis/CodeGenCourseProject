@@ -1,4 +1,4 @@
-﻿program foo;
+	program foo;
 begin
 	var a : integer;
 	var b : boolean;

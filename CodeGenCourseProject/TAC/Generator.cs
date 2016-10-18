@@ -3,6 +3,7 @@ using CodeGenCourseProject.SemanticChecking;
 using CodeGenCourseProject.TAC.Values;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using static CodeGenCourseProject.TAC.Function;
 
 namespace CodeGenCourseProject.TAC
@@ -131,9 +132,9 @@ namespace CodeGenCourseProject.TAC
         }
 
         public void Visit(ArrayIndexNode node)
-        {            
+        {
             var nameNode = (IdentifierNode)node.Children[0];
-            
+
             nameNode.Accept(this);
             tacValueStack.Pop();
 
@@ -141,14 +142,40 @@ namespace CodeGenCourseProject.TAC
             var expr = node.Children[1];
             expr.Accept(this);
             var exprTAC = tacValueStack.Pop();
+            var arrayIsReference = false;
             var symbol = (ArraySymbol)symbolTable.GetSymbol(name);
 
-            var arrayName = new TACIdentifier(nameNode.Line, nameNode.Column, name, symbol.BaseType, symbol.Id, symbol.IsReference);
-            arrayName.IsArray = true;
+            // if the variable exists in the symbol table but has not been declared on this level, it is captured
+
+
+            arrayIsReference = symbol.IsReference;
+            var addressing = AddressingMode.NONE;
+
+            var exprId = exprTAC as TACIdentifier;
+            if (exprId != null && exprId.IsPointer)
+            {
+                exprId.AddressingMode = AddressingMode.DEREFERENCE;
+            }
+            bool isCaptured = IsCaptured(name, symbol.Id);
+
+            // validation expects a reference, so if symbol is not a reference, we must take the address of the symbol
+            if (!arrayIsReference && !isCaptured)
+            {
+                addressing = AddressingMode.TAKE_ADDRESS;
+            }
+
+            var validationName = new TACIdentifier(nameNode.Line, nameNode.Column, name, symbol.BaseType, symbol.Id, addressing);
+            Emit(Operator.VALIDATE_INDEX, validationName, exprTAC, null);
 
             var destination = GetTemporary(node);
-            destination.IsReference = true;
-            Emit(Operator.VALIDATE_INDEX, arrayName, exprTAC, null);
+            destination.AddressingMode = AddressingMode.DEREFERENCE;
+            destination.IsPointer = true;
+
+
+
+            var arrayName = new TACIdentifier(nameNode.Line, nameNode.Column, name, symbol.BaseType, symbol.Id, addressing);
+            arrayName.IsArray = true;
+            arrayName.IsPointer = arrayIsReference || isCaptured;
             Emit(Operator.PLUS, arrayName, exprTAC, destination);
             tacValueStack.Push(destination);
         }
@@ -185,10 +212,16 @@ namespace CodeGenCourseProject.TAC
             symbolTable.PopLevel();
         }
 
+
+        // TODO: Clean up, it is horribly messy
+        // May want to rethink variable capture handling, most of the complexity 
+        // comes from that (add to argument list earlier?)
         public void Visit(CallNode callNode)
         {
             var name = ((IdentifierNode)callNode.Children[0]).Value;
             var arguments = new List<TACValue>();
+
+            // is null when handling inbuilt functions like writeln
             var functionSymbol = (FunctionSymbol)symbolTable.GetSymbol(name, callNode.Line, callNode.Column);
 
             for (int i = 1; i < callNode.Children.Count; ++i)
@@ -208,41 +241,107 @@ namespace CodeGenCourseProject.TAC
                 arguments.Add(argument);
             }
 
+            // handle captured variables
+            if (functionSymbol != null)
+            {
+                foreach (var f in functions)
+                {
+                    if (f.Name == Helper.MangleFunctionName(functionSymbol.Name, functionSymbol.Id))
+                    {
+                        var list = new List<Variable>(f.CapturedVariables);
+                        for (int i = list.Count - 1; i >= 0; --i)
+                        {
+
+                            var id = new TACIdentifier(list[i].Identifier);
+                            id.Line = callNode.Line;
+                            id.Column = callNode.Column;
+                            var symbol = symbolTable.GetSymbol(id.UnmangledName) as VariableSymbol;
+
+                            var isCaptured = IsCaptured(id.UnmangledName, id.Id);
+                            if (isCaptured || (symbol != null && symbol.IsReference))
+                            {
+                                id.AddressingMode = AddressingMode.NONE;
+                            }
+                            else
+                            {
+                                id.AddressingMode = AddressingMode.TAKE_ADDRESS;
+                            }
+                            id.IsCaptured = true;
+                            Emit(Operator.PUSH, null, id, null);
+                        }
+
+                        break;
+                    }
+                }
+            }
+
+            var pushType = Operator.PUSH;
+            bool isInbuiltRead = false;
+            bool isInbuiltWriteln = false;
+            if (name == "read" && functionSymbol == null)
+            {
+                pushType = Operator.PUSH_INITIALIZED;
+                isInbuiltRead = true;
+            }
+
+            if (name == "writeln" && functionSymbol == null)
+            {
+                isInbuiltWriteln = true;
+            }
+
+
+            // push in reverse order, as this makes code gen slightly easier
+            for (int i = arguments.Count - 1; i >= 0; --i)
+            {
+                if (arguments[i] is TACIdentifier)
+                {
+                    var isRefefenceArgument = false;
+
+                    // if function argument is reference, make sure addressing mode is correct
+                    if (isInbuiltRead || functionSymbol != null && functionSymbol.IsReferenceParameters[i])
+                    {
+                        isRefefenceArgument = true;
+                    }
+
+                    var identifier = (TACIdentifier)arguments[i];
+                    if (identifier.IsPointer && isRefefenceArgument || (!identifier.IsPointer && !isRefefenceArgument))
+                    {
+                        identifier.AddressingMode = AddressingMode.NONE;
+                    }
+                    else if (!identifier.IsPointer && isRefefenceArgument)
+                    {
+                        identifier.AddressingMode = AddressingMode.TAKE_ADDRESS;
+                    }
+                    else if (identifier.IsPointer && !isRefefenceArgument)
+                    {
+                        identifier.AddressingMode = AddressingMode.DEREFERENCE;
+                    }
+                }
+                Emit(pushType, null, arguments[i], null);
+            }
+
 
             // inbuilt read function
-            if (name == "read" && functionSymbol == null)
-            {   // push in reverse order, as this makes code gen slightly easier
-                for (int i = arguments.Count - 1; i >= 0; --i)
-                {
-                    // PUSH_INITIALIZED means that the values in question are always initialized - 
-                    // this is used by the control flow analyser
-                    Emit(Operator.PUSH_INITIALIZED, null, arguments[i], null);
-                }
-
-                Emit(Operator.CALL_READ, null, new TACInteger(arguments.Count), null);
+            if (isInbuiltRead)
+            {   Emit(Operator.CALL_READ, null, new TACInteger(arguments.Count), null);
                 return;
             }
 
-            // push in reverse order, as this makes code gen slightly easier
-            for (int i = arguments.Count -1; i >= 0; --i)
-            {
-                Emit(Operator.PUSH, null, arguments[i], null);
-            }
-
             // inbuilt writeln function
-            if (name == "writeln" && functionSymbol == null)
+            if (isInbuiltWriteln)
             {
                 Emit(Operator.CALL_WRITELN, null, new TACInteger(arguments.Count), null);
                 return;
             }
-  
 
-            
+
+
             /*
-                If the called function has captured variables, which are not locals for the function,
-                we need to capture them as well                   
+                If the called function has captured variables, which are not locals for current function and are not used
+                in the function, we need to capture them as well for this function.
+                This ensures that the captured variables get properly passed around when creating function calls        
             */
-            if (functionStack.Count > 1) // Ignores the program node
+            if (functionStack.Count > 1) // Ignores the program node and inbuilt functions
             {
                 Function f = null;
                 foreach (var func in functions)
@@ -258,12 +357,17 @@ namespace CodeGenCourseProject.TAC
                 {
                     foreach (var captured in f.CapturedVariables)
                     {
-                        if (!functionStack.Peek().Locals.Contains(captured) && 
+                        if (!functionStack.Peek().Locals.Contains(captured) &&
                             !functionStack.Peek().Parameters.Contains(captured))
                         {
+                            // we know at this point that the captured variable is a pointer, since it comes from outer scope
+                            // we also know that the next function expects a pointer, so we do not need any addressing operations
+                            var newId = new TACIdentifier(captured.Identifier);
+                            var newVar = new Variable(newId, captured.Type, true);
+
                             functionStack.Peek().
                                 CapturedVariables.
-                                Add(captured);
+                                Add(newVar);
                         }
                     }
 
@@ -284,22 +388,41 @@ namespace CodeGenCourseProject.TAC
 
         private TACValue GenerateCopyIfNeeded(CallNode callNode, FunctionSymbol functionSymbol, int i, TACValue argument)
         {
+            var argumentIdentifier = (TACIdentifier)argument;
             var argumentSymbol = symbolTable.GetSymbol(
-                                    ((TACIdentifier)argument).UnmangledName, callNode.Line, callNode.Column);
+                                    argumentIdentifier.UnmangledName, callNode.Line, callNode.Column);
             if (!(argumentSymbol is ArraySymbol))
             {
                 return argument;
             }
+            // reference parameters are not copied
             var functionArgumentIsReference = functionSymbol.IsReferenceParameters[i - 1];
-
             if (functionArgumentIsReference)
             {
                 return argument;
             }
+
             var temporary = GetTemporary(callNode.Children[i]);
-            Emit(Operator.CLONE_ARRAY, null, argument, temporary);
-            argument = temporary;
-            return argument;
+
+            var addressing = AddressingMode.NONE;
+
+            // array copy helper function expects a pointer, so if the original pointer does not have 
+            // dereference-addressing mode (not a pointer), we must take its address
+            if (!argumentIdentifier.IsPointer)
+            {
+                addressing = AddressingMode.TAKE_ADDRESS;
+            }
+
+            var copyIdentifier = new TACIdentifier(argumentIdentifier);
+            copyIdentifier.AddressingMode = addressing;
+
+            temporary.AddressingMode = AddressingMode.TAKE_ADDRESS;
+
+            Emit(Operator.CLONE_ARRAY, null, copyIdentifier, temporary);
+
+            var retIdentifier = new TACIdentifier(temporary);
+            retIdentifier.AddressingMode = AddressingMode.NONE;
+            return retIdentifier;
         }
 
         public void Visit(EqualsNode equalsNode)
@@ -317,7 +440,15 @@ namespace CodeGenCourseProject.TAC
                 return;
             }
             returnNode.Children[0].Accept(this);
-            Emit(Operator.RETURN, null, tacValueStack.Pop(), null);
+            var variable = tacValueStack.Pop();
+            var varId = variable as TACIdentifier;
+
+            if (varId != null && varId.IsPointer)
+            {
+                varId.AddressingMode = AddressingMode.DEREFERENCE;
+            }
+
+            Emit(Operator.RETURN, null, variable, null);
             AssertEmptyTacValueStack();
         }
 
@@ -401,55 +532,43 @@ namespace CodeGenCourseProject.TAC
                     }
                     return;
                 }
-
             }
-
 
             var outerSymbol =
                 outerSymbolTables.Count > 0 ?
                     outerSymbolTables.Peek().GetSymbol(name, identifierNode.Line, identifierNode.Column)
                     : null;
 
-
             // if symbol is the same symbol than one in the outer symbol table 
             // (table without current function declarations), the variable is captured
-            // from outer context
-            TACIdentifier identifier;
+            // from outer context. Make sure it is treated as a pointer
+            TACIdentifier identifier = null;
             if (symbol == outerSymbol)
             {
-                var isReference = false;
-                if (outerSymbol is VariableSymbol)
-                {
-                    isReference = ((VariableSymbol)outerSymbol).IsReference;
-                }
-                else if (outerSymbol is ArraySymbol)
-                {
-                    isReference = ((ArraySymbol)outerSymbol).IsReference;
-                }
-
-
                 identifier = new TACIdentifier(
-                    identifierNode.Line, identifierNode.Column, name, symbol.Type, symbol.Id, isReference);
+                     identifierNode.Line, identifierNode.Column, name, symbol.Type, symbol.Id);
+                identifier.IsPointer = true;
                 capturedIdentifiers.Peek().Add(
                     new Variable(
                         identifier,
                         symbol.Type,
-                        true)); // always pass as reference
+                        true));
             }
             else
             {
-                var isReference = false;
+                var isPointer = false;
                 if (symbol is VariableSymbol)
                 {
-                    isReference = ((VariableSymbol)symbol).IsReference;
+                    isPointer = ((VariableSymbol)symbol).IsReference;
                 }
                 else if (symbol is ArraySymbol)
                 {
-                    isReference = ((ArraySymbol)symbol).IsReference;
+                    isPointer = ((ArraySymbol)symbol).IsReference;
                 }
-
+                
                 identifier = new TACIdentifier(
-                    identifierNode.Line, identifierNode.Column, name, symbol.Type, symbol.Id, isReference);
+                     identifierNode.Line, identifierNode.Column, name, symbol.Type, symbol.Id);
+                identifier.IsPointer = isPointer;
             }
 
 
@@ -550,8 +669,8 @@ namespace CodeGenCourseProject.TAC
             }
             else
             {
-                type = 
-                    SemanticChecker.ARRAY_PREFIX + 
+                type =
+                    SemanticChecker.ARRAY_PREFIX +
                     ((IdentifierNode)((ArrayTypeNode)functionNode.Children[1]).Children[0]).Value +
                     SemanticChecker.ARRAY_SUFFIX;
             }
@@ -572,7 +691,7 @@ namespace CodeGenCourseProject.TAC
         {
             var symbol = symbolTable.GetSymbol(functionParameterNode.Name.Value);
             var id = new TACIdentifier(symbol.Line, symbol.Column, symbol.Name, symbol.Type, symbol.Id);
-
+            
             functionStack.Peek().
                 AddParameter(
                     id,
@@ -604,6 +723,23 @@ namespace CodeGenCourseProject.TAC
 
             var expr = tacValueStack.Pop();
             var store = tacValueStack.Pop();
+
+            // ensure store has correct addressing mode
+            var id = (TACIdentifier)store;
+            
+            if (id.IsPointer)
+            {
+                id.AddressingMode = AddressingMode.DEREFERENCE;
+            }
+
+            // ensure expression has correct addressing mode
+            
+            var exprId = expr as TACIdentifier;
+            if (exprId != null && exprId.IsPointer)
+            {
+                exprId.AddressingMode = AddressingMode.DEREFERENCE; 
+            }
+
             Emit(
                 expr,
                 store);
@@ -627,7 +763,7 @@ namespace CodeGenCourseProject.TAC
                 for (int i = 1; i < variableDeclarationNode.Children.Count; ++i)
                 {
                     var name = (IdentifierNode)variableDeclarationNode.Children[i];
-                    var symbol = (ArraySymbol)symbolTable.GetSymbol(name.Value, variableDeclarationNode.Line+1, variableDeclarationNode.Column);
+                    var symbol = (ArraySymbol)symbolTable.GetSymbol(name.Value, variableDeclarationNode.Line + 1, variableDeclarationNode.Column);
                     Emit(
                       Operator.DECLARE_ARRAY,
                       new TACIdentifier(name.Line, name.Column, name.Value, symbol.BaseType, symbol.Id),
@@ -635,10 +771,15 @@ namespace CodeGenCourseProject.TAC
                       null);
 
                     AssertEmptyTacValueStack();
+                    if (symbol.IsReference)
+                    {
+                        throw new NotImplementedException("Not implemented");
+                    }
+                    var addressing = AddressingMode.NONE; // TODO - handle corretly
 
                     functionStack.Peek().Locals.Add(
                         new Variable(
-                            new TACIdentifier(name.Value, symbol.Type, symbol.Id, symbol.IsReference),
+                            new TACIdentifier(name.Value, symbol.Type, symbol.Id, addressing),
                             symbol.Type,
                             symbol.IsReference
                         ));
@@ -649,17 +790,22 @@ namespace CodeGenCourseProject.TAC
                 for (int i = 1; i < variableDeclarationNode.Children.Count; ++i)
                 {
                     var name = (IdentifierNode)variableDeclarationNode.Children[i];
-                    var symbol = (VariableSymbol)symbolTable.GetSymbol(name.Value, variableDeclarationNode.Line+1, variableDeclarationNode.Column);
+                    var symbol = (VariableSymbol)symbolTable.GetSymbol(name.Value, variableDeclarationNode.Line + 1, variableDeclarationNode.Column);
+
+                    var addressing = AddressingMode.NONE; // TODO - handle corretly
+                    if (symbol.IsReference)
+                    {
+                        throw new NotImplementedException("Not implemented");
+                    }
 
                     functionStack.Peek().Locals.Add(
                         new Variable(
-                            new TACIdentifier(name.Value, symbol.Type, symbol.Id, symbol.IsReference),
+                            new TACIdentifier(name.Value, symbol.Type, symbol.Id, addressing),
                             symbol.Type,
                             symbol.IsReference
                         ));
                 }
             }
-
         }
 
         public void Visit(NotEqualsNode notEqualsNode)
@@ -676,7 +822,7 @@ namespace CodeGenCourseProject.TAC
 
             var endLabel = GetLabelId();
             Emit(Operator.LABEL, null, new TACInteger(beginLabel), null);
-           
+
 
             whileNode.Children[0].Accept(this);
             var condition = tacValueStack.Pop();
@@ -710,7 +856,13 @@ namespace CodeGenCourseProject.TAC
             AssertEmptyTacValueStack();
 
             assertNode.Children[0].Accept(this);
-            Emit(Operator.CALL_ASSERT, new TACInteger(assertNode.Line), tacValueStack.Pop(), null);
+            var expr = tacValueStack.Pop();
+            var id = expr as TACIdentifier;
+            if (id != null && id.IsPointer)
+            {
+                id.AddressingMode = AddressingMode.DEREFERENCE;
+            }
+            Emit(Operator.CALL_ASSERT, new TACInteger(assertNode.Line), expr, null);
             AssertEmptyTacValueStack();
         }
 
@@ -749,6 +901,14 @@ namespace CodeGenCourseProject.TAC
             var tacValue = GetTemporary(node);
 
             var rhs = tacValueStack.Pop();
+
+            var rId = rhs as TACIdentifier;
+
+            if (rId != null && rId.IsPointer)
+            {
+                rId.AddressingMode = AddressingMode.DEREFERENCE;
+            }
+
             Emit(op, rhs, tacValue);
             tacValueStack.Push(tacValue);
         }
@@ -775,6 +935,20 @@ namespace CodeGenCourseProject.TAC
 
             var rhs = tacValueStack.Pop();
             var lhs = tacValueStack.Pop();
+
+            var rId = rhs as TACIdentifier;
+            var lId = lhs as TACIdentifier;
+
+            if (rId != null && rId.IsPointer)
+            {
+                rId.AddressingMode = AddressingMode.DEREFERENCE;
+            }
+
+            if (lId != null && lId.IsPointer)
+            {
+                lId.AddressingMode = AddressingMode.DEREFERENCE;
+            }
+
             Emit(op, lhs, rhs, tacValue);
 
             tacValueStack.Push(tacValue);
@@ -795,7 +969,7 @@ namespace CodeGenCourseProject.TAC
             // Too many dirty workarounds.
             // this one in particular is because I need the symbol table info here
             // that is only present in the child block
-
+            
             symbolTable.PushLevel(((BlockNode)node.Children[block]).GetSymbols());
             for (int i = paramStart; i < node.Children.Count; ++i)
             {
@@ -803,6 +977,8 @@ namespace CodeGenCourseProject.TAC
             }
 
             node.Children[block].Accept(this);
+
+
             symbolTable.PopLevel();
             var captured = capturedIdentifiers.Pop();
 
@@ -819,6 +995,8 @@ namespace CodeGenCourseProject.TAC
             //    end
             // end
             //
+            
+            // create new copy of stack; two stack creation ensures stack is not upside down
             var fTables =
                 new Stack<SymbolTable>(new Stack<SymbolTable>(outerSymbolTables));
             foreach (var f in functionStack)
@@ -827,7 +1005,7 @@ namespace CodeGenCourseProject.TAC
                 {
                     break;
                 }
-
+                
                 foreach (var captureParam in captured)
                 {
                     var s = fTables.Peek().GetSymbol(
@@ -839,7 +1017,6 @@ namespace CodeGenCourseProject.TAC
                 }
                 fTables.Pop();
             }
-
             outerSymbolTables.Pop();
             Functions.Add(functionStack.Pop());
         }
@@ -862,6 +1039,13 @@ namespace CodeGenCourseProject.TAC
         private void Emit(Operator op, TACValue lhs, TACValue rhs, TACValue destination)
         {
             functionStack.Peek().Statements.Add(new Statement(op, lhs, rhs, destination));
+        }
+        
+        private bool IsCaptured(string name, int id)
+        {
+            return outerSymbolTables.Count > 0 &&
+                 outerSymbolTables.Peek().Contains(name) &&
+                 outerSymbolTables.Peek().GetSymbol(name).Id == id;
         }
 
         void AssertEmptyTacValueStack()

@@ -375,7 +375,7 @@ void assert(char expr, int line)
         private void EmitStatement(Statement statement)
         {
             /* REFACTOR REFACTOR REFACTOR */
-           
+
             string lhs = "";
             string rhs = "";
             string operation = "";
@@ -458,17 +458,16 @@ void assert(char expr, int line)
             }
 
             string dest = GenerateDestination(statement);
-
             if (statement.LeftOperand != null)
             {
                 statement.LeftOperand.Accept(this);
-                lhs += GetDereferenceOperator(statement.LeftOperand) + cValues.Pop();
+                lhs += cValues.Pop();
             }
 
             if (statement.RightOperand != null)
             {
                 statement.RightOperand.Accept(this);
-                rhs += GetDereferenceOperator(statement.RightOperand) + cValues.Pop();
+                rhs += cValues.Pop();
             }
             // rhs should never be empty if we have an operator
             operation = HandleOperator(lhs, rhs, statement.Operator, GetCType(statement.RightOperand));
@@ -483,7 +482,6 @@ void assert(char expr, int line)
             string dest = string.Empty;
             if (statement.Destination != null)
             {
-
                 statement.Destination.Accept(this);
                 string type = String.Empty;
                 if (statement.Destination is TACIdentifier)
@@ -494,10 +492,6 @@ void assert(char expr, int line)
                 if (type != String.Empty)
                 {
                     dest += type;
-                }
-                else
-                {
-                    dest += GetDereferenceOperator(statement.Destination);
                 }
 
                 dest += cValues.Pop() + " = ";
@@ -554,26 +548,7 @@ void assert(char expr, int line)
         {
             program.Add(indentation.Indent + str);
         }
-
-        public void Visit(TACInteger tacInteger)
-        {
-            cValues.Push(tacInteger.Value.ToString());
-        }
-
-        public void Visit(TACIdentifier tacIdentifier)
-        {
-
-            // arrays are alwayws pre-declared, non-arrays are declared on demand
-            if (tacIdentifier.IsArray)
-            {
-                cValues.Push(tacIdentifier.Name + (tacIdentifier.IsReference || capturedVariables.Any(x => x.Identifier.Name == tacIdentifier.Name) ? "->" : ".") + "arr");
-            } 
-            else
-            {
-                cValues.Push(tacIdentifier.Name);
-            }
-        }
-
+              
         private string GetTypeIfNotDeclared(TACIdentifier tacIdentifier)
         {
             var type = "";
@@ -583,73 +558,48 @@ void assert(char expr, int line)
                 (!tacIdentifier.Type.Contains(SemanticChecker.ARRAY_PREFIX) || tacIdentifier.Name.StartsWith("__t")))
             {
                 declared.Add(tacIdentifier.Name);
-                type = GetCType(tacIdentifier.Type) + " ";
-                if (tacIdentifier.IsReference)
-                {
-                    type += "*";
-                }
+                type = GetCType(tacIdentifier.Type) + " " + (tacIdentifier.IsPointer ? "*" : "");
             }
 
             return type;
         }
 
+
         public void EmitArrayDeclaration(Statement statement)
         {
             var array = (TACIdentifier)statement.LeftOperand;
-            statement.RightOperand.Accept(this);
-
             var type = GetCType(array.Type);
-            var name = array.Name;
-            var sizeExpr = GetDereferenceOperator(statement.LeftOperand) + cValues.Pop();
+
+            array.Accept(this);
+            var name = cValues.Pop();
+            declared.Add(name);
+
+            statement.RightOperand.Accept(this);
+            var sizeExpr = cValues.Pop();
+
 
             Emit(ArrayCreation(name, type, sizeExpr, (array.Line + 1).ToString()) + ";");
-        }
-
-        public void Visit(TACReal tacReal)
-        {
-            cValues.Push(tacReal.Value.ToString());
-        }
-
-        public void Visit(TACBoolean tacBoolean)
-        {
-            cValues.Push((tacBoolean.Value ? 1 : 0).ToString());
-        }
-
-        public void Visit(TACString tacString)
-        {
-            // we need to convert \n back to the escape sequence form, as line break in C string is not 
-            // acceptable without appending \ to the line. Similarily, \" must be replaced by the escape sequence, 
-            // as otherwise the string is broken by unexpected '"' characters
-
-            // we also need to change \ to \\, as otherwise it is interpreted as start of escape sequence by the C compiler
-
-            string value = tacString.Value;
-            // ordering is critical here, as otherwise the escape secuence character gets malformed
-            value = value.Replace("\\", "\\\\");
-            value = value.Replace("\n", "\\n");
-            value = value.Replace("\"", "\\\"");
-            value = value.Replace("\r", "\\r"); // carriage return seems to be interpreted as new line as well
-
-            cValues.Push("\"" + value + "\"");
         }
 
         public void EmitArraySize(Statement statement)
         {
             statement.RightOperand.Accept(this);
             var memberOp = ".";
+            // could be function as well (foo().size)
             if (statement.RightOperand is TACIdentifier)
             {
-                var ident = (TACIdentifier)statement.RightOperand;
-                if (ident.IsReference ||
-                    capturedVariables.Any(x => x.Identifier.Name == ident.Name))
-                {
-                    memberOp = "->";
-                }
+                memberOp = GetMemberOp((TACIdentifier)statement.RightOperand);
             }
             var destination = GenerateDestination(statement);
             Emit(destination + cValues.Pop() + memberOp + "size;");
 
         }
+
+        private string GetMemberOp(TACIdentifier identifier)
+        {
+            return identifier.IsPointer ? "->" : ".";
+        }
+
 
         public void EmitAssert(Statement statement)
         {
@@ -685,8 +635,7 @@ void assert(char expr, int line)
             foreach (var arg in tacValueArguments)
             {
                 arg.Accept(this);
-                var prefix = GetDereferenceOperator(arg);
-                argumentList.Add(prefix + cValues.Pop());
+                argumentList.Add(cValues.Pop());
                 specifierList.Add(formatSpecifiers[GetCType(arg)]);
             }
 
@@ -709,9 +658,9 @@ void assert(char expr, int line)
         {
             statement.LeftOperand.Accept(this);
             int id = ((TACInteger)statement.RightOperand).Value;
-            var derefOp = GetDereferenceOperator(statement.LeftOperand);
+            var derefOp = statement.LeftOperand;
 
-            Emit("if (!" + derefOp + cValues.Pop() + ")");
+            Emit("if (!" + cValues.Pop() + ")");
             indentation.Increase();
             Emit("goto " + getLabel(id) + ";");
             indentation.Decrease();
@@ -726,7 +675,7 @@ void assert(char expr, int line)
                 expr = cValues.Pop();
             }
 
-            Emit("return " + GetDereferenceOperator(statement.RightOperand) + expr + ";");
+            Emit("return " + expr + ";");
         }
 
         public void EmitRead(int argCount)
@@ -744,16 +693,12 @@ void assert(char expr, int line)
             foreach (var arg in tacValueArguments)
             {
                 arg.Accept(this);
-                var addressSymbol = "&";
                 var type = "";
                 if (arg is TACIdentifier)
                 {
                     var ident = (TACIdentifier)arg;
                     type = ident.Type;
-                    if (ident.IsReference || capturedVariables.Any(x => x.Identifier.Name == ident.Name))
-                    {
-                        addressSymbol = "";
-                    }
+
                 }
 
                 switch (type)
@@ -771,19 +716,11 @@ void assert(char expr, int line)
                         throw new InternalCompilerError("Invalid type " + type + " when handling types for 'read'");
                 }
 
-                string value = cValues.Pop();
-                // count > 1 ---> it was declared only now (first use)
-                if (value.Split().Length > 1)
-                {
-                    Emit(value + ";");
-                    argStrings.Add(addressSymbol + value.Split()[1]);
-                }
-                else
-                {
-                    argStrings.Add(addressSymbol + value);
-                }
+
+                argStrings.Add(cValues.Pop());
+
             }
-            
+
             var args = string.Join(", ", argStrings);
             Emit("read(\"" + formatString + "\", " + args + ");");
         }
@@ -798,7 +735,7 @@ void assert(char expr, int line)
 
             // find the function we are calling
             foreach (var f in functions)
-            {  
+            {
                 if (f.Name == identifier.Name)
                 {
                     parameters = f.Parameters;
@@ -815,7 +752,7 @@ void assert(char expr, int line)
             var args_string = new List<string>();
             var argList = new List<TACValue>();
 
-            for (int i = 0; i < parameters.Count; ++i)
+            for (int i = 0; i < parameters.Count + func.CapturedVariables.Count; ++i)
             {
                 argList.Add(argStack.Pop());
             }
@@ -823,43 +760,13 @@ void assert(char expr, int line)
 
             for (int i = 0; i < argList.Count; ++i)
             {
-                string arg = "";
-                var argIsRef = parameters[i].IsReference;
-                var paramIsRef = false;
-                if (argList[i] is TACIdentifier)
-                {
-                    var argIdentifier = (TACIdentifier)argList[i];
-                    paramIsRef = argIdentifier.IsReference ||
-                    capturedVariables.Any(x => x.Identifier.Name == argIdentifier.Name);
-                }
-
-                if (argIsRef && !paramIsRef)
-                {
-                    arg += "&";
-                }
-                else if (!argIsRef && paramIsRef)
-                {
-                    arg += "*";
-                }
-
                 argList[i].Accept(this);
-                arg += cValues.Pop();
-                args_string.Add(arg);
-            };
-
-
-            foreach (var captured in func.CapturedVariables)
-            {
-                args_string.Add(CAPTURE_NOTIFIER + " " +
-                    ((capturedVariables.Contains(captured) ||
-                        captured.Identifier.IsReference) ?
-                        "" : "&") +
-                    captured.Identifier.Name);
+                args_string.Add(cValues.Pop());
             }
-            var args = string.Join(", ", args_string);
 
+            var args = string.Join(", ", args_string);
             var destStr = GenerateDestination(statement);
-            
+
 
             Emit(destStr + identifier.Name + "(" + args + ");");
         }
@@ -867,34 +774,14 @@ void assert(char expr, int line)
         void EmitValidateArrayIndex(Statement statement)
         {
             var identifier = (TACIdentifier)statement.LeftOperand;
+            var type = GetCType(identifier.Type);
+            statement.LeftOperand.Accept(this);
+            var name = cValues.Pop();
             statement.RightOperand.Accept(this);
             var indexExpr = cValues.Pop();
 
-            var type = GetCType(identifier.Type);
-
-            var addressOperator = "";
-            // captured variables are always references
-            if (!(identifier.IsReference ||
-                capturedVariables.Any(x => x.Identifier.Name == identifier.Name)))
-            {
-                addressOperator = "&";
-            }
-
-            string indexDeref = "";
-
-            if (statement.RightOperand is TACIdentifier)
-            {
-                var ident = (TACIdentifier)statement.RightOperand;
-                if (ident.IsReference || capturedVariables.Any(x => x.Identifier.Name == ident.Name))
-                {
-                    indexDeref = "*";
-                }
-
-            }
-
-            indexExpr = indexDeref + indexExpr;
-            Emit("__validate_" + type + "_array_index(" + 
-                addressOperator + "" + identifier.Name + ", " + indexExpr + ", " + (identifier.Line + 1) + ");");
+            Emit("__validate_" + type + "_array_index(" +
+                 name + ", " + indexExpr + ", " + (identifier.Line + 1) + ");");
 
         }
 
@@ -909,14 +796,8 @@ void assert(char expr, int line)
             var destination = (TACIdentifier)statement.Destination;
             var sizeExpr = source.Name;
 
-            if (source.IsReference)
-            {
-                sizeExpr += "->";
-            }
-            else
-            {
-                sizeExpr += ".";
-            }
+            var memberOp = GetMemberOp(source);
+            sizeExpr += memberOp;
             sizeExpr += "size";
 
             Emit(GetBaseCType(source.Type) + "_array " + destination.Name + ";");
@@ -933,20 +814,13 @@ void assert(char expr, int line)
 
         private string ArrayCopy(TACIdentifier source, TACIdentifier destination, string type)
         {
-            var sourceRefSymbol = "&";
-            var destRefSymbol = "&";
+            source.Accept(this);
+            var sourceName = cValues.Pop();
 
-            if (source.IsReference || capturedVariables.Any(x => x.Identifier.Name == source.Name))
-            {
-                sourceRefSymbol = "";
-            }
+            destination.Accept(this);
+            var destinationName = cValues.Pop();
 
-            if (destination.IsReference || capturedVariables.Any(x => x.Identifier.Name == destination.Name))
-            {
-                destRefSymbol = "";
-            }
-
-            return ("__copy_" + type + "_array(" + sourceRefSymbol + source.Name + ", " + destRefSymbol + destination.Name + ")");
+            return ("__copy_" + type + "_array(" + sourceName + ", " + destinationName + ")");
         }
 
         private string GetCType(string minipascalType)
@@ -1024,20 +898,65 @@ void assert(char expr, int line)
                     throw new InternalCompilerError("Should not be reached");
             }
         }
-
-        string GetDereferenceOperator(TACValue value)
+        public void Visit(TACInteger tacInteger)
         {
-            if (value is TACIdentifier)
-            {
-                var ident = (TACIdentifier)value;
-                if (!ident.IsArray && (ident.IsReference ||
-                    capturedVariables.Any(x => x.Identifier.Name == ident.Name)))
-                {
-                    return "*";
-                }
-            }
+            cValues.Push(tacInteger.Value.ToString());
+        }
 
-            return "";
+        public void Visit(TACIdentifier tacIdentifier)
+        {
+            var addressing = String.Empty;
+            
+            if (tacIdentifier.IsArray)
+            {
+                var memberOp = GetMemberOp(tacIdentifier);
+                cValues.Push(tacIdentifier.Name + memberOp + "arr");
+            }
+            else
+            {
+                // do not use addressing ifG we have not declared this one yet
+                if (declared.Contains(tacIdentifier.Name))
+                {
+                    if (tacIdentifier.AddressingMode == AddressingMode.DEREFERENCE)
+                    {
+                        addressing = "*";
+                    }
+                    else if (tacIdentifier.AddressingMode == AddressingMode.TAKE_ADDRESS)
+                    {
+                        addressing = "&";
+                    }
+                }
+
+                cValues.Push(addressing + tacIdentifier.Name);
+            }
+        }
+
+        public void Visit(TACReal tacReal)
+        {
+            cValues.Push(tacReal.Value.ToString());
+        }
+
+        public void Visit(TACBoolean tacBoolean)
+        {
+            cValues.Push((tacBoolean.Value ? 1 : 0).ToString());
+        }
+
+        public void Visit(TACString tacString)
+        {
+            // we need to convert \n back to the escape sequence form, as line break in C string is not 
+            // acceptable without appending \ to the line. Similarily, \" must be replaced by the escape sequence, 
+            // as otherwise the string is broken by unexpected '"' characters
+
+            // we also need to change \ to \\, as otherwise it is interpreted as start of escape sequence by the C compiler
+
+            string value = tacString.Value;
+            // ordering is critical here, as otherwise the escape secuence character gets malformed
+            value = value.Replace("\\", "\\\\");
+            value = value.Replace("\n", "\\n");
+            value = value.Replace("\"", "\\\"");
+            value = value.Replace("\r", "\\r"); // carriage return seems to be interpreted as new line as well
+
+            cValues.Push("\"" + value + "\"");
         }
 
     }

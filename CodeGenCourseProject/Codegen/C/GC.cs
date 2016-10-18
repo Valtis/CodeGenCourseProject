@@ -46,7 +46,7 @@ namespace CodeGenCourseProject.Codegen.C
 enum Type { " + C_OBJ_TYPE_NONE + ", " + C_OBJ_TYPE_STRING_ARRAY + @"};
 
 #ifndef GC_DISABLE
-
+#include <stdint.h>
 #ifndef MAX_HEAP_SIZE 
 // 8MB heap by default
 #define MAX_HEAP_SIZE 1024*1024*8
@@ -77,7 +77,7 @@ GC_State gc_state;
 /* Add allocation to the allocations linked list */
 void add_allocation(void *ptr, size_t size, enum Type type)
 {
-    GC_PRINT(""add_allocation(% p, % d)\n"", ptr, size);
+    GC_PRINT(""add_allocation(%p, %Iu)\n"", ptr, size);
     allocation_t * new_alloc = malloc(sizeof(allocation_t));
     new_alloc->ptr = ptr;
     new_alloc->allocation_size = size;
@@ -161,7 +161,7 @@ void gc_sweep();
 void gc_collect()
 {
     GC_PRINT(""Collecting dead objects\n"");
-    GC_PRINT(""Memory in use: %d bytes\n"", gc_state.allocated);
+    GC_PRINT(""Memory in use: %Iu bytes\n"", gc_state.allocated);
     if (gc_state.head == NULL)
     {
         GC_PRINT(""No allocated objects - stopping\n"");
@@ -171,7 +171,7 @@ void gc_collect()
     gc_scan_registers();
     gc_sweep();
     GC_PRINT(""GC finished\n"");
-    GC_PRINT(""Memory in use: %d bytes\n"", gc_state.allocated);
+    GC_PRINT(""Memory in use: %Iu bytes\n"", gc_state.allocated);
 }
 
 void gc_scan_stack()
@@ -249,8 +249,8 @@ void gc_scan_graph_from(const allocation_t* cur)
         GC_PRINT(""String array - scanning\n"");
         string* arr = cur->ptr;
         size_t size = cur->allocation_size / sizeof(string*);
-        int i = 0;
-        for (; i<size; ++i)
+        size_t i = 0;
+        for (; i < size; ++i)
         {
             allocation_t* alloc = gc_state.head;
             while (alloc != NULL)

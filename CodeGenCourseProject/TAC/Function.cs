@@ -70,13 +70,22 @@ namespace CodeGenCourseProject.TAC
         private IList<Statement> statements;
         private readonly string returnType;
 
+
+        private class VariableComparer : IComparer<Variable>
+        {
+            public int Compare(Variable x, Variable y)
+            {
+                return x.Identifier.Id - y.Identifier.Id;
+            }
+        }
+
         public Function(int line, int column, string name, int id, string returnType)
         {
             this.line = line;
             this.column = column;
             this.parameters = new List<Variable>();
             this.statements = new List<Statement>();
-            this.CapturedVariables = new HashSet<Variable>();
+            this.CapturedVariables = new SortedSet<Variable>(new VariableComparer());
             this.locals = new HashSet<Variable>();
             this.returnType = returnType;
             if (name != Generator.ENTRY_POINT)
